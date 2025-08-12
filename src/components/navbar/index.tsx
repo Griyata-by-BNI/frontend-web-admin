@@ -1,5 +1,9 @@
+"use client";
+
+import clsx from "clsx";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import React from "react";
 
 type NavItem = {
@@ -7,14 +11,16 @@ type NavItem = {
   href: string;
 };
 
+const navItems: NavItem[] = [
+  { label: "Beranda", href: "/" },
+  { label: "Partner Developer", href: "/partner-developer" },
+  { label: "Info KPR", href: "/info-kpr" },
+  { label: "Simulasi KPR", href: "/simulasi-kpr" },
+  { label: "Cek Kemampuan KPRmu", href: "/cek-kemampuan" },
+];
+
 const Navbar = () => {
-  const navItems: NavItem[] = [
-    { label: "Beranda", href: "/" },
-    { label: "Partner Developer", href: "/partner-developer" },
-    { label: "Info KPR", href: "/info-kpr" },
-    { label: "Simulasi KPR", href: "/simulasi-kpr" },
-    { label: "Cek Kemampuan KPRmu", href: "/cek-kemampuan" },
-  ];
+  const pathname = usePathname();
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -32,15 +38,28 @@ const Navbar = () => {
         </div>
 
         <div className="md:flex justify-center items-center space-x-12">
-          {navItems.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className="hidden md:block text-primary-black font-semibold hover:text-primary-tosca transition-colors duration-300"
-            >
-              {item.label}
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const isActive =
+              item.href === "/"
+                ? pathname === item.href
+                : pathname.startsWith(item.href);
+
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={clsx(
+                  {
+                    "text-primary-tosca": isActive,
+                    "text-primary-black": !isActive,
+                  },
+                  "hidden md:block font-semibold hover:text-primary-tosca transition-colors duration-300"
+                )}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
 
           <div className="flex-shrink-0">
             <Link href="/login">
