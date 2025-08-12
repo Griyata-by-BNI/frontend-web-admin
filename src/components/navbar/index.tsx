@@ -13,10 +13,10 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { label: "Beranda", href: "/" },
-  { label: "Partner Developer", href: "/partner-developer" },
+  { label: "Partner Developer", href: "/developers" },
   { label: "Info KPR", href: "/info-kpr" },
   { label: "Simulasi KPR", href: "/simulasi-kpr" },
-  { label: "Cek Kemampuan KPRmu", href: "/cek-kemampuan" },
+  { label: "Cek Kemampuan KPRmu", href: "/kemampuan-kpr" },
 ];
 
 const Navbar = () => {

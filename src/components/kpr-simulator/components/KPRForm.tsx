@@ -29,6 +29,7 @@ export const KPRForm = ({
     <div className="flex flex-col w-full gap-4">
       <div className="flex flex-col w-full gap-2">
         <p className="font-semibold text-dark-tosca">Harga Properti</p>
+
         <InputNumber
           size="large"
           className="!w-full"
@@ -44,6 +45,7 @@ export const KPRForm = ({
 
       <div className="flex flex-col w-full gap-2">
         <p className="font-semibold text-dark-tosca">Uang Muka</p>
+
         <InputNumber
           size="large"
           className="!w-full"
