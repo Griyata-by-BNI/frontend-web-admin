@@ -1,16 +1,17 @@
 import { Col, InputNumber, Row, Select, Slider } from "antd";
 import interestRateData from "@/data/interest-rate.json";
+import { InterestRate } from "../types";
 
 interface KPRFormProps {
   propertyPrice: number;
   downPayment: number;
   tenor: number;
-  selectedRate: any;
+  selectedRate: InterestRate | null;
   isValidTenor: boolean;
   onPropertyPriceChange: (value: number) => void;
   onDownPaymentChange: (value: number) => void;
   onTenorChange: (value: number) => void;
-  onRateChange: (rate: any) => void;
+  onRateChange: (rate: InterestRate | null) => void;
 }
 
 export const KPRForm = ({
@@ -22,7 +23,7 @@ export const KPRForm = ({
   onPropertyPriceChange,
   onDownPaymentChange,
   onTenorChange,
-  onRateChange
+  onRateChange,
 }: KPRFormProps) => {
   return (
     <div className="flex flex-col w-full gap-4">
@@ -32,7 +33,9 @@ export const KPRForm = ({
           size="large"
           className="!w-full"
           prefix={<p className="font-semibold text-dark-tosca">Rp</p>}
-          formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+          formatter={(value) =>
+            `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          }
           parser={(value) => Number(value!.replace(/\$\s?|(,*)/g, ""))}
           value={propertyPrice}
           onChange={(value) => onPropertyPriceChange(value || 0)}
@@ -45,7 +48,9 @@ export const KPRForm = ({
           size="large"
           className="!w-full"
           prefix={<p className="font-semibold text-dark-tosca">Rp</p>}
-          formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+          formatter={(value) =>
+            `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          }
           parser={(value) => Number(value!.replace(/\$\s?|(,*)/g, ""))}
           value={downPayment}
           onChange={(value) => onDownPaymentChange(value || 0)}
@@ -54,10 +59,12 @@ export const KPRForm = ({
 
       <div className="flex flex-col w-full gap-2">
         <p className="font-semibold text-dark-tosca">Jangka Waktu</p>
+
         <Row align="middle" gutter={16}>
           <Col flex="auto">
             <Slider min={5} max={30} value={tenor} onChange={onTenorChange} />
           </Col>
+
           <Col>
             <InputNumber
               size="large"
@@ -75,14 +82,15 @@ export const KPRForm = ({
 
       <div className="flex flex-col w-full gap-2">
         <p className="font-semibold text-dark-tosca">Pilihan Suku Bunga</p>
+
         <Select
           placeholder="Pilih suku bunga"
           className="w-full"
           size="large"
           value={selectedRate?.id}
           onChange={(value) => {
-            const rate = interestRateData.find((r) => r.id === value);
-            onRateChange(rate);
+            const rate = interestRateData.find((r) => r.id === value) as InterestRate;
+            onRateChange(rate || null);
           }}
           options={interestRateData.map((rate) => ({
             key: rate.id,
@@ -91,13 +99,14 @@ export const KPRForm = ({
           }))}
           status={!isValidTenor ? "error" : ""}
         />
-      </div>
 
-      {!isValidTenor && (
-        <div className="text-red-500 text-sm mt-2">
-          Tenor minimal untuk suku bunga ini adalah {selectedRate?.minimum_tenor} tahun
-        </div>
-      )}
+        {!isValidTenor && (
+          <div className="text-red-500 text-sm ">
+            Tenor minimal untuk suku bunga ini adalah{" "}
+            {selectedRate?.minimum_tenor} tahun
+          </div>
+        )}
+      </div>
     </div>
   );
 };

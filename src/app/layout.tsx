@@ -1,5 +1,4 @@
 // app/layout.tsx
-
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
@@ -40,7 +39,7 @@ export default function RootLayout({
           <Navbar />
 
           <main className="flex-grow bg-light-tosca">
-            <div className="flex flex-col items-center justify-center max-w-[1200px] mx-auto py-12">
+            <div className="flex flex-col items-center justify-center max-w-[1200px] mx-8 lg:mx-auto py-12">
               <ConfigProvider
                 theme={{
                   token: {
