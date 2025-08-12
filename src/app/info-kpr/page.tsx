@@ -6,16 +6,14 @@ export default function InfoKPR() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-4">Informasi KPR</h1>
         <p className="text-gray-600 mb-6">
-          Kredit Pemilikan Rumah (KPR) adalah fasilitas kredit yang diberikan oleh bank 
-          untuk membantu nasabah dalam membeli rumah atau properti. Gunakan simulator 
-          di bawah ini untuk menghitung estimasi angsuran KPR Anda.
+          Kredit Pemilikan Rumah (KPR) adalah fasilitas kredit yang diberikan
+          oleh bank untuk membantu nasabah dalam membeli rumah atau properti.
+          Gunakan simulator di bawah ini untuk menghitung estimasi angsuran KPR
+          Anda.
         </p>
       </div>
 
-      <KPRSimulator 
-        showTitle={false}
-        className="mb-8"
-      />
+      <KPRSimulator className="mb-8" />
 
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-2xl font-semibold mb-4">Tips Mengajukan KPR</h2>

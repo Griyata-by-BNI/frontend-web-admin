@@ -29,6 +29,7 @@ export const KPRForm = ({
     <div className="flex flex-col w-full gap-4">
       <div className="flex flex-col w-full gap-2">
         <p className="font-semibold text-dark-tosca">Harga Properti</p>
+
         <InputNumber
           size="large"
           className="!w-full"
@@ -44,6 +45,7 @@ export const KPRForm = ({
 
       <div className="flex flex-col w-full gap-2">
         <p className="font-semibold text-dark-tosca">Uang Muka</p>
+
         <InputNumber
           size="large"
           className="!w-full"
@@ -58,7 +60,7 @@ export const KPRForm = ({
       </div>
 
       <div className="flex flex-col w-full gap-2">
-        <p className="font-semibold text-dark-tosca">Jangka Waktu</p>
+        <p className="font-semibold text-dark-tosca">Jangka Waktu (Tenor)</p>
 
         <Row align="middle" gutter={16}>
           <Col flex="auto">
@@ -89,7 +91,9 @@ export const KPRForm = ({
           size="large"
           value={selectedRate?.id}
           onChange={(value) => {
-            const rate = interestRateData.find((r) => r.id === value) as InterestRate;
+            const rate = interestRateData.find(
+              (r) => r.id === value
+            ) as InterestRate;
             onRateChange(rate || null);
           }}
           options={interestRateData.map((rate) => ({

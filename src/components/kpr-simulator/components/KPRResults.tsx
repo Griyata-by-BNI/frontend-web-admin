@@ -1,6 +1,9 @@
-import { Alert, Button, Col, Row, Table } from "antd";
+import { Alert, Button, Col, Row, Table, theme } from "antd";
 import { InterestRate } from "../types";
 import React from "react";
+import Link from "next/link";
+
+const { useToken } = theme;
 
 interface KPRResultsProps {
   selectedRate: InterestRate | null;
@@ -12,6 +15,17 @@ interface KPRResultsProps {
   additionalButton?: React.ReactNode;
 }
 
+const columns = [
+  { title: "Periode", dataIndex: "period", key: "period" },
+  { title: "Suku Bunga", dataIndex: "rate", key: "rate" },
+  {
+    title: "Angsuran/Bulan",
+    dataIndex: "monthlyPayment",
+    key: "monthlyPayment",
+    render: (value: number) => `Rp ${value.toLocaleString("id-ID")}`,
+  },
+];
+
 export const KPRResults = ({
   selectedRate,
   propertyPrice,
@@ -21,16 +35,7 @@ export const KPRResults = ({
   onShowDetailedSchedule,
   additionalButton,
 }: KPRResultsProps) => {
-  const columns = [
-    { title: "Periode", dataIndex: "period", key: "period" },
-    { title: "Suku Bunga", dataIndex: "rate", key: "rate" },
-    {
-      title: "Angsuran/Bulan",
-      dataIndex: "monthlyPayment",
-      key: "monthlyPayment",
-      render: (value: number) => `Rp ${value.toLocaleString("id-ID")}`,
-    },
-  ];
+  const { token } = useToken();
 
   if (!selectedRate) return null;
 
@@ -80,6 +85,14 @@ export const KPRResults = ({
                     {additionalButton}
                   </Col>
                 )}
+
+                <Col span={24}>
+                  <Link href="/">
+                    <p className="text-sm text-dark-tosca/75 underline text-center">
+                      Syarat & Ketentuan
+                    </p>
+                  </Link>
+                </Col>
               </Row>
             ) : (
               <Alert
@@ -122,7 +135,14 @@ export const KPRResults = ({
               </>
             ) : (
               <Alert
-                message="Tidak dapat menghitung simulasi"
+                message={
+                  <p
+                    style={{ color: token.colorWarning }}
+                    className="font-bold"
+                  >
+                    Tidak dapat menghitung simulasi
+                  </p>
+                }
                 description="Pastikan semua data telah diisi dengan benar dan tenor sesuai dengan ketentuan suku bunga yang dipilih."
                 type="warning"
                 showIcon

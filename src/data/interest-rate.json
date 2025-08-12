@@ -2,7 +2,7 @@
   {
     "id": 1,
     "title": "3.25% Single Fixed 1 Tahun - Minimum Tenor 3 Tahun",
-    "minimum_tenor": 1,
+    "minimum_tenor": 3,
     "type": "single-fixed",
     "fixed_duration": 1,
     "interest_rate": 3.25,
@@ -11,7 +11,7 @@
   {
     "id": 2,
     "title": "8.00% Single Fixed 1 Tahun - Minimum Tenor 1 Tahun",
-    "minimum_tenor": 3,
+    "minimum_tenor": 1,
     "type": "single-fixed",
     "interest_rate": 8.0,
     "fixed_duration": 1,
@@ -29,7 +29,7 @@
   {
     "id": 4,
     "title": "3.25% Single Fixed 3 Tahun - Minimum Tenor 15 Tahun",
-    "minimum_tenor": 5,
+    "minimum_tenor": 15,
     "type": "single-fixed",
     "interest_rate": 3.25,
     "fixed_duration": 3,
@@ -101,7 +101,7 @@
   {
     "id": 12,
     "title": "8.25% Single Fixed 5 Tahun - Minimum Tenor 5 Tahun",
-    "minimum_tenor": 10,
+    "minimum_tenor": 5,
     "type": "single-fixed",
     "interest_rate": 8.25,
     "fixed_duration": 5,
