@@ -1,0 +1,185 @@
+[
+  {
+    "id": 1,
+    "title": "3.25% Single Fixed 1 Tahun - Minimum Tenor 3 Tahun",
+    "minimum_tenor": 1,
+    "type": "single-fixed",
+    "fixed_duration": 1,
+    "interest_rate": 3.25,
+    "floating_note": "Suku bunga floating berlaku dari tahun ke-2 hingga akhir tenor."
+  },
+  {
+    "id": 2,
+    "title": "8.00% Single Fixed 1 Tahun - Minimum Tenor 1 Tahun",
+    "minimum_tenor": 3,
+    "type": "single-fixed",
+    "interest_rate": 8.0,
+    "fixed_duration": 1,
+    "floating_note": "Suku bunga floating berlaku dari tahun ke-2 hingga akhir tenor."
+  },
+  {
+    "id": 3,
+    "title": "8.00% Single Fixed 2 Tahun - Minimum Tenor 15 Tahun",
+    "minimum_tenor": 15,
+    "type": "single-fixed",
+    "interest_rate": 8.0,
+    "fixed_duration": 2,
+    "floating_note": "Suku bunga floating berlaku dari tahun ke-3 hingga akhir tenor."
+  },
+  {
+    "id": 4,
+    "title": "3.25% Single Fixed 3 Tahun - Minimum Tenor 15 Tahun",
+    "minimum_tenor": 5,
+    "type": "single-fixed",
+    "interest_rate": 3.25,
+    "fixed_duration": 3,
+    "floating_note": "Suku bunga floating berlaku dari tahun ke-4 hingga akhir tenor."
+  },
+  {
+    "id": 5,
+    "title": "4.25% Single Fixed 3 Tahun - Minimum Tenor 10 Tahun",
+    "minimum_tenor": 10,
+    "type": "single-fixed",
+    "interest_rate": 4.25,
+    "fixed_duration": 3,
+    "floating_note": "Suku bunga floating berlaku dari tahun ke-4 hingga akhir tenor."
+  },
+  {
+    "id": 6,
+    "title": "7.25% Single Fixed 3 Tahun - Minimum Tenor 5 Tahun",
+    "minimum_tenor": 5,
+    "type": "single-fixed",
+    "interest_rate": 7.25,
+    "fixed_duration": 3,
+    "floating_note": "Suku bunga floating berlaku dari tahun ke-4 hingga akhir tenor."
+  },
+  {
+    "id": 7,
+    "title": "8.00% Single Fixed 3 Tahun - Minimum Tenor 3 Tahun",
+    "minimum_tenor": 3,
+    "type": "single-fixed",
+    "interest_rate": 8.0,
+    "fixed_duration": 3,
+    "floating_note": "Suku bunga floating berlaku dari tahun ke-4 hingga akhir tenor."
+  },
+  {
+    "id": 8,
+    "title": "8.25% Single Fixed 4 Tahun - Minimum Tenor 4 Tahun",
+    "minimum_tenor": 4,
+    "type": "single-fixed",
+    "interest_rate": 8.25,
+    "fixed_duration": 4,
+    "floating_note": "Suku bunga floating berlaku dari tahun ke-5 hingga akhir tenor."
+  },
+  {
+    "id": 9,
+    "title": "4.25% Single Fixed 5 Tahun - Minimum Tenor 15 Tahun",
+    "minimum_tenor": 15,
+    "type": "single-fixed",
+    "interest_rate": 4.25,
+    "fixed_duration": 5,
+    "floating_note": "Suku bunga floating berlaku dari tahun ke-6 hingga akhir tenor."
+  },
+  {
+    "id": 10,
+    "title": "5.25% Single Fixed 5 Tahun - Minimum Tenor 12 Tahun",
+    "minimum_tenor": 12,
+    "type": "single-fixed",
+    "interest_rate": 5.25,
+    "fixed_duration": 5,
+    "floating_note": "Suku bunga floating berlaku dari tahun ke-6 hingga akhir tenor."
+  },
+  {
+    "id": 11,
+    "title": "6.25% Single Fixed 5 Tahun - Minimum Tenor 10 Tahun",
+    "minimum_tenor": 10,
+    "type": "single-fixed",
+    "interest_rate": 6.25,
+    "fixed_duration": 5,
+    "floating_note": "Suku bunga floating berlaku dari tahun ke-6 hingga akhir tenor."
+  },
+  {
+    "id": 12,
+    "title": "8.25% Single Fixed 5 Tahun - Minimum Tenor 5 Tahun",
+    "minimum_tenor": 10,
+    "type": "single-fixed",
+    "interest_rate": 8.25,
+    "fixed_duration": 5,
+    "floating_note": "Suku bunga floating berlaku dari tahun ke-6 hingga akhir tenor."
+  },
+  {
+    "id": 13,
+    "title": "8.25% Single Fixed 6 Tahun - Minimum Tenor 6 Tahun",
+    "minimum_tenor": 6,
+    "type": "single-fixed",
+    "interest_rate": 8.25,
+    "fixed_duration": 6,
+    "floating_note": "Suku bunga floating berlaku dari tahun ke-7 hingga akhir tenor."
+  },
+  {
+    "id": 14,
+    "title": "8.25% Single Fixed 7 Tahun - Minimum Tenor 7 Tahun",
+    "minimum_tenor": 7,
+    "type": "single-fixed",
+    "interest_rate": 8.25,
+    "fixed_duration": 7,
+    "floating_note": "Suku bunga floating berlaku dari tahun ke-8 hingga akhir tenor."
+  },
+  {
+    "id": 15,
+    "title": "8.25% Single Fixed 8 Tahun - Minimum Tenor 8 Tahun",
+    "minimum_tenor": 8,
+    "type": "single-fixed",
+    "interest_rate": 8.25,
+    "fixed_duration": 8,
+    "floating_note": "Suku bunga floating berlaku dari tahun ke-9 hingga akhir tenor."
+  },
+  {
+    "id": 16,
+    "title": "8.75% Single Fixed 9 Tahun - Minimum Tenor 9 Tahun",
+    "minimum_tenor": 9,
+    "type": "single-fixed",
+    "interest_rate": 8.75,
+    "fixed_duration": 9,
+    "floating_note": "Suku bunga floating berlaku dari tahun ke-10 hingga akhir tenor."
+  },
+  {
+    "id": 17,
+    "title": "8.75% Single Fixed 10 Tahun - Minimum Tenor 10 Tahun",
+    "minimum_tenor": 10,
+    "type": "single-fixed",
+    "interest_rate": 8.75,
+    "fixed_duration": 10,
+    "floating_note": "Suku bunga floating berlaku dari tahun ke-11 hingga akhir tenor."
+  },
+  {
+    "id": 18,
+    "title": "Fixed Berjenjang - 15 Tahun",
+    "minimum_tenor": 15,
+    "type": "tiered-fixed",
+    "interest_rate": [
+      { "rate": 3.25, "note": "Fixed tahun ke-1" },
+      { "rate": 5.25, "note": "Fixed tahun ke-2 sampai dengan 3" },
+      { "rate": 7.25, "note": "Fixed tahun ke-4 sampai dengan 5" },
+      { "rate": 9.25, "note": "Fixed tahun ke-6 sampai dengan 7" },
+      { "rate": 11.25, "note": "Fixed tahun ke-8 sampai dengan 10" }
+    ],
+    "fixed_duration": 10,
+    "floating_note": "Suku bunga floating berlaku dari tahun ke-11 hingga akhir tenor."
+  },
+  {
+    "id": 19,
+    "title": "Fixed Berjenjang - 10 Tahun",
+    "minimum_tenor": 10,
+    "type": "tiered-fixed",
+    "interest_rate": [
+      { "rate": 3.25, "note": "Fixed tahun ke-1" },
+      { "rate": 5.25, "note": "Fixed tahun ke-2" },
+      { "rate": 7.25, "note": "Fixed tahun ke-3" },
+      { "rate": 9.25, "note": "Fixed tahun ke-4" },
+      { "rate": 11.25, "note": "Fixed tahun ke-5 sampai dengan 10" }
+    ],
+    "fixed_duration": 10,
+    "floating_note": "Suku bunga floating berlaku dari tahun ke-11 hingga akhir tenor."
+  }
+]

@@ -1,6 +1,15 @@
+// app/layout.tsx
+
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import Navbar from "@/components/navbar";
+import { ConfigProvider } from "antd";
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,9 +34,25 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${jakarta.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <div className="flex flex-col min-h-screen relative">
+          <Navbar />
+
+          <main className="flex-grow bg-light-tosca">
+            <div className="flex flex-col items-center justify-center max-w-[1200px] mx-auto py-12">
+              <ConfigProvider
+                theme={{
+                  token: {
+                    colorPrimary: "#30a5a2",
+                  },
+                }}
+              >
+                {children}
+              </ConfigProvider>
+            </div>
+          </main>
+        </div>
       </body>
     </html>
   );
