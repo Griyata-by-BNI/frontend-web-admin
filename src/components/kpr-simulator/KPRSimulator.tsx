@@ -45,9 +45,11 @@ const detailedColumns = [
 
 export const KPRSimulator = ({
   className = "",
-  title = "Simulasi KPR",
+  initialPropertyPrice = 1000000000,
+  additionalButton = <></>,
 }: KPRSimulatorProps) => {
-  const [propertyPrice, setPropertyPrice] = useState<number>(1000000000);
+  const [propertyPrice, setPropertyPrice] =
+    useState<number>(initialPropertyPrice);
   const [downPayment, setDownPayment] = useState<number>(200000000);
   const [tenor, setTenor] = useState<number>(15);
   const [selectedInterestRate, setSelectedInterestRate] =
@@ -79,11 +81,11 @@ export const KPRSimulator = ({
 
   return (
     <div
-      className={`w-full bg-gradient-to-r pt-5 from-primary-tosca to-primary-purple h-max rounded-xl shadow ${className}`}
+      className={`w-full bg-gradient-to-r pt-5 from-primary-tosca to-primary-purple h-max rounded-xl md:rounded-2xl shadow ${className}`}
     >
-      <div className="overflow-hidden rounded-xl">
+      <div className="overflow-hidden rounded-xl md:rounded-2xl">
         <Row
-          className="bg-white rounded-xl h-full p-4 md:p-12"
+          className="bg-white rounded-xl h-full p-4 md:p-8"
           align="stretch"
           gutter={[48, 24]}
         >
@@ -109,6 +111,7 @@ export const KPRSimulator = ({
               monthlyPayment={monthlyPayment}
               paymentSchedule={paymentSchedule}
               onShowDetailedSchedule={handleShowDetailedSchedule}
+              additionalButton={additionalButton}
             />
           </Col>
         </Row>

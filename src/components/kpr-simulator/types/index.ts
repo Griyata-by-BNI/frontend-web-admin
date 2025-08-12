@@ -10,7 +10,8 @@ export interface InterestRate {
 
 export interface KPRSimulatorProps {
   className?: string;
-  title?: string;
+  initialPropertyPrice?: number;
+  additionalButton?: React.ReactNode;
 }
 
 export interface ScheduleItem {

@@ -1,4 +1,5 @@
 import { KPRSimulator } from "@/components/kpr-simulator";
+import { Button } from "antd";
 
 export default function SimulasiKPR() {
   return (

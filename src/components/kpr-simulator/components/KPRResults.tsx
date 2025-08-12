@@ -1,5 +1,6 @@
 import { Alert, Button, Col, Row, Table } from "antd";
 import { InterestRate } from "../types";
+import React from "react";
 
 interface KPRResultsProps {
   selectedRate: InterestRate | null;
@@ -8,6 +9,7 @@ interface KPRResultsProps {
   monthlyPayment: number;
   paymentSchedule: any[];
   onShowDetailedSchedule: () => void;
+  additionalButton?: React.ReactNode;
 }
 
 export const KPRResults = ({
@@ -17,6 +19,7 @@ export const KPRResults = ({
   monthlyPayment,
   paymentSchedule,
   onShowDetailedSchedule,
+  additionalButton,
 }: KPRResultsProps) => {
   const columns = [
     { title: "Periode", dataIndex: "period", key: "period" },
@@ -71,6 +74,12 @@ export const KPRResults = ({
                     Lihat Detail Angsuran
                   </Button>
                 </Col>
+
+                {additionalButton && (
+                  <Col span={24} className="mt-2">
+                    {additionalButton}
+                  </Col>
+                )}
               </Row>
             ) : (
               <Alert
@@ -108,6 +117,8 @@ export const KPRResults = ({
                 >
                   Lihat Detail Angsuran
                 </Button>
+
+                {additionalButton && <>{additionalButton}</>}
               </>
             ) : (
               <Alert
