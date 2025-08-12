@@ -55,7 +55,7 @@ export const AffordabilityResults = ({
             <Col span={24}>
               <p className="text-sm text-gray-600">Penghasilan Bersih</p>
 
-              <p className="text-dark-tosca text-lg font-bold">
+              <p className="text-primary-tosca text-lg font-bold">
                 Rp {netIncome.toLocaleString("id-ID")}
               </p>
             </Col>
@@ -63,7 +63,7 @@ export const AffordabilityResults = ({
             <Col span={24}>
               <p className="text-sm text-gray-600">Rasio Angsuran</p>
 
-              <p className="text-lg font-bold text-dark-tosca">
+              <p className="text-lg font-bold text-primary-tosca">
                 {affordabilityRatio.toFixed(1)}% dari penghasilan bersih
               </p>
             </Col>
