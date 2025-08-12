@@ -1,6 +1,9 @@
-import { Alert, Button, Col, Row, Table } from "antd";
+import { Alert, Button, Col, Row, Table, theme } from "antd";
 import { InterestRate } from "../types";
 import React from "react";
+import Link from "next/link";
+
+const { useToken } = theme;
 
 interface KPRResultsProps {
   selectedRate: InterestRate | null;
@@ -21,6 +24,7 @@ export const KPRResults = ({
   onShowDetailedSchedule,
   additionalButton,
 }: KPRResultsProps) => {
+  const { token } = useToken();
   const columns = [
     { title: "Periode", dataIndex: "period", key: "period" },
     { title: "Suku Bunga", dataIndex: "rate", key: "rate" },
@@ -80,6 +84,14 @@ export const KPRResults = ({
                     {additionalButton}
                   </Col>
                 )}
+
+                <Col span={24}>
+                  <Link href="/">
+                    <p className="text-sm text-dark-tosca/75 underline text-center">
+                      Syarat & Ketentuan
+                    </p>
+                  </Link>
+                </Col>
               </Row>
             ) : (
               <Alert
@@ -122,7 +134,14 @@ export const KPRResults = ({
               </>
             ) : (
               <Alert
-                message="Tidak dapat menghitung simulasi"
+                message={
+                  <p
+                    style={{ color: token.colorWarning }}
+                    className="font-bold"
+                  >
+                    Tidak dapat menghitung simulasi
+                  </p>
+                }
                 description="Pastikan semua data telah diisi dengan benar dan tenor sesuai dengan ketentuan suku bunga yang dipilih."
                 type="warning"
                 showIcon
