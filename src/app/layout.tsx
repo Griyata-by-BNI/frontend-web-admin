@@ -1,10 +1,8 @@
 // app/layout.tsx
-import  { Metadata } from "next";
+import { ConfigProvider } from "antd";
+import type { Metadata } from "next";
 import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-import 'leaflet/dist/leaflet.css';
-import Navbar from "@/components/navbar";
-import { ConfigProvider } from "antd";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -36,23 +34,15 @@ export default function RootLayout({
       <body
         className={`${jakarta.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className="flex flex-col min-h-screen relative">
-          <Navbar />
-
-          <main className="flex-grow bg-light-tosca">
-            <div className="flex flex-col max-w-[1200px] mx-8 lg:mx-auto py-4 md:py-12">
-              <ConfigProvider
-                theme={{
-                  token: {
-                    colorPrimary: "#30a5a2",
-                  },
-                }}
-              >
-                {children}
-              </ConfigProvider>
-            </div>
-          </main>
-        </div>
+        <ConfigProvider
+          theme={{
+            token: {
+              colorPrimary: "#30a5a2",
+            },
+          }}
+        >
+          {children}
+        </ConfigProvider>
       </body>
     </html>
   );

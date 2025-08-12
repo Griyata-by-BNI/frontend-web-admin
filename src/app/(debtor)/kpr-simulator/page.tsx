@@ -1,7 +1,6 @@
-import { KPRSimulator } from "@/components/kpr-simulator";
-import { Button } from "antd";
+import { KPRSimulator } from "./components/KPRSimulator";
 
-export default function SimulasiKPR() {
+export default function KprSimulatorPage() {
   return (
     <>
       <p className="text-3xl mb-1 font-bold text-primary-black self-start">

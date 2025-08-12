@@ -2,10 +2,10 @@
 import "@ant-design/v5-patch-for-react-19";
 import { Col, Row } from "antd";
 import { useState } from "react";
-import { AffordabilityForm } from "./components/AffordabilityForm";
-import { AffordabilityResults } from "./components/AffordabilityResults";
-import { useAffordabilityCalculation } from "./hooks/useAffordabilityCalculation";
-import { KPRAffordabilityProps, AffordabilityParams } from "./types";
+import { AffordabilityForm } from "./AffordabilityForm";
+import { AffordabilityResults } from "./AffordabilityResults";
+import { useAffordabilityCalculation } from "../hooks/useAffordabilityCalculation";
+import { KPRAffordabilityProps, AffordabilityParams } from "../types";
 
 export const KPRAffordability = ({ className = "" }: KPRAffordabilityProps) => {
   const [params, setParams] = useState<AffordabilityParams>({
