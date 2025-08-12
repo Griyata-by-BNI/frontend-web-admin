@@ -51,7 +51,7 @@ export const useDetailedSchedule = () => {
         let currentRate = 0;
         
         for (const rateInfo of selectedRate.interest_rate as Array<{ rate: number; note: string }>) {
-          const match = rateInfo.note.match(/tahun ke-(\\d+)(?:\\s+sampai\\s+dengan\\s+(\\d+))?/);
+          const match = rateInfo.note.match(/tahun ke-(\d+)(?:\s+sampai\s+dengan\s+(\d+))?/);
           if (match) {
             const start = parseInt(match[1]);
             const end = match[2] ? parseInt(match[2]) : start;
