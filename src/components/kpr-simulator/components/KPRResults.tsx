@@ -15,6 +15,17 @@ interface KPRResultsProps {
   additionalButton?: React.ReactNode;
 }
 
+const columns = [
+  { title: "Periode", dataIndex: "period", key: "period" },
+  { title: "Suku Bunga", dataIndex: "rate", key: "rate" },
+  {
+    title: "Angsuran/Bulan",
+    dataIndex: "monthlyPayment",
+    key: "monthlyPayment",
+    render: (value: number) => `Rp ${value.toLocaleString("id-ID")}`,
+  },
+];
+
 export const KPRResults = ({
   selectedRate,
   propertyPrice,
@@ -25,16 +36,6 @@ export const KPRResults = ({
   additionalButton,
 }: KPRResultsProps) => {
   const { token } = useToken();
-  const columns = [
-    { title: "Periode", dataIndex: "period", key: "period" },
-    { title: "Suku Bunga", dataIndex: "rate", key: "rate" },
-    {
-      title: "Angsuran/Bulan",
-      dataIndex: "monthlyPayment",
-      key: "monthlyPayment",
-      render: (value: number) => `Rp ${value.toLocaleString("id-ID")}`,
-    },
-  ];
 
   if (!selectedRate) return null;
 

@@ -19,13 +19,16 @@ export const AffordabilityResults = ({
   const { token } = useToken();
 
   const netIncome = params.monthlyIncome - params.monthlyExpenses;
+
   const affordabilityRatio =
     params.monthlyInstallment > 0
       ? (params.monthlyInstallment / netIncome) * 100
       : 0;
+
   const selectedRate = interestRateData.find(
     (rate) => rate.id === params.selectedRateId
   );
+
   const isValidTenor =
     !selectedRate || params.tenor >= selectedRate.minimum_tenor;
 

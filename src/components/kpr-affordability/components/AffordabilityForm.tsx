@@ -25,9 +25,11 @@ export const AffordabilityForm = ({
   const maxAge = selectedJobType?.maxAge || 66;
   const maxLoanAge = getMaxLoanAge(params.jobType);
   const maxTenor = Math.max(1, maxLoanAge - params.age);
+
   const selectedRate = interestRateData.find(
     (rate) => rate.id === params.selectedRateId
   );
+
   const isValidTenor =
     !selectedRate || params.tenor >= selectedRate.minimum_tenor;
 
