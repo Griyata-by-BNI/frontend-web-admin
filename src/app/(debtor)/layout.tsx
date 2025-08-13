@@ -10,7 +10,7 @@ export default function DebtorLayout({
       <Navbar />
 
       <main className="flex-grow bg-light-tosca">
-        <div className="flex flex-col max-w-[1200px] mx-8 lg:mx-auto py-4 md:py-12">
+        <div className="flex flex-col max-w-[1400px] mx-8 lg:mx-auto py-4 md:py-12">
           {children}
         </div>
       </main>
