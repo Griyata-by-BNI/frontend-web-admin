@@ -50,7 +50,7 @@ const MOCK_HOUSING_DETAILS: HousingDetails = {
   developerId: 'summarecon',
   clusterId: 'suvarna-sutera',
   name: 'Suvarna Sutera',
-  mainImageUrl: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800',
+  mainImageUrl: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600',
   description: 'Sejak 2007, Tangerang mulai dikembangkan untuk Downtown basket dan menara di atas Downtown Lake...',
   priceRange: '819 JT - 2.1 M',
   installment: '8.1 JT',
@@ -81,7 +81,7 @@ const PropertyTypeCard: React.FC<{ property: PropertyType; developerId: string; 
     href={`/developers/${developerId}/clusters/${clusterId}/properties/${property.id}`}
     className="block bg-white rounded-xl shadow-md overflow-hidden transition-transform duration-300 hover:scale-105 hover:shadow-lg"
   >
-    <div className="relative w-full h-40">
+    <div className="relative w-full h-50">
       <Image src={property.imageUrl} alt={property.name} layout="fill" objectFit="cover" />
     </div>
     <div className="p-4">
@@ -115,20 +115,14 @@ export default function HousingDetailPage() {
   ), []);
 
   return (
-    <div className="bg-[#e0f2f1] min-h-screen font-sans">
+    <div className="bg-light-tosca min-h-screen font-sans">
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center text-sm text-gray-600 mb-4 flex-wrap">
-          <HomeIcon />
-          <span className="mx-2">/</span><a href="#" className="hover:underline">Partner Developer</a>
-          <span className="mx-2">/</span><a href="#" className="hover:underline">Summarecon</a>
-          <span className="mx-2">/</span><span className="font-semibold text-gray-800">{details.name}</span>
-        </div>
 
         <div className="lg:grid lg:grid-cols-3 lg:gap-8">
           {/* Kolom Kiri */}
           <div className="lg:col-span-2">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">{details.name}</h1>
-            <div className="relative w-full h-80 rounded-2xl overflow-hidden shadow-lg mb-6">
+            <div className="relative w-full h-100 rounded-2xl overflow-hidden shadow-lg mb-6">
               <Image src={details.mainImageUrl} alt={details.name} layout="fill" objectFit="cover" />
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Deskripsi</h2>
@@ -168,29 +162,29 @@ export default function HousingDetailPage() {
           <div className="lg:col-span-1 mt-8 lg:mt-0">
            <div className="sticky top-24">
             <div className="relative bg-white rounded-xl shadow-lg overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-teal-400 to-cyan-500"></div>
-            <div className="p-6">
-                <p className="text-sm text-teal-700">Harga mulai dari</p>
-                <p className="text-4xl font-bold text-gray-800 mt-1">
-                <span className="text-2xl align-top">Rp </span>
-                {details.priceRange}
-                </p>
-                <p className="text-teal-600 font-semibold mt-2">
-                Angsuran mulai dari Rp {details.installment}/bulan
-                </p>
-                <div className="my-5 border-t"></div>
-                <p className="text-xl font-bold text-gray-900">{details.developer}</p>
-                <p className="text-gray-500">{details.subLocation}</p>
-                <div className="my-5 border-t"></div>
-                <p className="text-sm text-gray-500 mb-2">Developer:</p>
-                <Image
-                src={details.developerLogoUrl}
-                alt="Developer Logo"
-                width={150}
-                height={50}
-                style={{ objectFit: 'contain' }}
-                />
-            </div>
+              <div className="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-teal-400 to-cyan-500"></div>
+                <div className="p-6">
+                    <p className="text-sm text-teal-700">Harga mulai dari</p>
+                    <p className="text-4xl font-bold text-gray-800 mt-1">
+                    <span className="text-2xl align-top">Rp </span>
+                    {details.priceRange}
+                    </p>
+                    <p className="text-teal-600 font-semibold mt-2">
+                    Angsuran mulai dari Rp {details.installment}/bulan
+                    </p>
+                    <div className="my-5 border-t"></div>
+                    <p className="text-xl font-bold text-gray-900">{details.developer}</p>
+                    <p className="text-gray-500">{details.subLocation}</p>
+                    <div className="my-5 border-t"></div>
+                    <p className="text-sm text-gray-500 mb-2">Developer:</p>
+                    <Image
+                    src={details.developerLogoUrl}
+                    alt="Developer Logo"
+                    width={150}
+                    height={50}
+                    style={{ objectFit: 'contain' }}
+                    />
+                </div>
             <div className="absolute bottom-0 left-0 right-0 h-3 bg-gradient-to-r from-teal-400 to-cyan-500"></div>
             </div>
             </div>

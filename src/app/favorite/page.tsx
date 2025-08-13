@@ -99,8 +99,8 @@ const PropertyCard: React.FC<{ property: Property }> = ({ property }) => {
 // --- Komponen Utama Aplikasi ---
 export default function App() {
   return (
-    <div className="bg-[#e0f2f1] min-h-screen font-sans">
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="bg-light-tosca min-h-screen font-sans">
+      <main className="flex flex-col items-center justify-center max-w-[1200px] mx-8 lg:mx-auto py-12">
         
         <div className="text-center mb-10">
             <div className="flex justify-center items-center mb-4">

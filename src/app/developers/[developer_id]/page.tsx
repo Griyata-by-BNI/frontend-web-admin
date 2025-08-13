@@ -40,7 +40,7 @@ export default function App() {
   const developer = MOCK_DEVELOPER_DETAILS;
 
   return (
-    <div className="bg-[#f0fafa] min-h-screen font-sans">
+    <div className="bg-light-tosca min-h-screen font-sans">
 
       {/* Konten Utama */}
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -48,12 +48,7 @@ export default function App() {
         {/* Judul dan Breadcrumbs */}
         <div>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{developer.name}</h1>
-            <div className="flex items-center text-sm text-gray-500 mt-2 flex-wrap">
-                <HomeIcon />
-                <a href="#" className="ml-1 hover:underline">Partner Developer</a>
-                <span className="mx-2">/</span>
-                <span className="font-semibold text-gray-800">{developer.name}</span>
-            </div>
+
         </div>
 
         {/* Tentang Developer */}
@@ -86,14 +81,17 @@ export default function App() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {developer.properties.map(property => (
-                    <PropertyCard key={property.id} property={property} />
-                ))}
+                    <PropertyCard 
+                        key={property.id} 
+                        property={property} 
+                        developerId={developer.id} // <-- TAMBAHKAN INI
+                    />
+                ))}
             </div>
         </section>
 
         {/* Pagination */}
         <Pagination />
-
       </main>
     </div>
   );

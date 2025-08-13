@@ -36,20 +36,13 @@ const SearchIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" heig
 
 const PartnerDeveloperPage = () => {
   return (
-    <div className="bg-teal-50 min-h-screen">
-      <main className="container mx-auto px-4 py-8">
+    
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
         
         {/* Header dan Search Bar */}
         <div className="flex justify-between items-center mb-6">
             <div>
                 <h1 className="text-3xl font-bold text-gray-900">Partner Developer</h1>
-                <div className="flex items-center text-sm text-gray-500 mt-1">
-                    <HomeIcon />
-                    <span className="mx-2">/</span>
-                    <span>Beranda</span>
-                    <span className="mx-2">/</span>
-                    <span className="font-semibold text-gray-700">Partner Developer</span>
-                </div>
             </div>
             <div className="relative">
                 <input 
@@ -72,7 +65,7 @@ const PartnerDeveloperPage = () => {
         <Pagination />
 
       </main>
-    </div>
+
   );
 };
 
