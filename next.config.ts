@@ -23,8 +23,12 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "i.imgur.com",
       },
+      {
+        protocol: "https",
+        hostname:"upload.wikimedia.org",
+      },
     ],
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
