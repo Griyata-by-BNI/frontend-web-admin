@@ -19,7 +19,7 @@ interface PasswordValidation {
 
 interface FormData {
   name: string;
-  phone: string;
+  phoneNumber: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -28,7 +28,7 @@ interface FormData {
 
 interface FieldStatusState {
   name: FieldStatus;
-  phone: FieldStatus;
+  phoneNumber: FieldStatus;
   email: FieldStatus;
   password: FieldStatus;
   confirmPassword: FieldStatus;
@@ -37,7 +37,7 @@ interface FieldStatusState {
 const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     name: '',
-    phone: '',
+    phoneNumber: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -54,7 +54,7 @@ const RegisterPage: React.FC = () => {
   
   const [fieldStatus, setFieldStatus] = useState<FieldStatusState>({
     name: null,
-    phone: null,
+    phoneNumber: null,
     email: null,
     password: null,
     confirmPassword: null,
@@ -80,14 +80,14 @@ const RegisterPage: React.FC = () => {
     return { isValid: true, message: '' };
   };
 
-  const validatePhone = (phone: string): { isValid: boolean; message: string } => {
-    if (!phone.trim()) {
+  const validatePhone = (phoneNumber: string): { isValid: boolean; message: string } => {
+    if (!phoneNumber.trim()) {
       return { isValid: false, message: 'Nomor handphone wajib diisi' };
     }
-    if (!/^\d{10,13}$/.test(phone)) {
+    if (!/^\d{10,13}$/.test(phoneNumber)) {
       return { isValid: false, message: 'Nomor handphone harus 10-13 digit angka' };
     }
-    if (!phone.startsWith('08') && !phone.startsWith('62')) {
+    if (!phoneNumber.startsWith('08') && !phoneNumber.startsWith('62')) {
       return { isValid: false, message: 'Nomor handphone harus dimulai dengan 08 atau 62' };
     }
     return { isValid: true, message: '' };
@@ -159,7 +159,7 @@ const RegisterPage: React.FC = () => {
       case 'name':
         validation = validateName(value);
         break;
-      case 'phone':
+      case 'phoneNumber':
         validation = validatePhone(value);
         break;
       case 'email':
@@ -218,7 +218,7 @@ const RegisterPage: React.FC = () => {
 
     // Validate all fields
     const isNameValid = validateField('name', formData.name);
-    const isPhoneValid = validateField('phone', formData.phone);
+    const isPhoneValid = validateField('phoneNumber', formData.phoneNumber);
     const isEmailValid = validateField('email', formData.email);
     const passwordResult = validatePassword(formData.password);
     const isPasswordValid = passwordResult.isValid;
@@ -240,14 +240,14 @@ const RegisterPage: React.FC = () => {
 
     try {
       // API call untuk registrasi
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch('https://581911203717.ngrok-free.app/api/v1/auth/sign-up', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: formData.name.trim(),
-          phone: formData.phone,
+          fullName: formData.name.trim(),
+          phoneNumber: formData.phoneNumber,
           email: formData.email.toLowerCase().trim(),
           password: formData.password,
         }),
@@ -256,7 +256,7 @@ const RegisterPage: React.FC = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert('Registrasi berhasil! Tautan verifikasi telah dikirim ke email Anda.');
+        alert('Registrasi berhasil! Kode OTP verifikasi telah dikirim ke email Anda.');
         router.push('/register/verify-email');
       } else {
         if (response.status === 400) {
@@ -265,8 +265,8 @@ const RegisterPage: React.FC = () => {
             setFieldErrors(prev => ({ ...prev, email: 'Email sudah terdaftar. Silakan gunakan email lain.' }));
             setFieldStatus(prev => ({ ...prev, email: 'invalid' }));
           } else if (errorMessage.toLowerCase().includes('phone already exists')) {
-            setFieldErrors(prev => ({ ...prev, phone: 'Nomor handphone sudah terdaftar.' }));
-            setFieldStatus(prev => ({ ...prev, phone: 'invalid' }));
+            setFieldErrors(prev => ({ ...prev, phoneNumber: 'Nomor handphone sudah terdaftar.' }));
+            setFieldStatus(prev => ({ ...prev, phoneNumber: 'invalid' }));
           } else {
             setGlobalError(errorMessage || 'Data yang Anda masukkan tidak valid.');
           }
@@ -305,6 +305,7 @@ const RegisterPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* <Header /> */}
       <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
         <div className="w-full max-w-md bg-gray-100 p-6 rounded-lg shadow-lg">
           <h3 className="text-2xl font-bold text-teal-500 mb-4">Registrasi untuk pengalaman baru</h3>
@@ -332,14 +333,14 @@ const RegisterPage: React.FC = () => {
               <input
                 type="tel"
                 placeholder="Nomor handphone (08xxxxxxxxx)"
-                value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
-                className={getInputClass('phone')}
+                value={formData.phoneNumber}
+                onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                className={getInputClass('phoneNumber')}
                 disabled={loading}
                 required
               />
-              {fieldErrors.phone && (
-                <p className="text-red-500 text-sm mt-1">{fieldErrors.phone}</p>
+              {fieldErrors.phoneNumber && (
+                <p className="text-red-500 text-sm mt-1">{fieldErrors.phoneNumber}</p>
               )}
             </div>
 
