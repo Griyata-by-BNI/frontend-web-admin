@@ -1,9 +1,11 @@
 // app/register/page.tsx
 'use client';
+
 import Link from 'next/link';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Footer from '../../../components/Footer';
+import axiosInstance from '../../../../lib/axios';
 
 // Define types
 type FieldStatus = 'valid' | 'invalid' | null;
@@ -32,6 +34,15 @@ interface FieldStatusState {
   email: FieldStatus;
   password: FieldStatus;
   confirmPassword: FieldStatus;
+}
+
+interface ApiResponse {
+  status?: {
+    code: number;
+    message: string;
+  };
+  message?: string;
+  success?: boolean;
 }
 
 const RegisterPage: React.FC = () => {
@@ -210,6 +221,36 @@ const RegisterPage: React.FC = () => {
     }
   };
 
+  // Handle API errors
+  const handleApiError = (error: any): string => {
+    if (error.response?.data?.status) {
+      const { code, message } = error.response.data.status;
+      
+      switch (code) {
+        case 400:
+          if (message.toLowerCase().includes('email') && message.toLowerCase().includes('already')) {
+            return 'Email sudah terdaftar. Silakan gunakan email lain atau login.';
+          } else if (message.toLowerCase().includes('phone') && message.toLowerCase().includes('already')) {
+            return 'Nomor handphone sudah terdaftar. Silakan gunakan nomor lain.';
+          }
+          return message || 'Data yang Anda masukkan tidak valid.';
+          
+        case 422:
+          return 'Data yang Anda masukkan tidak dapat diproses. Silakan periksa format data.';
+          
+        case 500:
+          return 'Terjadi kesalahan pada server. Silakan coba lagi dalam beberapa saat.';
+          
+        default:
+          return message || `Terjadi kesalahan (${code}). Silakan coba lagi.`;
+      }
+    } else if (error.code === 'NETWORK_ERROR' || error.message?.includes('Network Error')) {
+      return 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
+    } else {
+      return 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+    }
+  };
+
   // Submit handler with API integration
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -239,48 +280,59 @@ const RegisterPage: React.FC = () => {
     }
 
     try {
-      // API call untuk registrasi
-      const response = await fetch('https://581911203717.ngrok-free.app/api/v1/auth/sign-up', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fullName: formData.name.trim(),
-          phoneNumber: formData.phoneNumber,
-          email: formData.email.toLowerCase().trim(),
-          password: formData.password,
-        }),
+      // API call for registration using axiosInstance
+      const response = await axiosInstance.post<ApiResponse>('/api/v1/auth/sign-up', {
+        fullName: formData.name.trim(),
+        phoneNumber: formData.phoneNumber,
+        email: formData.email.toLowerCase().trim(),
+        password: formData.password,
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
+      // Success case
+      if (response.data.success || response.status === 200 || response.status === 201) {
+        // Store registration data for verification page
+        const registrationData = {
+          email: formData.email.toLowerCase().trim(),
+          name: formData.name.trim(),
+          timestamp: new Date().toISOString()
+        };
+        
+        // Store in multiple places for reliability
+        localStorage.setItem('registrationData', JSON.stringify(registrationData));
+        sessionStorage.setItem('pendingVerificationEmail', formData.email.toLowerCase().trim());
+        
         alert('Registrasi berhasil! Kode OTP verifikasi telah dikirim ke email Anda.');
-        router.push('/register/verify-email');
+        
+        // Redirect to verify-email with email parameter
+        router.push(`/register/verify-email?email=${encodeURIComponent(formData.email.toLowerCase().trim())}`);
       } else {
-        if (response.status === 400) {
-          const errorMessage = data.message || '';
-          if (errorMessage.toLowerCase().includes('email already exists')) {
+        setGlobalError('Registrasi gagal. Silakan coba lagi.');
+      }
+
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      const errorMessage = handleApiError(error);
+
+      // Handle specific field errors
+      if (error.response?.data?.status) {
+        const { code, message } = error.response.data.status;
+        
+        if (code === 400) {
+          if (message.toLowerCase().includes('email') && message.toLowerCase().includes('already')) {
             setFieldErrors(prev => ({ ...prev, email: 'Email sudah terdaftar. Silakan gunakan email lain.' }));
             setFieldStatus(prev => ({ ...prev, email: 'invalid' }));
-          } else if (errorMessage.toLowerCase().includes('phone already exists')) {
+          } else if (message.toLowerCase().includes('phone') && message.toLowerCase().includes('already')) {
             setFieldErrors(prev => ({ ...prev, phoneNumber: 'Nomor handphone sudah terdaftar.' }));
             setFieldStatus(prev => ({ ...prev, phoneNumber: 'invalid' }));
           } else {
-            setGlobalError(errorMessage || 'Data yang Anda masukkan tidak valid.');
+            setGlobalError(errorMessage);
           }
-        } else if (response.status === 422) {
-          setGlobalError('Data yang Anda masukkan tidak dapat diproses. Silakan periksa kembali.');
-        } else if (response.status === 500) {
-          setGlobalError('Terjadi kesalahan pada server. Silakan coba lagi dalam beberapa saat.');
         } else {
-          setGlobalError(data.message || 'Registrasi gagal. Silakan coba lagi.');
+          setGlobalError(errorMessage);
         }
+      } else {
+        setGlobalError(errorMessage);
       }
-    } catch (error) {
-      console.error('Registration error:', error);
-      setGlobalError('Terjadi kesalahan koneksi. Silakan periksa internet Anda dan coba lagi.');
     } finally {
       setLoading(false);
     }
