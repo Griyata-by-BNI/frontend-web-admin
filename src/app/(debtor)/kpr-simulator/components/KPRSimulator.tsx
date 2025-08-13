@@ -3,11 +3,11 @@ import "@ant-design/v5-patch-for-react-19";
 import { Col, Modal, Row, Table } from "antd";
 import { useState } from "react";
 import interestRateData from "@/data/interest-rate.json";
-import { useKPRCalculation } from "./hooks/useKPRCalculation";
-import { useDetailedSchedule } from "./hooks/useDetailedSchedule";
-import { KPRForm } from "./components/KPRForm";
-import { KPRResults } from "./components/KPRResults";
-import { InterestRate, KPRSimulatorProps } from "./types";
+import { useKPRCalculation } from "../hooks/useKPRCalculation";
+import { useDetailedSchedule } from "../hooks/useDetailedSchedule";
+import { KPRForm } from "./KPRForm";
+import { KPRResults } from "./KPRResults";
+import { InterestRate, KPRSimulatorProps } from "../types";
 
 const detailedColumns = [
   { title: "Bulan", dataIndex: "month", key: "month" },

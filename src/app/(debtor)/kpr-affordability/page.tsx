@@ -1,6 +1,6 @@
-import { KPRAffordability } from "@/components/kpr-affordability";
+import { KPRAffordability } from "./components/KPRAffordability";
 
-export default function KemampuanKPRPage() {
+export default function KprAffordabilityPage() {
   return (
     <>
       <p className="text-3xl mb-1 font-bold text-primary-black self-start">
