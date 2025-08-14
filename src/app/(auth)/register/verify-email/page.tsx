@@ -5,7 +5,7 @@ import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Footer from '../../../../components/Footer';
-import axiosInstance from '../../../../../lib/axios';
+import axiosInstance from '@/lib/axios';
 
 interface VerifyResponse {
   status?: {
@@ -251,7 +251,7 @@ const VerifyEmailPage: React.FC = () => {
 
     try {
       // Use the same endpoint as registration but for resend
-      const response = await axiosInstance.post<ResendResponse>('/api/v1/auth/resend-otp', {
+      const response = await axiosInstance.post<ResendResponse>('/api/v1/auth/sign-up-verify-resend-otp', {
         email: email
       });
 
