@@ -37,14 +37,14 @@ export default function CreateDeveloperModal({
       centered
       title={
         <Typography.Title level={5} className="!text-dark-tosca">
-          Create Developer Data
+          Buat Data Developer
         </Typography.Title>
       }
       maskClosable={false}
       open={open}
       onCancel={handleCancel}
       onOk={() => form.submit()}
-      okText="Create"
+      okText="Buat"
       classNames={{
         body: "!pt-2 max-h-[75vh] overflow-y-auto !px-6",
         content: "!p-0",
@@ -55,18 +55,19 @@ export default function CreateDeveloperModal({
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <Form.Item
           name="name"
-          label="Name"
+          label="Nama"
           className="!mb-2"
-          rules={[{ required: true, message: "Please input name!" }]}
+          rules={[{ required: true, message: "Mohon masukkan nama!" }]}
         >
-          <Input placeholder="Enter developer name" />
+          <Input placeholder="Masukkan nama developer" />
         </Form.Item>
 
         <Form.Item
           name="image"
-          label="Image"
+          label="Gambar"
           className="!mb-2"
-          rules={[{ required: true, message: "Please upload an image!" }]}
+          valuePropName="fileList"
+          rules={[{ required: true, message: "Mohon upload gambar!" }]}
         >
           <Upload.Dragger
             maxCount={1}
@@ -97,7 +98,7 @@ export default function CreateDeveloperModal({
                   className="w-72 aspect-video object-contain rounded mb-2"
                 />
                 <p className="text-gray-500">
-                  Click or drag file to replace current image
+                  Klik atau seret file untuk mengganti gambar
                 </p>
               </div>
             ) : (
@@ -106,11 +107,9 @@ export default function CreateDeveloperModal({
                   <UploadCloud className="w-10 h-10 stroke-primary-tosca" />
                 </div>
                 <p className="text-gray-700 text-md mt-2">
-                  Click or drag file to upload image
+                  Klik atau seret file untuk upload gambar
                 </p>
-                <p className="ant-upload-hint">
-                  Support for a single image upload.
-                </p>
+                <p className="ant-upload-hint">Mendukung upload satu gambar.</p>
               </>
             )}
           </Upload.Dragger>
@@ -118,20 +117,22 @@ export default function CreateDeveloperModal({
 
         <Form.Item
           name="cluster_count"
-          label="Cluster Count"
+          label="Jumlah Cluster"
           className="!mb-2"
-          rules={[{ required: true, message: "Please input cluster count!" }]}
+          rules={[
+            { required: true, message: "Mohon masukkan jumlah cluster!" },
+          ]}
         >
-          <Input placeholder="Enter cluster count" />
+          <Input placeholder="Masukkan jumlah cluster" />
         </Form.Item>
 
         <Form.Item
           name="phone_number"
-          label="Phone Number"
+          label="Nomor Telepon"
           className="!mb-2"
           rules={[
-            { required: true, message: "Please input phone number!" },
-            { min: 10, message: "Phone number must be at least 10 digits!" },
+            { required: true, message: "Mohon masukkan nomor telepon!" },
+            { min: 10, message: "Nomor telepon minimal 10 digit!" },
           ]}
         >
           <Input placeholder="081234567890" />
@@ -139,11 +140,11 @@ export default function CreateDeveloperModal({
 
         <Form.Item
           name="description"
-          label="Description"
+          label="Deskripsi"
           className="!mb-2"
-          rules={[{ required: true, message: "Please input description!" }]}
+          rules={[{ required: true, message: "Mohon masukkan deskripsi!" }]}
         >
-          <Input.TextArea placeholder="Enter description" rows={3} />
+          <Input.TextArea placeholder="Masukkan deskripsi" rows={3} />
         </Form.Item>
       </Form>
     </Modal>

@@ -18,23 +18,22 @@ export default function DeleteConfirmModal({
 }: DeleteConfirmModalProps) {
   return (
     <Modal
-      title="Delete Confirmation"
+      title="Konfirmasi Hapus"
       open={open}
       onOk={onConfirm}
       onCancel={onCancel}
-      okText="Delete"
+      okText="Hapus"
       okType="danger"
-      cancelText="Cancel"
+      cancelText="Batal"
       classNames={{ footer: "!mt-6" }}
     >
       <p>
-        Are you sure you want to delete{" "}
+        Apakah Anda yakin ingin menghapus data{" "}
         {salesData && (
           <>
             <strong>{salesData.name}</strong>
           </>
-        )}{" "}
-        data?
+        )}?
       </p>
     </Modal>
   );

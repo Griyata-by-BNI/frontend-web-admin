@@ -31,24 +31,24 @@ export default function CreateSalesModal({
       centered
       title={
         <Typography.Title level={5} className="!text-dark-tosca">
-          Create Sales Data
+          Buat Data Sales
         </Typography.Title>
       }
       maskClosable={false}
       open={open}
       onCancel={handleCancel}
       onOk={() => form.submit()}
-      okText="Create"
+      okText="Buat"
       classNames={{ body: "!pt-2" }}
     >
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <Form.Item
           name="name"
-          label="Name"
+          label="Nama"
           className="!mb-2"
-          rules={[{ required: true, message: "Please input name!" }]}
+          rules={[{ required: true, message: "Mohon masukkan nama!" }]}
         >
-          <Input placeholder="Enter full name" />
+          <Input placeholder="Masukkan nama lengkap" />
         </Form.Item>
 
         <Form.Item
@@ -59,24 +59,24 @@ export default function CreateSalesModal({
             {
               required: true,
               type: "email",
-              message: "Please input valid email!",
+              message: "Mohon masukkan email yang valid!",
             },
           ]}
         >
-          <Input placeholder="example@company.com" />
+          <Input placeholder="contoh@perusahaan.com" />
         </Form.Item>
 
         <Form.Item
           name="phone_number"
-          label="Phone Number"
+          label="Nomor Telepon"
           className="!mb-2"
           rules={[
-            { required: true, message: "Please input phone number!" },
+            { required: true, message: "Mohon masukkan nomor telepon!" },
             {
               pattern: /^[0-9+\-\s()]+$/,
-              message: "Please input valid phone number!",
+              message: "Mohon masukkan nomor telepon yang valid!",
             },
-            { min: 10, message: "Phone number must be at least 10 digits!" },
+            { min: 10, message: "Nomor telepon minimal 10 digit!" },
           ]}
         >
           <Input placeholder="081234567890" />
@@ -84,38 +84,38 @@ export default function CreateSalesModal({
 
         <Form.Item
           name="gender"
-          label="Gender"
+          label="Jenis Kelamin"
           className="!mb-2"
-          rules={[{ required: true, message: "Please select gender!" }]}
+          rules={[{ required: true, message: "Mohon pilih jenis kelamin!" }]}
         >
-          <Select placeholder="Select gender">
-            <Select.Option value="Male">Male</Select.Option>
-            <Select.Option value="Female">Female</Select.Option>
+          <Select placeholder="Pilih jenis kelamin">
+            <Select.Option value="Male">Laki-laki</Select.Option>
+            <Select.Option value="Female">Perempuan</Select.Option>
           </Select>
         </Form.Item>
 
         <Form.Item
           name="address"
-          label="Address"
+          label="Alamat"
           className="!mb-2"
           rules={[
-            { required: true, message: "Please input address!" },
-            { min: 5, message: "Address must be at least 5 characters!" },
+            { required: true, message: "Mohon masukkan alamat!" },
+            { min: 5, message: "Alamat minimal 5 karakter!" },
           ]}
         >
-          <Input placeholder="Enter city or region" />
+          <Input placeholder="Masukkan kota atau wilayah" />
         </Form.Item>
 
         <Form.Item
           name="target_score"
-          label="Target Score"
+          label="Target Skor"
           className="!mb-2"
-          rules={[{ required: true, message: "Please input target score!" }]}
+          rules={[{ required: true, message: "Mohon masukkan target skor!" }]}
         >
           <InputNumber
             min={0}
             max={100}
-            placeholder="Enter score (0-100)"
+            placeholder="Masukkan skor (0-100)"
             style={{ width: "100%" }}
           />
         </Form.Item>

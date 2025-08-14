@@ -41,14 +41,14 @@ export default function EditDeveloperModal({
       centered
       title={
         <Typography.Title level={5} className="!text-dark-tosca">
-          Edit Developer Data
+          Edit Data Developer
         </Typography.Title>
       }
       maskClosable={false}
       open={open}
       onCancel={handleCancel}
       onOk={() => form.submit()}
-      okText="Update"
+      okText="Perbarui"
       classNames={{
         body: "!pt-2 max-h-[75vh] overflow-y-auto !px-6",
         content: "!p-0",
@@ -59,18 +59,19 @@ export default function EditDeveloperModal({
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <Form.Item
           name="name"
-          label="Name"
+          label="Nama"
           className="!mb-2"
-          rules={[{ required: true, message: "Please input name!" }]}
+          rules={[{ required: true, message: "Mohon masukkan nama!" }]}
         >
           <Input />
         </Form.Item>
 
         <Form.Item
           name="image"
-          label="Image"
+          label="Gambar"
           className="!mb-2"
-          rules={[{ required: true, message: "Please upload an image!" }]}
+          valuePropName="fileList"
+          rules={[{ required: true, message: "Mohon upload gambar!" }]}
         >
           <Upload.Dragger
             maxCount={1}
@@ -100,7 +101,7 @@ export default function EditDeveloperModal({
                 />
 
                 <p className="text-gray-500">
-                  Click or drag file to replace current image
+                  Klik atau seret file untuk mengganti gambar
                 </p>
               </div>
             ) : (
@@ -109,10 +110,10 @@ export default function EditDeveloperModal({
                   <UploadOutlined />
                 </p>
                 <p className="ant-upload-text">
-                  Click or drag file to this area to upload
+                  Klik atau seret file ke area ini untuk upload
                 </p>
                 <p className="ant-upload-hint">
-                  Upload new image to replace current one.
+                  Upload gambar baru untuk mengganti yang lama.
                 </p>
               </>
             )}
@@ -121,27 +122,29 @@ export default function EditDeveloperModal({
 
         <Form.Item
           name="cluster_count"
-          label="Cluster Count"
+          label="Jumlah Cluster"
           className="!mb-2"
-          rules={[{ required: true, message: "Please input cluster count!" }]}
+          rules={[
+            { required: true, message: "Mohon masukkan jumlah cluster!" },
+          ]}
         >
           <Input />
         </Form.Item>
 
         <Form.Item
           name="phone_number"
-          label="Phone Number"
+          label="Nomor Telepon"
           className="!mb-2"
-          rules={[{ required: true, message: "Please input phone number!" }]}
+          rules={[{ required: true, message: "Mohon masukkan nomor telepon!" }]}
         >
           <Input />
         </Form.Item>
 
         <Form.Item
           name="description"
-          label="Description"
+          label="Deskripsi"
           className="!mb-2"
-          rules={[{ required: true, message: "Please input description!" }]}
+          rules={[{ required: true, message: "Mohon masukkan deskripsi!" }]}
         >
           <Input.TextArea rows={3} />
         </Form.Item>

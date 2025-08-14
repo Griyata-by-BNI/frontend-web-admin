@@ -1,4 +1,4 @@
-import { Button, Col, Input, Row, Table, Tooltip } from "antd";
+import { Button, Col, Input, Row, Table, Tag, Tooltip } from "antd";
 import { mockClusterData } from "../../constants";
 import type { Cluster } from "../../types";
 import { Edit, Eye, Plus, Trash } from "lucide-react";
@@ -6,8 +6,11 @@ import { useState } from "react";
 import CreateClusterModal from "./CreateClusterModal";
 import EditClusterModal from "./EditClusterModal";
 import DeleteClusterModal from "./DeleteClusterModal";
+import { useRouter, useParams } from "next/navigation";
 
 export default function TableCluster({}) {
+  const router = useRouter();
+  const { developer_id } = useParams();
   const [searchText, setSearchText] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -20,41 +23,73 @@ export default function TableCluster({}) {
   );
   const columns = [
     {
-      title: "Name",
+      title: "Nama",
       dataIndex: "name",
       key: "name",
     },
     {
-      title: "Phone",
+      title: "Telepon",
       dataIndex: "phone_number",
       key: "phone_number",
     },
     {
-      title: "Description",
+      title: "Deskripsi",
       dataIndex: "description",
       key: "description",
     },
     {
-      title: "Action",
+      title: "Fasilitas Bersama",
+      dataIndex: "facilities",
+      key: "facilities",
+      width: "400px",
+      render: (facilities: string) => (
+        <>
+          {facilities ? (
+            <div className="overflow-hidden">
+              <Row gutter={[0, 4]}>
+                {facilities.split(", ").map((item, index) => (
+                  <Col key={index}>
+                    <Tag>{item}</Tag>
+                  </Col>
+                ))}
+              </Row>
+            </div>
+          ) : (
+            "-"
+          )}
+        </>
+      ),
+    },
+    {
+      title: "Aksi",
       dataIndex: "action",
       key: "action",
       render: (_: any, record: Cluster) => (
         <div className="flex items-center gap-2">
           <Tooltip title="Detail Data">
-            <Button icon={<Eye className="w-4 h-4" />} />
+            <Button
+              icon={<Eye className="w-4 h-4" />}
+              onClick={() =>
+                router.push(
+                  `/admin/developer-management/${developer_id}/clusters/${record.id}`
+                )
+              }
+            />
           </Tooltip>
+
           <Tooltip title="Edit Data">
-            <Button 
-              icon={<Edit className="w-4 h-4" />} 
+            <Button
+              icon={<Edit className="w-4 h-4" />}
               onClick={() => {
                 setEditingRecord(record);
                 setIsEditModalOpen(true);
               }}
             />
           </Tooltip>
-          <Tooltip title="Delete Data">
-            <Button 
-              icon={<Trash className="w-4 h-4 stroke-red-500" />} 
+
+          <Tooltip title="Hapus Data">
+            <Button
+              icon={<Trash className="w-4 h-4 stroke-red-500" />}
               onClick={() => {
                 setDeletingRecord(record);
                 setIsDeleteModalOpen(true);
@@ -71,7 +106,7 @@ export default function TableCluster({}) {
       <Row gutter={16} className="mb-4">
         <Col span={6}>
           <Input.Search
-            placeholder="Search by name"
+            placeholder="Cari berdasarkan nama"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
@@ -84,7 +119,7 @@ export default function TableCluster({}) {
               icon={<Plus className="w-4 h-4" />}
               onClick={() => setIsCreateModalOpen(true)}
             >
-              Create Data
+              Buat Data
             </Button>
           </div>
         </Col>

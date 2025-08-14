@@ -12,13 +12,13 @@ import {
   Tooltip,
 } from "antd";
 import { Edit, Eye, Plus, Trash } from "lucide-react";
-import { useState } from "react";
 import Link from "next/link";
-import EditDeveloperModal from "./components/EditDeveloperModal";
-import DeleteConfirmModal from "./components/DeleteConfirmModal";
-import CreateDeveloperModal from "./components/CreateDeveloperModal";
-import type { Developer } from "./types";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import CreateDeveloperModal from "./components/CreateDeveloperModal";
+import DeleteDeveloperModal from "./components/DeleteDeveloperModal";
+import EditDeveloperModal from "./components/EditDeveloperModal";
+import type { Developer } from "./types";
 
 const mockData: Developer[] = [
   {
@@ -87,7 +87,7 @@ export default function DeveloperManagementPage() {
 
   const columns = [
     {
-      title: "Name",
+      title: "Nama",
       dataIndex: "name",
       key: "name",
       render: (text: string, record: Developer) => (
@@ -99,14 +99,14 @@ export default function DeveloperManagementPage() {
       ),
     },
     {
-      title: "Cluster Count",
+      title: "Jumlah Cluster",
       dataIndex: "cluster_count",
       key: "cluster_count",
     },
-    { title: "Phone", dataIndex: "phone_number", key: "phone_number" },
-    { title: "Description", dataIndex: "description", key: "description" },
+    { title: "Telepon", dataIndex: "phone_number", key: "phone_number" },
+    { title: "Deskripsi", dataIndex: "description", key: "description" },
     {
-      title: "Action",
+      title: "Aksi",
       dataIndex: "action",
       key: "action",
       render: (_: any, record: Developer) => (
@@ -129,7 +129,7 @@ export default function DeveloperManagementPage() {
             />
           </Tooltip>
 
-          <Tooltip title="Delete Data">
+          <Tooltip title="Hapus Data">
             <Button
               icon={<Trash className="w-4 h-4 stroke-red-500" />}
               onClick={() => handleDelete(record)}
@@ -144,7 +144,7 @@ export default function DeveloperManagementPage() {
     <>
       <div className="mb-4 flex flex-col gap-1">
         <p className="text-2xl text-primary-black font-bold">
-          Developer Management
+          Manajemen Developer
         </p>
 
         <Breadcrumb
@@ -153,7 +153,7 @@ export default function DeveloperManagementPage() {
             {
               title: (
                 <p className="text-dark-tosca font-semibold">
-                  Developer Management
+                  Manajemen Developer
                 </p>
               ),
               href: "/admin/developer-management",
@@ -165,7 +165,7 @@ export default function DeveloperManagementPage() {
       <Row gutter={16} className="mb-4">
         <Col span={6}>
           <Input.Search
-            placeholder="Search by name"
+            placeholder="Cari berdasarkan nama"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
@@ -178,7 +178,7 @@ export default function DeveloperManagementPage() {
               icon={<Plus className="w-4 h-4" />}
               onClick={() => setIsCreateModalOpen(true)}
             >
-              Create Data
+              Buat Data
             </Button>
           </div>
         </Col>
@@ -198,7 +198,7 @@ export default function DeveloperManagementPage() {
         editingRecord={editingRecord}
       />
 
-      <DeleteConfirmModal
+      <DeleteDeveloperModal
         open={isDeleteModalOpen}
         onCancel={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}

@@ -3,38 +3,38 @@
 import { Modal } from "antd";
 import type { Developer } from "../types";
 
-interface DeleteConfirmModalProps {
+interface DeleteDeveloperModalProps {
   open: boolean;
   onCancel: () => void;
   onConfirm: () => void;
   developerData: Developer | null;
 }
 
-export default function DeleteConfirmModal({
+export default function DeleteDeveloperModal({
   open,
   onCancel,
   onConfirm,
   developerData,
-}: DeleteConfirmModalProps) {
+}: DeleteDeveloperModalProps) {
   return (
     <Modal
-      title="Delete Confirmation"
+      title="Konfirmasi Hapus"
       open={open}
       onOk={onConfirm}
       onCancel={onCancel}
-      okText="Delete"
+      okText="Hapus"
       okType="danger"
-      cancelText="Cancel"
+      cancelText="Batal"
       classNames={{ footer: "!mt-6" }}
     >
       <p>
-        Are you sure you want to delete{" "}
+        Apakah Anda yakin ingin menghapus data{" "}
         {developerData && (
           <>
             <strong>{developerData.name}</strong>
           </>
-        )}{" "}
-        data?
+        )}
+        ?
       </p>
     </Modal>
   );

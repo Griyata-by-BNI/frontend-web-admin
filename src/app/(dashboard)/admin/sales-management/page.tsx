@@ -86,14 +86,14 @@ export default function SalesManagementPage() {
   });
 
   const columns = [
-    { title: "Name", dataIndex: "name", key: "name" },
+    { title: "Nama", dataIndex: "name", key: "name" },
     { title: "Email", dataIndex: "email", key: "email" },
-    { title: "Phone", dataIndex: "phone_number", key: "phone_number" },
-    { title: "Gender", dataIndex: "gender", key: "gender" },
-    { title: "Address", dataIndex: "address", key: "address" },
-    { title: "Target Score", dataIndex: "target_score", key: "target_score" },
+    { title: "Telepon", dataIndex: "phone_number", key: "phone_number" },
+    { title: "Jenis Kelamin", dataIndex: "gender", key: "gender" },
+    { title: "Alamat", dataIndex: "address", key: "address" },
+    { title: "Target Skor", dataIndex: "target_score", key: "target_score" },
     {
-      title: "Action",
+      title: "Aksi",
       dataIndex: "action",
       key: "action",
       render: (_: any, record: Sales) => (
@@ -105,7 +105,7 @@ export default function SalesManagementPage() {
             />
           </Tooltip>
 
-          <Tooltip title="Delete Data">
+          <Tooltip title="Hapus Data">
             <Button
               icon={<Trash className="w-4 h-4 stroke-red-500" />}
               onClick={() => handleDelete(record)}
@@ -120,7 +120,7 @@ export default function SalesManagementPage() {
     <>
       <div className="mb-4 flex flex-col gap-1">
         <p className="text-2xl text-primary-black font-bold">
-          Sales Management
+          Manajemen Sales
         </p>
 
         <Breadcrumb
@@ -131,7 +131,7 @@ export default function SalesManagementPage() {
             {
               title: (
                 <p className="text-dark-tosca font-semibold">
-                  Sales Management
+                  Manajemen Sales
                 </p>
               ),
               href: "/admin/sales-management",
@@ -143,7 +143,7 @@ export default function SalesManagementPage() {
       <Row gutter={16} className="mb-4">
         <Col span={6}>
           <Input.Search
-            placeholder="Search by name or email"
+            placeholder="Cari berdasarkan nama atau email"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
@@ -151,7 +151,7 @@ export default function SalesManagementPage() {
 
         <Col span={4}>
           <Select
-            placeholder="Filter by region"
+            placeholder="Filter berdasarkan wilayah"
             value={selectedRegion}
             onChange={setSelectedRegion}
             allowClear
@@ -169,7 +169,7 @@ export default function SalesManagementPage() {
               icon={<Plus className="w-4 h-4" />}
               onClick={() => setIsCreateModalOpen(true)}
             >
-              Create Data
+              Buat Data
             </Button>
           </div>
         </Col>

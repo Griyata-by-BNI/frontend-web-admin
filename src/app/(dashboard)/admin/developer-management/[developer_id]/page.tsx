@@ -8,6 +8,7 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import { mockDeveloperData } from "../constants";
 import EditDeveloperModal from "../components/EditDeveloperModal";
+import DeleteDeveloperModal from "../components/DeleteDeveloperModal";
 import type { Developer } from "../types";
 import TableCluster from "./components/TableCluster";
 
@@ -15,12 +16,17 @@ export default function DeveloperDetailPage() {
   const params = useParams();
   const developerId = params.developer_id as string;
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const developer = mockDeveloperData.find((dev) => dev.id === developerId);
 
   const handleEditSubmit = (values: Developer) => {
     console.log("Updated values:", values);
     setIsEditModalOpen(false);
+  };
+
+  const handleDeleteConfirm = () => {
+    setIsDeleteModalOpen(false);
   };
 
   if (!developer) {
@@ -38,7 +44,7 @@ export default function DeveloperDetailPage() {
           items={[
             { title: "Dashboard" },
             {
-              title: "Developer Management",
+              title: "Manajemen Developer",
               href: "/admin/developer-management",
             },
             {
@@ -78,8 +84,9 @@ export default function DeveloperDetailPage() {
                 <Button
                   icon={<Trash className="w-4 h-4 stroke-red-500" />}
                   className="w-max"
+                  onClick={() => setIsDeleteModalOpen(true)}
                 >
-                  Delete
+                  Hapus
                 </Button>
               </div>
 
@@ -96,7 +103,7 @@ export default function DeveloperDetailPage() {
 
             <Col span={24}>
               <p className="text-lg font-bold text-primary-black mb-1">
-                List Cluster
+                Daftar Cluster
               </p>
 
               <TableCluster />
@@ -110,6 +117,13 @@ export default function DeveloperDetailPage() {
         onCancel={() => setIsEditModalOpen(false)}
         onSubmit={handleEditSubmit}
         editingRecord={developer}
+      />
+
+      <DeleteDeveloperModal
+        open={isDeleteModalOpen}
+        onCancel={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        developerData={developer}
       />
     </>
   );

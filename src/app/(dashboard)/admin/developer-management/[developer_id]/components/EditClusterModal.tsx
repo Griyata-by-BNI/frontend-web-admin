@@ -2,7 +2,7 @@
 
 import { Button, Form, Input, Modal, Select, Typography, Upload } from "antd";
 import type { Cluster } from "../../types";
-import { Upload as UploadIcon, Trash } from "lucide-react";
+import { Upload as UploadIcon, Trash, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { FacitiliesData } from "../../constants";
 
@@ -23,11 +23,18 @@ export default function EditClusterModal({
   const [previewImages, setPreviewImages] = useState<string[]>([]);
 
   useEffect(() => {
-    if (editingRecord) {
-      form.setFieldsValue(editingRecord);
-      setPreviewImages([...(editingRecord.images || [])]);
+    if (editingRecord && open) {
+      const formValues = {
+        ...editingRecord,
+        facilities: editingRecord.facilities
+          ? editingRecord.facilities.split(", ")
+          : [],
+        images: editingRecord.cluster_photo_urls || [],
+      };
+      form.setFieldsValue(formValues);
+      setPreviewImages([...(editingRecord.cluster_photo_urls || [])]);
     }
-  }, [editingRecord, form]);
+  }, [editingRecord, form, open]);
 
   const handleSubmit = (values: any) => {
     onSubmit(values);
@@ -46,14 +53,14 @@ export default function EditClusterModal({
       centered
       title={
         <Typography.Title level={5} className="!text-dark-tosca">
-          Edit Cluster Data
+          Edit Data Cluster
         </Typography.Title>
       }
       maskClosable={false}
       open={open}
       onCancel={handleCancel}
       onOk={() => form.submit()}
-      okText="Update"
+      okText="Perbarui"
       classNames={{
         body: "!pt-2 max-h-[75vh] overflow-y-auto !px-6",
         content: "!p-0",
@@ -65,20 +72,20 @@ export default function EditClusterModal({
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <Form.Item
           name="name"
-          label="Name"
+          label="Nama"
           className="!mb-2"
-          rules={[{ required: true, message: "Please input name!" }]}
+          rules={[{ required: true, message: "Mohon masukkan nama!" }]}
         >
-          <Input placeholder="Enter cluster name" />
+          <Input placeholder="Masukkan nama cluster" />
         </Form.Item>
 
         <Form.Item
           name="phone_number"
-          label="Phone Number"
+          label="Nomor Telepon"
           className="!mb-2"
           rules={[
-            { required: true, message: "Please input phone number!" },
-            { min: 10, message: "Phone number must be at least 10 digits!" },
+            { required: true, message: "Mohon masukkan nomor telepon!" },
+            { min: 10, message: "Nomor telepon minimal 10 digit!" },
           ]}
         >
           <Input placeholder="081234567890" />
@@ -88,51 +95,51 @@ export default function EditClusterModal({
           name="latitude"
           label="Latitude"
           className="!mb-2"
-          rules={[{ required: true, message: "Please input latitude!" }]}
+          rules={[{ required: true, message: "Mohon masukkan latitude!" }]}
         >
-          <Input placeholder="Enter latitude" type="number" step="any" />
+          <Input placeholder="Masukkan latitude" type="number" step="any" />
         </Form.Item>
 
         <Form.Item
           name="longitude"
           label="Longitude"
           className="!mb-2"
-          rules={[{ required: true, message: "Please input longitude!" }]}
+          rules={[{ required: true, message: "Mohon masukkan longitude!" }]}
         >
-          <Input placeholder="Enter longitude" type="number" step="any" />
+          <Input placeholder="Masukkan longitude" type="number" step="any" />
         </Form.Item>
 
         <Form.Item
           name="description"
-          label="Description"
+          label="Deskripsi"
           className="!mb-2"
-          rules={[{ required: true, message: "Please input description!" }]}
+          rules={[{ required: true, message: "Mohon masukkan deskripsi!" }]}
         >
-          <Input.TextArea placeholder="Enter description" rows={3} />
+          <Input.TextArea placeholder="Masukkan deskripsi" rows={3} />
         </Form.Item>
 
         <Form.Item
           name="facilities"
-          label="Facilities"
+          label="Fasilitas"
           className="!mb-2"
-          rules={[{ required: true, message: "Please select facilities!" }]}
+          rules={[{ required: true, message: "Mohon pilih fasilitas!" }]}
         >
           <Select
             mode="multiple"
-            placeholder="Select facilities"
-            options={FacitiliesData.map(facility => ({
+            placeholder="Pilih fasilitas"
+            options={FacitiliesData.map((facility) => ({
               label: facility,
-              value: facility
+              value: facility,
             }))}
           />
         </Form.Item>
 
         <Form.Item
           name="images"
-          label="Images"
+          label="Gambar"
           className="!mb-2"
           rules={[
-            { required: true, message: "Please upload at least one image!" },
+            { required: true, message: "Mohon upload minimal satu gambar!" },
           ]}
           valuePropName="fileList"
         >
@@ -167,7 +174,7 @@ export default function EditClusterModal({
             }}
           >
             <Button icon={<UploadIcon className="w-4 h-4" />}>
-              Upload Images
+              Upload Gambar
             </Button>
           </Upload>
         </Form.Item>
@@ -177,7 +184,7 @@ export default function EditClusterModal({
             {previewImages.map((image, index) => (
               <div
                 key={index}
-                className="relative border rounded-lg overflow-hidden"
+                className="relative border border-gray-100 rounded-lg overflow-hidden"
               >
                 <img
                   src={image}
@@ -188,7 +195,7 @@ export default function EditClusterModal({
                 <Button
                   shape="circle"
                   size="small"
-                  icon={<Trash className="w-4 h-4" />}
+                  icon={<X className="w-4 h-4" />}
                   className="!absolute top-1 right-1 !z-[9999999]"
                   onClick={() => {
                     const newImages = previewImages.filter(

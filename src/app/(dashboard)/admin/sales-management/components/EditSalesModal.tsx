@@ -35,22 +35,22 @@ export default function EditSalesModal({
       centered
       title={
         <Typography.Title level={5} className="!text-dark-tosca">
-          Edit Sales Data
+          Edit Data Sales
         </Typography.Title>
       }
       maskClosable={false}
       open={open}
       onCancel={onCancel}
       onOk={() => form.submit()}
-      okText="Update"
+      okText="Perbarui"
       classNames={{ body: "!pt-2" }}
     >
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <Form.Item
           name="name"
-          label="Name"
+          label="Nama"
           className="!mb-2"
-          rules={[{ required: true, message: "Please input name!" }]}
+          rules={[{ required: true, message: "Mohon masukkan nama!" }]}
         >
           <Input />
         </Form.Item>
@@ -63,7 +63,7 @@ export default function EditSalesModal({
             {
               required: true,
               type: "email",
-              message: "Please input valid email!",
+              message: "Mohon masukkan email yang valid!",
             },
           ]}
         >
@@ -72,39 +72,39 @@ export default function EditSalesModal({
 
         <Form.Item
           name="phone_number"
-          label="Phone Number"
+          label="Nomor Telepon"
           className="!mb-2"
-          rules={[{ required: true, message: "Please input phone number!" }]}
+          rules={[{ required: true, message: "Mohon masukkan nomor telepon!" }]}
         >
           <Input />
         </Form.Item>
 
         <Form.Item
           name="gender"
-          label="Gender"
+          label="Jenis Kelamin"
           className="!mb-2"
-          rules={[{ required: true, message: "Please select gender!" }]}
+          rules={[{ required: true, message: "Mohon pilih jenis kelamin!" }]}
         >
           <Select>
-            <Select.Option value="Male">Male</Select.Option>
-            <Select.Option value="Female">Female</Select.Option>
+            <Select.Option value="Male">Laki-laki</Select.Option>
+            <Select.Option value="Female">Perempuan</Select.Option>
           </Select>
         </Form.Item>
 
         <Form.Item
           name="address"
-          label="Address"
+          label="Alamat"
           className="!mb-2"
-          rules={[{ required: true, message: "Please input address!" }]}
+          rules={[{ required: true, message: "Mohon masukkan alamat!" }]}
         >
           <Input />
         </Form.Item>
 
         <Form.Item
           name="target_score"
-          label="Target Score"
+          label="Target Skor"
           className="!mb-2"
-          rules={[{ required: true, message: "Please input target score!" }]}
+          rules={[{ required: true, message: "Mohon masukkan target skor!" }]}
         >
           <InputNumber min={0} max={100} style={{ width: "100%" }} />
         </Form.Item>

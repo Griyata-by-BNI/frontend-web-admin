@@ -1,27 +1,40 @@
 "use client";
 
-import { Button, Form, Input, Modal, Select, Typography, Upload } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  Modal,
+  Typography,
+  Upload,
+  InputNumber,
+} from "antd";
 import { Upload as UploadIcon, X } from "lucide-react";
 import { useState } from "react";
-import type { Cluster } from "../../types";
-import { FacitiliesData } from "../../constants";
+import type { Property } from "../../../../types";
 
-interface CreateClusterModalProps {
+interface CreatePropertyModalProps {
   open: boolean;
   onCancel: () => void;
-  onSubmit: (values: Omit<Cluster, "id" | "created_at" | "updated_at">) => void;
+  onSubmit: (values: Omit<Property, "id" | "createdAt" | "updatedAt">) => void;
+  clusterTypeId: number;
 }
 
-export default function CreateClusterModal({
+export default function CreatePropertyModal({
   open,
   onCancel,
   onSubmit,
-}: CreateClusterModalProps) {
+  clusterTypeId,
+}: CreatePropertyModalProps) {
   const [form] = Form.useForm();
   const [previewImages, setPreviewImages] = useState<string[]>([]);
 
   const handleSubmit = (values: any) => {
-    onSubmit(values);
+    onSubmit({
+      ...values,
+      clusterTypeId,
+      property_photo_urls: values.images || [],
+    });
     form.resetFields();
     setPreviewImages([]);
   };
@@ -37,7 +50,7 @@ export default function CreateClusterModal({
       centered
       title={
         <Typography.Title level={5} className="!text-dark-tosca">
-          Buat Data Cluster
+          Buat Data Properti
         </Typography.Title>
       }
       maskClosable={false}
@@ -55,41 +68,11 @@ export default function CreateClusterModal({
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <Form.Item
           name="name"
-          label="Nama"
+          label="Nama Properti"
           className="!mb-2"
-          rules={[{ required: true, message: "Mohon masukkan nama!" }]}
+          rules={[{ required: true, message: "Mohon masukkan nama properti!" }]}
         >
-          <Input placeholder="Masukkan nama cluster" />
-        </Form.Item>
-
-        <Form.Item
-          name="phone_number"
-          label="Nomor Telepon"
-          className="!mb-2"
-          rules={[
-            { required: true, message: "Mohon masukkan nomor telepon!" },
-            { min: 10, message: "Nomor telepon minimal 10 digit!" },
-          ]}
-        >
-          <Input placeholder="081234567890" />
-        </Form.Item>
-
-        <Form.Item
-          name="latitude"
-          label="Latitude"
-          className="!mb-2"
-          rules={[{ required: true, message: "Mohon masukkan latitude!" }]}
-        >
-          <Input placeholder="Masukkan latitude" type="number" step="any" />
-        </Form.Item>
-
-        <Form.Item
-          name="longitude"
-          label="Longitude"
-          className="!mb-2"
-          rules={[{ required: true, message: "Mohon masukkan longitude!" }]}
-        >
-          <Input placeholder="Masukkan longitude" type="number" step="any" />
+          <Input placeholder="Masukkan nama properti" />
         </Form.Item>
 
         <Form.Item
@@ -102,19 +85,123 @@ export default function CreateClusterModal({
         </Form.Item>
 
         <Form.Item
+          name="price"
+          label="Harga"
+          className="!mb-2"
+          rules={[{ required: true, message: "Mohon masukkan harga!" }]}
+        >
+          <InputNumber
+            placeholder="Masukkan harga"
+            className="!w-full"
+            formatter={(value) =>
+              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            }
+            parser={(value) => value!.replace(/\$\s?|(,*)/g, "")}
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="sellingPrice"
+          label="Harga Jual"
+          className="!mb-2"
+          rules={[{ required: true, message: "Mohon masukkan harga jual!" }]}
+        >
+          <InputNumber
+            placeholder="Masukkan harga jual"
+            className="!w-full"
+            formatter={(value) =>
+              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            }
+            parser={(value) => value!.replace(/\$\s?|(,*)/g, "")}
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="location"
+          label="Lokasi"
+          className="!mb-2"
+          rules={[{ required: true, message: "Mohon masukkan lokasi!" }]}
+        >
+          <Input placeholder="Masukkan lokasi" />
+        </Form.Item>
+
+        <Form.Item
+          name="collateralAddress"
+          label="Alamat Agunan"
+          className="!mb-2"
+          rules={[{ required: true, message: "Mohon masukkan alamat agunan!" }]}
+        >
+          <Input placeholder="Masukkan alamat agunan" />
+        </Form.Item>
+
+        <Form.Item
+          name="landArea"
+          label="Luas Tanah (m²)"
+          className="!mb-2"
+          rules={[{ required: true, message: "Mohon masukkan luas tanah!" }]}
+        >
+          <InputNumber placeholder="Masukkan luas tanah" className="!w-full" />
+        </Form.Item>
+
+        <Form.Item
+          name="buildingArea"
+          label="Luas Bangunan (m²)"
+          className="!mb-2"
+          rules={[{ required: true, message: "Mohon masukkan luas bangunan!" }]}
+        >
+          <InputNumber
+            placeholder="Masukkan luas bangunan"
+            className="!w-full"
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="stock"
+          label="Stok"
+          className="!mb-2"
+          rules={[{ required: true, message: "Mohon masukkan stok!" }]}
+        >
+          <InputNumber
+            placeholder="Masukkan stok"
+            className="!w-full"
+            min={0}
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="spesifications"
+          label="Spesifikasi"
+          className="!mb-2"
+          rules={[{ required: true, message: "Mohon masukkan spesifikasi!" }]}
+        >
+          <Input.TextArea placeholder="Masukkan spesifikasi" rows={3} />
+        </Form.Item>
+
+        <Form.Item
           name="facilities"
           label="Fasilitas"
           className="!mb-2"
-          rules={[{ required: true, message: "Mohon pilih fasilitas!" }]}
+          rules={[{ required: true, message: "Mohon masukkan fasilitas!" }]}
         >
-          <Select
-            mode="multiple"
-            placeholder="Pilih fasilitas"
-            options={FacitiliesData.map((facility) => ({
-              label: facility,
-              value: facility,
-            }))}
-          />
+          <Input placeholder="Masukkan fasilitas (pisahkan dengan koma)" />
+        </Form.Item>
+
+        <Form.Item
+          name="latitude"
+          label="Latitude"
+          className="!mb-2"
+          rules={[{ required: true, message: "Mohon masukkan latitude!" }]}
+        >
+          <Input placeholder="Masukkan latitude" />
+        </Form.Item>
+
+        <Form.Item
+          name="longitude"
+          label="Longitude"
+          className="!mb-2"
+          rules={[{ required: true, message: "Mohon masukkan longitude!" }]}
+        >
+          <Input placeholder="Masukkan longitude" />
         </Form.Item>
 
         <Form.Item
