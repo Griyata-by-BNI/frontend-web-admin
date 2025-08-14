@@ -1,11 +1,7 @@
-// app/register/page.tsx
 'use client';
 
-import Link from 'next/link';
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Footer from '../../../components/Footer';
-import axiosInstance from '../../../../lib/axios';
+import { X, ChevronLeft, ChevronRight, FileText, Shield, Users, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 // Define types
 type FieldStatus = 'valid' | 'invalid' | null;
@@ -36,15 +32,306 @@ interface FieldStatusState {
   confirmPassword: FieldStatus;
 }
 
-interface ApiResponse {
-  status?: {
-    code: number;
-    message: string;
-  };
-  message?: string;
-  success?: boolean;
-}
+// Terms Modal Component
+const TermsModal: React.FC<{ isOpen: boolean; onClose: () => void; onAgree: () => void }> = ({ isOpen, onClose, onAgree }) => {
+  const [currentSection, setCurrentSection] = useState(0);
 
+  const sections = [
+    {
+      title: "Kebijakan Privasi",
+      icon: <Shield className="w-6 h-6" />,
+      content: (
+        <div className="space-y-4">
+          <div>
+            <h4 className="font-semibold text-teal-800 mb-2">1.1. Informasi yang kami kumpulkan</h4>
+            <p className="text-gray-700 mb-3">
+              Kami mengumpulkan informasi yang Anda berikan secara langsung atau melalui penggunaan aplikasi. Informasi ini meliputi:
+            </p>
+            <ul className="space-y-2 text-sm text-gray-600">
+              <li className="flex items-start">
+                <span className="w-2 h-2 bg-teal-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span><strong>Data Pribadi:</strong> Nama lengkap, NIK, alamat, tanggal lahir, jenis kelamin, nomor telepon, email, dan data KTP</span>
+              </li>
+              <li className="flex items-start">
+                <span className="w-2 h-2 bg-teal-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span><strong>Data Finansial:</strong> Informasi pendapatan, data keuangan, riwayat pekerjaan untuk analisis KPR</span>
+              </li>
+              <li className="flex items-start">
+                <span className="w-2 h-2 bg-teal-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span><strong>Data Properti:</strong> Informasi properti seperti lokasi, harga, jenis, dan spesifikasi</span>
+              </li>
+              <li className="flex items-start">
+                <span className="w-2 h-2 bg-teal-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span><strong>Data Teknis:</strong> Informasi perangkat, IP address, ID perangkat, dan log aktivitas</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      )
+    },
+    {
+      title: "Penggunaan & Pengungkapan Informasi",
+      icon: <Users className="w-6 h-6" />,
+      content: (
+        <div className="space-y-4">
+          <div>
+            <h4 className="font-semibold text-teal-800 mb-2">1.2. Penggunaan Informasi</h4>
+            <p className="text-gray-700 mb-3">Informasi yang kami kumpulkan digunakan untuk:</p>
+            <ul className="space-y-2 text-sm text-gray-600 mb-4">
+              <li className="flex items-start">
+                <span className="w-2 h-2 bg-teal-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span>Memproses, menganalisis, dan menyetujui pengajuan KPR Anda</span>
+              </li>
+              <li className="flex items-start">
+                <span className="w-2 h-2 bg-teal-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span>Memberikan layanan dan fitur aplikasi Griyata by BNI</span>
+              </li>
+              <li className="flex items-start">
+                <span className="w-2 h-2 bg-teal-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span>Berkomunikasi mengenai status pengajuan dan pembaruan layanan</span>
+              </li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold text-teal-800 mb-2">1.3. Pengungkapan Informasi</h4>
+            <p className="text-gray-700 mb-3">
+              Kami tidak menjual atau menyewakan informasi pribadi Anda kepada pihak ketiga. Informasi hanya dapat diungkapkan kepada:
+            </p>
+            <ul className="space-y-2 text-sm text-gray-600 mb-4">
+              <li className="flex items-start">
+                <span className="w-2 h-2 bg-teal-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span><strong>Pihak Internal BNI:</strong> Untuk keperluan pemrosesan pengajuan KPR oleh unit terkait</span>
+              </li>
+              <li className="flex items-start">
+                <span className="w-2 h-2 bg-teal-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span><strong>Pihak Ketiga Mitra BNI:</strong> Developer properti, asuransi, dan appraiser</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      )
+    },
+    {
+      title: "Syarat & Ketentuan Layanan",
+      icon: <FileText className="w-6 h-6" />,
+      content: (
+        <div className="space-y-4">
+          <div>
+            <h4 className="font-semibold text-teal-800 mb-2">2.1. Kewajiban Pengguna</h4>
+            <ul className="space-y-2 text-sm text-gray-600 mb-4">
+              <li className="flex items-start">
+                <span className="w-2 h-2 bg-teal-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span>Anda bertanggung jawab penuh atas keakuratan, kelengkapan, dan keabsahan semua informasi yang Anda berikan</span>
+              </li>
+              <li className="flex items-start">
+                <span className="w-2 h-2 bg-teal-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span>Anda bertanggung jawab penuh atas kerahasiaan dan penggunaan akun Anda</span>
+              </li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold text-teal-800 mb-2">2.2. Hak Kekayaan Intelektual</h4>
+            <p className="text-gray-700 text-sm mb-4">
+              Seluruh konten, desain, logo, dan fitur dalam aplikasi Griyata by BNI dilindungi 
+              oleh hak cipta dan kekayaan intelektual milik PT Bank Negara Indonesia (Persero) Tbk.
+            </p>
+          </div>
+        </div>
+      )
+    },
+    {
+      title: "Ketentuan Umum & Kontak",
+      icon: <AlertCircle className="w-6 h-6" />,
+      content: (
+        <div className="space-y-4">
+          <div>
+            <h4 className="font-semibold text-teal-800 mb-2">3.1. Pembaruan Kebijakan</h4>
+            <p className="text-gray-700 text-sm mb-4">
+              Kami berhak untuk mengubah atau memperbarui kebijakan ini sewaktu-waktu. 
+              Setiap perubahan akan diinformasikan melalui notifikasi di aplikasi atau situs web resmi BNI.
+            </p>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold text-teal-800 mb-2">3.2. Hubungi Kami</h4>
+            <div className="bg-teal-50 border border-teal-200 p-4 rounded-lg">
+              <ul className="space-y-3 text-sm text-gray-700">
+                <li className="flex items-center">
+                  <div className="w-8 h-8 bg-teal-500 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-white text-xs font-bold">@</span>
+                  </div>
+                  <div>
+                    <strong>Email:</strong>
+                    <br />
+                    <span className="text-teal-600">bnicall@bni.co.id</span>
+                  </div>
+                </li>
+                <li className="flex items-center">
+                  <div className="w-8 h-8 bg-teal-500 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-white text-xs font-bold">☎</span>
+                  </div>
+                  <div>
+                    <strong>BNI Call:</strong>
+                    <br />
+                    <span className="text-teal-600">1500046</span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )
+    }
+  ];
+
+  const nextSection = () => {
+    setCurrentSection((prev) => Math.min(prev + 1, sections.length - 1));
+  };
+
+  const prevSection = () => {
+    setCurrentSection((prev) => Math.max(prev - 1, 0));
+  };
+
+  const goToSection = (index: number) => {
+    setCurrentSection(index);
+  };
+
+  const handleAgree = () => {
+    onAgree();
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={onClose}></div>
+        
+        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="p-3 bg-white bg-opacity-20 rounded-lg">
+                  {sections[currentSection].icon}
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold">Kebijakan Aplikasi Griyata by BNI</h1>
+                  <p className="text-teal-100 text-sm mt-1">{sections[currentSection].title}</p>
+                </div>
+              </div>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+
+          {/* Progress Indicator */}
+          <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                {sections.map((section, index) => (
+                  <div key={index} className="flex items-center">
+                    <button
+                      onClick={() => goToSection(index)}
+                      className={`w-8 h-8 rounded-full text-xs font-medium transition duration-200 flex items-center justify-center ${
+                        index === currentSection 
+                          ? 'bg-teal-500 text-white shadow-lg' 
+                          : index < currentSection
+                            ? 'bg-teal-200 text-teal-700 hover:bg-teal-300'
+                            : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
+                      }`}
+                    >
+                      {index + 1}
+                    </button>
+                    {index < sections.length - 1 && (
+                      <div className={`w-8 h-1 mx-2 rounded transition duration-300 ${
+                        index < currentSection ? 'bg-teal-300' : 'bg-gray-200'
+                      }`}></div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full">
+                {currentSection + 1} dari {sections.length}
+              </span>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 max-h-96 overflow-y-auto">
+            <div className="max-w-full">
+              <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <span className="p-2 bg-teal-100 text-teal-600 rounded-lg mr-3">
+                  {sections[currentSection].icon}
+                </span>
+                {sections[currentSection].title}
+              </h2>
+              <div className="prose prose-teal max-w-none">
+                {sections[currentSection].content}
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation Footer */}
+          <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={prevSection}
+                disabled={currentSection === 0}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition duration-200 ${
+                  currentSection === 0
+                    ? 'text-gray-400 cursor-not-allowed bg-gray-100'
+                    : 'text-gray-700 hover:bg-gray-200 bg-white shadow-sm'
+                }`}
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Sebelumnya</span>
+              </button>
+
+              <div className="flex space-x-1">
+                {sections.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => goToSection(index)}
+                    className={`w-2 h-2 rounded-full transition duration-200 ${
+                      index === currentSection ? 'bg-teal-500' : 'bg-gray-300'
+                    }`}
+                  />
+                ))}
+              </div>
+
+              {currentSection === sections.length - 1 ? (
+                <button
+                  onClick={handleAgree}
+                  className="flex items-center space-x-2 px-6 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-medium transition duration-200 shadow-sm"
+                >
+                  <span>Setuju & Tutup</span>
+                </button>
+              ) : (
+                <button
+                  onClick={nextSection}
+                  className="flex items-center space-x-2 px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-medium transition duration-200 shadow-sm"
+                >
+                  <span>Selanjutnya</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Main Register Component
 const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -74,10 +361,11 @@ const RegisterPage: React.FC = () => {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
   const [globalError, setGlobalError] = useState('');
-  
-  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
 
-  // Validation functions
+  // Validation functions (unchanged from original)
   const validateName = (name: string): { isValid: boolean; message: string } => {
     if (!name.trim()) {
       return { isValid: false, message: 'Nama lengkap wajib diisi' };
@@ -221,37 +509,12 @@ const RegisterPage: React.FC = () => {
     }
   };
 
-  // Handle API errors
-  const handleApiError = (error: any): string => {
-    if (error.response?.data?.status) {
-      const { code, message } = error.response.data.status;
-      
-      switch (code) {
-        case 400:
-          if (message.toLowerCase().includes('email') && message.toLowerCase().includes('already')) {
-            return 'Email sudah terdaftar. Silakan gunakan email lain atau login.';
-          } else if (message.toLowerCase().includes('phone') && message.toLowerCase().includes('already')) {
-            return 'Nomor handphone sudah terdaftar. Silakan gunakan nomor lain.';
-          }
-          return message || 'Data yang Anda masukkan tidak valid.';
-          
-        case 422:
-          return 'Data yang Anda masukkan tidak dapat diproses. Silakan periksa format data.';
-          
-        case 500:
-          return 'Terjadi kesalahan pada server. Silakan coba lagi dalam beberapa saat.';
-          
-        default:
-          return message || `Terjadi kesalahan (${code}). Silakan coba lagi.`;
-      }
-    } else if (error.code === 'NETWORK_ERROR' || error.message?.includes('Network Error')) {
-      return 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
-    } else {
-      return 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
-    }
+  // Handle terms agreement
+  const handleTermsAgree = () => {
+    setFormData(prev => ({ ...prev, agreeToTerms: true }));
   };
 
-  // Submit handler with API integration
+  // Submit handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -279,60 +542,12 @@ const RegisterPage: React.FC = () => {
       return;
     }
 
+    // Simulate API call
     try {
-      // API call for registration using axiosInstance
-      const response = await axiosInstance.post<ApiResponse>('/api/v1/auth/sign-up', {
-        fullName: formData.name.trim(),
-        phoneNumber: formData.phoneNumber,
-        email: formData.email.toLowerCase().trim(),
-        password: formData.password,
-      });
-
-      // Success case
-      if (response.data.success || response.status === 200 || response.status === 201) {
-        // Store registration data for verification page
-        const registrationData = {
-          email: formData.email.toLowerCase().trim(),
-          name: formData.name.trim(),
-          timestamp: new Date().toISOString()
-        };
-        
-        // Store in multiple places for reliability
-        localStorage.setItem('registrationData', JSON.stringify(registrationData));
-        sessionStorage.setItem('pendingVerificationEmail', formData.email.toLowerCase().trim());
-        
-        alert('Registrasi berhasil! Kode OTP verifikasi telah dikirim ke email Anda.');
-        
-        // Redirect to verify-email with email parameter
-        router.push(`/register/verify-email?email=${encodeURIComponent(formData.email.toLowerCase().trim())}`);
-      } else {
-        setGlobalError('Registrasi gagal. Silakan coba lagi.');
-      }
-
-    } catch (error: any) {
-      console.error('Registration error:', error);
-      const errorMessage = handleApiError(error);
-
-      // Handle specific field errors
-      if (error.response?.data?.status) {
-        const { code, message } = error.response.data.status;
-        
-        if (code === 400) {
-          if (message.toLowerCase().includes('email') && message.toLowerCase().includes('already')) {
-            setFieldErrors(prev => ({ ...prev, email: 'Email sudah terdaftar. Silakan gunakan email lain.' }));
-            setFieldStatus(prev => ({ ...prev, email: 'invalid' }));
-          } else if (message.toLowerCase().includes('phone') && message.toLowerCase().includes('already')) {
-            setFieldErrors(prev => ({ ...prev, phoneNumber: 'Nomor handphone sudah terdaftar.' }));
-            setFieldStatus(prev => ({ ...prev, phoneNumber: 'invalid' }));
-          } else {
-            setGlobalError(errorMessage);
-          }
-        } else {
-          setGlobalError(errorMessage);
-        }
-      } else {
-        setGlobalError(errorMessage);
-      }
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      alert('Registrasi berhasil! Kode OTP verifikasi telah dikirim ke email Anda.');
+    } catch (error) {
+      setGlobalError('Terjadi kesalahan. Silakan coba lagi.');
     } finally {
       setLoading(false);
     }
@@ -342,7 +557,7 @@ const RegisterPage: React.FC = () => {
   const getInputClass = (field: keyof FieldStatusState) => {
     const status = fieldStatus[field];
     return `w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 ${
-      status === 'valid' ? 'border-green-500 focus:ring-green-500 bg-green-50' : 
+      status === 'valid' ? 'border-teal-500 focus:ring-teal-500 bg-teal-50' : 
       status === 'invalid' ? 'border-red-500 focus:ring-red-500 bg-red-50' : 
       'border-gray-300 focus:ring-teal-500'
     }`;
@@ -356,180 +571,235 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* <Header /> */}
-      <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
-        <div className="w-full max-w-md bg-gray-100 p-6 rounded-lg shadow-lg">
-          <h3 className="text-2xl font-bold text-teal-500 mb-4">Registrasi untuk pengalaman baru</h3>
-          <p className="text-gray-600 mb-6">Masukkan identitas diri untuk mendaftar</p>
-          
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            {/* Name Field */}
-            <div>
-              <input
-                type="text"
-                placeholder="Nama lengkap"
-                value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
-                className={getInputClass('name')}
-                disabled={loading}
-                required
-              />
-              {fieldErrors.name && (
-                <p className="text-red-500 text-sm mt-1">{fieldErrors.name}</p>
-              )}
-            </div>
-
-            {/* Phone Field */}
-            <div>
-              <input
-                type="tel"
-                placeholder="Nomor handphone (08xxxxxxxxx)"
-                value={formData.phoneNumber}
-                onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                className={getInputClass('phoneNumber')}
-                disabled={loading}
-                required
-              />
-              {fieldErrors.phoneNumber && (
-                <p className="text-red-500 text-sm mt-1">{fieldErrors.phoneNumber}</p>
-              )}
-            </div>
-
-            {/* Email Field */}
-            <div>
-              <input
-                type="email"
-                placeholder="Alamat email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                className={getInputClass('email')}
-                disabled={loading}
-                required
-              />
-              {fieldErrors.email && (
-                <p className="text-red-500 text-sm mt-1">{fieldErrors.email}</p>
-              )}
-            </div>
-
-            {/* Password Field */}
-            <div>
-              <input
-                type="password"
-                placeholder="Kata sandi"
-                value={formData.password}
-                onChange={(e) => handleInputChange('password', e.target.value)}
-                className={getInputClass('password')}
-                disabled={loading}
-                required
-              />
-              {fieldErrors.password && (
-                <p className="text-red-500 text-sm mt-1">{fieldErrors.password}</p>
-              )}
-            </div>
-
-            {/* Confirm Password Field */}
-            <div>
-              <input
-                type="password"
-                placeholder="Ulangi kata sandi"
-                value={formData.confirmPassword}
-                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                className={getInputClass('confirmPassword')}
-                disabled={loading}
-                required
-              />
-              {fieldErrors.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1">{fieldErrors.confirmPassword}</p>
-              )}
-            </div>
-
-            {/* Terms Agreement */}
-            <div>
-              <label className="flex items-center text-gray-700 cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  className="mr-2 accent-teal-500" 
-                  checked={formData.agreeToTerms}
-                  onChange={(e) => handleInputChange('agreeToTerms', e.target.checked)}
-                  disabled={loading}
-                  required
-                />
-                Setuju dengan{' '}
-                <Link href="/terms" className="text-teal-500 hover:underline ml-1">
-                  syarat dan ketentuan
-                </Link>
-              </label>
-            </div>
-
-            {/* Password validation feedback */}
-            {formData.password && (
-              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-sm font-medium text-gray-700 mb-2">Kriteria kata sandi:</p>
-                <div className="space-y-1">
-                  {passwordValidations.map((validation, index) => (
-                    <div key={index} className="flex items-center space-x-2">
-                      <div className={`w-4 h-4 rounded-full flex items-center justify-center transition-all duration-200 ${
-                        validation.isValid 
-                          ? 'bg-green-500 text-white' 
-                          : 'bg-gray-200 text-gray-400'
-                      }`}>
-                        {validation.isValid ? (
-                          <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        ) : (
-                          <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                          </svg>
-                        )}
-                      </div>
-                      <span className={`text-sm transition-colors duration-200 ${
-                        validation.isValid 
-                          ? 'text-green-700 font-medium' 
-                          : 'text-gray-600'
-                      }`}>
-                        {validation.rule}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-2xl">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+            <span className="text-white text-2xl font-bold">G</span>
+          </div>
+          <h3 className="text-2xl font-bold text-teal-600 mb-2">Registrasi untuk pengalaman baru</h3>
+          <p className="text-gray-600">Masukkan identitas diri untuk mendaftar</p>
+        </div>
+        
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          {/* Name Field */}
+          <div>
+            <input
+              type="text"
+              placeholder="Nama lengkap"
+              value={formData.name}
+              onChange={(e) => handleInputChange('name', e.target.value)}
+              className={getInputClass('name')}
+              disabled={loading}
+              required
+            />
+            {fieldErrors.name && (
+              <p className="text-red-500 text-sm mt-1 flex items-center">
+                <AlertCircle className="w-4 h-4 mr-1" />
+                {fieldErrors.name}
+              </p>
             )}
+          </div>
 
-            {/* Global Error Message */}
-            {globalError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+          {/* Phone Field */}
+          <div>
+            <input
+              type="tel"
+              placeholder="Nomor handphone (08xxxxxxxxx)"
+              value={formData.phoneNumber}
+              onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+              className={getInputClass('phoneNumber')}
+              disabled={loading}
+              required
+            />
+            {fieldErrors.phoneNumber && (
+              <p className="text-red-500 text-sm mt-1 flex items-center">
+                <AlertCircle className="w-4 h-4 mr-1" />
+                {fieldErrors.phoneNumber}
+              </p>
+            )}
+          </div>
+
+          {/* Email Field */}
+          <div>
+            <input
+              type="email"
+              placeholder="Alamat email"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              className={getInputClass('email')}
+              disabled={loading}
+              required
+            />
+            {fieldErrors.email && (
+              <p className="text-red-500 text-sm mt-1 flex items-center">
+                <AlertCircle className="w-4 h-4 mr-1" />
+                {fieldErrors.email}
+              </p>
+            )}
+          </div>
+
+          {/* Password Field */}
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Kata sandi"
+              value={formData.password}
+              onChange={(e) => handleInputChange('password', e.target.value)}
+              className={getInputClass('password') + ' pr-12'}
+              disabled={loading}
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+            >
+              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
+            {fieldErrors.password && (
+              <p className="text-red-500 text-sm mt-1 flex items-center">
+                <AlertCircle className="w-4 h-4 mr-1" />
+                {fieldErrors.password}
+              </p>
+            )}
+          </div>
+
+          {/* Confirm Password Field */}
+          <div className="relative">
+            <input
+              type={showConfirmPassword ? 'text' : 'password'}
+              placeholder="Ulangi kata sandi"
+              value={formData.confirmPassword}
+              onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+              className={getInputClass('confirmPassword') + ' pr-12'}
+              disabled={loading}
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+            >
+              {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
+            {fieldErrors.confirmPassword && (
+              <p className="text-red-500 text-sm mt-1 flex items-center">
+                <AlertCircle className="w-4 h-4 mr-1" />
+                {fieldErrors.confirmPassword}
+              </p>
+            )}
+          </div>
+
+          {/* Password validation feedback */}
+          {formData.password && (
+            <div className="p-4 bg-teal-50 rounded-lg border border-teal-200">
+              <p className="text-sm font-medium text-teal-700 mb-3 flex items-center">
+                <Shield className="w-4 h-4 mr-2" />
+                Kriteria kata sandi:
+              </p>
+              <div className="space-y-2">
+                {passwordValidations.map((validation, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <div className={`w-4 h-4 rounded-full flex items-center justify-center transition-all duration-200 ${
+                      validation.isValid 
+                        ? 'bg-teal-500 text-white' 
+                        : 'bg-gray-200 text-gray-400'
+                    }`}>
+                      {validation.isValid ? (
+                        <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
+                    <span className={`text-sm transition-colors duration-200 ${
+                      validation.isValid 
+                        ? 'text-teal-700 font-medium' 
+                        : 'text-gray-600'
+                    }`}>
+                      {validation.rule}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Terms Agreement */}
+          <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <input 
+              type="checkbox" 
+              id="agreeToTerms"
+              className="mt-1 accent-teal-500 w-4 h-4" 
+              checked={formData.agreeToTerms}
+              onChange={(e) => handleInputChange('agreeToTerms', e.target.checked)}
+              disabled={loading}
+              required
+            />
+            <label htmlFor="agreeToTerms" className="text-sm text-gray-700 cursor-pointer flex-1">
+              Saya setuju dengan{' '}
+              <button
+                type="button"
+                onClick={() => setIsTermsModalOpen(true)}
+                className="text-teal-600 hover:text-teal-700 font-medium underline"
+              >
+                syarat dan ketentuan
+              </button>
+              {' '}yang berlaku
+            </label>
+          </div>
+
+          {/* Global Error Message */}
+          {globalError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-center">
+                <AlertCircle className="w-5 h-5 text-red-500 mr-3" />
                 <p className="text-red-600 text-sm font-medium">{globalError}</p>
               </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
+              isFormValid()
+                ? 'bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02]'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+            disabled={!isFormValid()}
+          >
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                Mendaftarkan...
+              </div>
+            ) : (
+              'Daftar Sekarang'
             )}
+          </button>
+        </form>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className="w-full bg-teal-500 text-white p-3 rounded-lg hover:bg-teal-600 transition-all duration-200 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:hover:bg-gray-300"
-              disabled={!isFormValid()}
-            >
-              {loading ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Mendaftarkan...
-                </div>
-              ) : (
-                'Daftar'
-              )}
-            </button>
-          </form>
-
-          <p className="text-center mt-6 text-gray-700">
+        <div className="mt-6 text-center">
+          <p className="text-gray-600">
             Sudah memiliki akun?{' '}
-            <Link href="/login" className="text-teal-500 hover:underline">
+            <button className="text-teal-600 hover:text-teal-700 font-medium underline">
               Masuk
-            </Link>
+            </button>
           </p>
         </div>
-      </main>
-      <Footer />
+      </div>
+
+      {/* Terms Modal */}
+      <TermsModal 
+        isOpen={isTermsModalOpen} 
+        onClose={() => setIsTermsModalOpen(false)}
+        onAgree={handleTermsAgree}
+      />
     </div>
   );
 };

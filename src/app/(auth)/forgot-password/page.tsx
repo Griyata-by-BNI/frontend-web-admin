@@ -1,13 +1,11 @@
 // app/forgot-password/page.tsx
 'use client';
 
-'use client';
-
 import Link from 'next/link';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Footer from '../../../components/Footer';
-import axiosInstance from '../../../../lib/axios';
+import axiosInstance from '@/lib/axios';
 
 const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -27,45 +25,46 @@ const ForgotPasswordPage: React.FC = () => {
       response: err.response,
       request: err.request,
       status: err.response?.status,
-      data: err.response?.data
+      data: err.response?.data,
+      url: err.config?.url,
+      method: err.config?.method
     });
 
-    // Prioritas pengecekan error berdasarkan tingkat kepastian
-    
-    // 1. Cek apakah ada response dari server
     if (err.response) {
       const status = err.response.status;
       const errorMessage = err.response.data?.message;
       
       console.log(`Server responded with status: ${status}`);
+      console.log('Response data:', err.response.data);
       
-      // Handle berdasarkan status code yang diterima
-      if (status === 400) {
-        setError('Data yang dikirim tidak valid. Periksa format email Anda');
-      } else if (status === 404) {
-        setError('Email tidak terdaftar dalam sistem');
-      } else if (status === 422) {
-        setError('Format email tidak valid atau data tidak lengkap');
-      } else if (status === 429) {
-        setError('Terlalu banyak percobaan. Silakan coba lagi dalam beberapa menit');
-      } else if (status >= 500 && status < 600) {
-        // Semua 5xx errors (500, 502, 503, 504, etc.)
-        setError('Terjadi gangguan pada server. Silakan coba lagi dalam beberapa saat');
-      } else {
-        // Status code lain yang tidak terduga
-        setError(errorMessage || `Terjadi kesalahan (${status}). Silakan coba lagi`);
+      switch (status) {
+        case 400:
+          setError('Data yang dikirim tidak valid. Periksa format email Anda');
+          break;
+        case 404:
+          setError('Email tidak terdaftar dalam sistem');
+          break;
+        case 422:
+          setError('Format email tidak valid atau data tidak lengkap');
+          break;
+        case 429:
+          setError('Terlalu banyak percobaan. Silakan coba lagi dalam beberapa menit');
+          break;
+        case 500:
+        case 502:
+        case 503:
+        case 504:
+          setError('Terjadi gangguan pada server. Silakan coba lagi dalam beberapa saat');
+          break;
+        default:
+          setError(errorMessage || `Terjadi kesalahan (${status}). Silakan coba lagi`);
       }
-    } 
-    // 2. Cek apakah request dikirim tapi tidak ada response (network issues)
-    else if (err.request) {
+    } else if (err.request) {
       console.log('No response received from server');
       setError('Tidak dapat terhubung ke server. Periksa koneksi internet Anda');
-    } 
-    // 3. Error lain (axios setup error, dll)
-    else if (err.message) {
+    } else if (err.message) {
       console.log('Request setup error:', err.message);
       
-      // Cek apakah message mengandung indikasi network error
       if (err.message.toLowerCase().includes('network') || 
           err.message.toLowerCase().includes('timeout') ||
           err.message.toLowerCase().includes('connection')) {
@@ -73,9 +72,7 @@ const ForgotPasswordPage: React.FC = () => {
       } else {
         setError('Terjadi kesalahan sistem. Silakan coba lagi');
       }
-    } 
-    // 4. Fallback untuk error yang tidak teridentifikasi
-    else {
+    } else {
       console.log('Unknown error type');
       setError('Terjadi kesalahan yang tidak diketahui. Silakan coba lagi nanti');
     }
@@ -101,25 +98,31 @@ const ForgotPasswordPage: React.FC = () => {
     }
 
     try {
-      console.log('Sending forgot password request for:', email.trim());
+      console.log('Sending forget password request to: /api/v1/auth/forget-password');
+      console.log('Request payload:', { email: email.trim() });
       
       const response = await axiosInstance.post('/api/v1/auth/forgot-password', {
         email: email.trim()
       }, {
-        timeout: 10000, // 10 second timeout
+        timeout: 15000, // 15 second timeout
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         }
       });
 
-      console.log('Forgot password response:', response);
+      console.log('Forget password response:', response.data);
 
-      // Jika sampai sini berarti berhasil
-      setSuccess('Kode verifikasi berhasil dikirim ke email Anda');
-      
-      setTimeout(() => {
-        router.push(`/forgot-password/otp?email=${encodeURIComponent(email.trim())}`);
-      }, 1500);
+      // Check if response indicates success
+      if (response.status === 200 || response.status === 201) {
+        setSuccess('Kode verifikasi berhasil dikirim ke email Anda');
+        
+        setTimeout(() => {
+          router.push(`/forgot-password/otp?email=${encodeURIComponent(email.trim())}`);
+        }, 1500);
+      } else {
+        setError('Respons tidak dikenal dari server. Silakan coba lagi');
+      }
       
     } catch (err: any) {
       handleError(err);
@@ -161,6 +164,18 @@ const ForgotPasswordPage: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L4.346 15.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
               <span className="text-sm">{error}</span>
+            </div>
+          )}
+
+          {/* Debug Info - Remove in production */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-xs text-blue-800">
+                <strong>Debug:</strong> Endpoint: /api/v1/auth/forget-password
+              </p>
+              <p className="text-xs text-blue-800">
+                Base URL: {axiosInstance.defaults.baseURL || 'Not configured'}
+              </p>
             </div>
           )}
 
@@ -238,4 +253,4 @@ const ForgotPasswordPage: React.FC = () => {
   );
 };
 
-export default ForgotPasswordPage;
+export default ForgotPasswordPage;;
