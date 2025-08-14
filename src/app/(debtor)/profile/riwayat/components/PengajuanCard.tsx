@@ -1,21 +1,23 @@
+import Link from "next/link";
 import { Submission } from "../types";
 import StatusBadge from "./StatusBadge";
 
 interface PengajuanCardProps extends Submission {}
 
 export default function PengajuanCard({
+  id,
   imageUrl,
   title,
   group,
   date,
   status,
 }: PengajuanCardProps) {
-  return (
+  const cardContent = (
     <div className="flex items-center gap-4 bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200">
-      <img 
-        src={imageUrl} 
-        alt={title} 
-        className="w-28 h-20 rounded-lg object-cover flex-shrink-0" 
+      <img
+        src={imageUrl}
+        alt={title}
+        className="w-28 h-20 rounded-lg object-cover flex-shrink-0"
       />
       <div className="flex-grow">
         <h3 className="text-base font-medium text-gray-900 mb-1">{title}</h3>
@@ -25,4 +27,36 @@ export default function PengajuanCard({
       <StatusBadge status={status} />
     </div>
   );
+
+  if (status === "Diproses") {
+    return (
+      <Link href="/profile/riwayat/in-process" className="cursor-pointer">
+        {cardContent}
+      </Link>
+    );
+  }
+
+  if (status === "Disetujui") {
+    return (
+      <Link
+        href="/profile/riwayat/completed?status=disetujui"
+        className="cursor-pointer"
+      >
+        {cardContent}
+      </Link>
+    );
+  }
+
+  if (status === "Ditolak") {
+    return (
+      <Link
+        href="/profile/riwayat/completed?status=ditolak"
+        className="cursor-pointer"
+      >
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return cardContent;
 }

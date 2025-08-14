@@ -34,9 +34,9 @@ export const completedSubmissions: Submission[] = [
   {
     id: 4,
     imageUrl:
-      "https://images.unsplash.com/photo-1600585152225-3589404e4c9f?q=80&w=2070&auto=format&fit=crop",
-    title: "Zeva - Tipe Agate",
-    group: "Summarecon Serpong",
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=1974&auto=format&fit=crop",
+    title: "Caksana - Tipe Celosia",
+    group: "Alam Sutera Group",
     date: "01/06/2025",
     status: "Ditolak",
   },
