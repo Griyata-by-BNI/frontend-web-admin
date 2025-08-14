@@ -1,8 +1,8 @@
 "use client";
 
-import { UploadOutlined } from "@ant-design/icons";
 import { Form, Input, Modal, Typography, Upload } from "antd";
-import { useEffect } from "react";
+import { UploadCloud } from "lucide-react";
+import { useEffect, useState } from "react";
 import type { Developer } from "../types";
 
 interface EditDeveloperModalProps {
@@ -19,20 +19,27 @@ export default function EditDeveloperModal({
   editingRecord,
 }: EditDeveloperModalProps) {
   const [form] = Form.useForm();
+  const [previewImage, setPreviewImage] = useState<string>("");
 
   useEffect(() => {
     if (editingRecord && open) {
-      form.setFieldsValue(editingRecord);
+      const formData = { ...editingRecord };
+      // Convert image string to empty fileList for Upload component
+      (formData as any).image = [];
+      form.setFieldsValue(formData);
+      setPreviewImage(editingRecord.image || "");
     }
   }, [editingRecord, form, open]);
 
   const handleSubmit = (values: any) => {
     onSubmit(values);
     form.resetFields();
+    setPreviewImage("");
   };
 
   const handleCancel = () => {
     form.resetFields();
+    setPreviewImage("");
     onCancel();
   };
 
@@ -60,7 +67,7 @@ export default function EditDeveloperModal({
         <Form.Item
           name="name"
           label="Nama"
-          className="!mb-2"
+          className="!mb-3"
           rules={[{ required: true, message: "Mohon masukkan nama!" }]}
         >
           <Input />
@@ -69,52 +76,51 @@ export default function EditDeveloperModal({
         <Form.Item
           name="image"
           label="Gambar"
-          className="!mb-2"
+          className="!mb-3"
           valuePropName="fileList"
           rules={[{ required: true, message: "Mohon upload gambar!" }]}
         >
           <Upload.Dragger
             maxCount={1}
             beforeUpload={() => false}
-            fileList={[]}
             onChange={(info) => {
               if (info.fileList.length > 0) {
                 const file = info.fileList[0].originFileObj;
                 if (file) {
                   const reader = new FileReader();
                   reader.onload = () => {
-                    form.setFieldValue("image", reader.result);
+                    const result = reader.result as string;
+                    form.setFieldValue("image", result);
+                    setPreviewImage(result);
                   };
                   reader.readAsDataURL(file);
                 }
               } else {
                 form.setFieldValue("image", "");
+                setPreviewImage("");
               }
             }}
           >
-            {editingRecord?.image ? (
+            {previewImage ? (
               <div className="flex flex-col items-center">
                 <img
-                  src={editingRecord.image}
-                  alt="Current profile"
+                  src={previewImage}
+                  alt="Preview"
                   className="w-72 aspect-video object-contain rounded mb-2"
                 />
-
                 <p className="text-gray-500">
                   Klik atau seret file untuk mengganti gambar
                 </p>
               </div>
             ) : (
               <>
-                <p className="ant-upload-drag-icon">
-                  <UploadOutlined />
+                <div className="flex justify-center w-full">
+                  <UploadCloud className="w-10 h-10 stroke-primary-tosca" />
+                </div>
+                <p className="text-gray-700 text-md mt-2">
+                  Klik atau seret file untuk upload gambar
                 </p>
-                <p className="ant-upload-text">
-                  Klik atau seret file ke area ini untuk upload
-                </p>
-                <p className="ant-upload-hint">
-                  Upload gambar baru untuk mengganti yang lama.
-                </p>
+                <p className="ant-upload-hint">Mendukung upload satu gambar.</p>
               </>
             )}
           </Upload.Dragger>
@@ -123,7 +129,7 @@ export default function EditDeveloperModal({
         <Form.Item
           name="cluster_count"
           label="Jumlah Cluster"
-          className="!mb-2"
+          className="!mb-3"
           rules={[
             { required: true, message: "Mohon masukkan jumlah cluster!" },
           ]}
@@ -134,7 +140,7 @@ export default function EditDeveloperModal({
         <Form.Item
           name="phone_number"
           label="Nomor Telepon"
-          className="!mb-2"
+          className="!mb-3"
           rules={[{ required: true, message: "Mohon masukkan nomor telepon!" }]}
         >
           <Input />
@@ -143,7 +149,7 @@ export default function EditDeveloperModal({
         <Form.Item
           name="description"
           label="Deskripsi"
-          className="!mb-2"
+          className="!mb-3"
           rules={[{ required: true, message: "Mohon masukkan deskripsi!" }]}
         >
           <Input.TextArea rows={3} />

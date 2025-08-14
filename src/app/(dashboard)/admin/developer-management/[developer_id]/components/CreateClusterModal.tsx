@@ -22,7 +22,10 @@ export default function CreateClusterModal({
 }: CreateClusterModalProps) {
   const [form] = Form.useForm();
   const [previewImages, setPreviewImages] = useState<string[]>([]);
-  const [coordinates, setCoordinates] = useState<{ lat?: number; lng?: number }>({});
+  const [coordinates, setCoordinates] = useState<{
+    lat?: number;
+    lng?: number;
+  }>({});
 
   const handleSubmit = (values: any) => {
     onSubmit(values);
@@ -66,7 +69,7 @@ export default function CreateClusterModal({
         <Form.Item
           name="name"
           label="Nama"
-          className="!mb-2"
+          className="!mb-3"
           rules={[{ required: true, message: "Mohon masukkan nama!" }]}
         >
           <Input placeholder="Masukkan nama cluster" />
@@ -75,7 +78,7 @@ export default function CreateClusterModal({
         <Form.Item
           name="phone_number"
           label="Nomor Telepon"
-          className="!mb-2"
+          className="!mb-3"
           rules={[
             { required: true, message: "Mohon masukkan nomor telepon!" },
             { min: 10, message: "Nomor telepon minimal 10 digit!" },
@@ -87,7 +90,7 @@ export default function CreateClusterModal({
         <Form.Item
           name="address"
           label="Alamat"
-          className="!mb-2"
+          className="!mb-3"
           rules={[{ required: true, message: "Mohon masukkan alamat!" }]}
         >
           <Input.TextArea placeholder="Masukkan alamat lengkap" rows={2} />
@@ -97,7 +100,7 @@ export default function CreateClusterModal({
           <Form.Item
             name="latitude"
             label="Latitude"
-            className="!mb-2"
+            className="!mb-3"
             rules={[{ required: true, message: "Mohon masukkan latitude!" }]}
           >
             <Input placeholder="Masukkan latitude" type="number" step="any" />
@@ -106,7 +109,7 @@ export default function CreateClusterModal({
           <Form.Item
             name="longitude"
             label="Longitude"
-            className="!mb-2"
+            className="!mb-3"
             rules={[{ required: true, message: "Mohon masukkan longitude!" }]}
           >
             <Input placeholder="Masukkan longitude" type="number" step="any" />
@@ -114,7 +117,9 @@ export default function CreateClusterModal({
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-2">Pilih Lokasi di Peta</label>
+          <label className="block text-sm font-medium mb-2">
+            Pilih Lokasi di Peta
+          </label>
           <MapSelector
             latitude={coordinates.lat}
             longitude={coordinates.lng}
@@ -125,7 +130,7 @@ export default function CreateClusterModal({
         <Form.Item
           name="description"
           label="Deskripsi"
-          className="!mb-2"
+          className="!mb-3"
           rules={[{ required: true, message: "Mohon masukkan deskripsi!" }]}
         >
           <Input.TextArea placeholder="Masukkan deskripsi" rows={3} />
@@ -134,7 +139,7 @@ export default function CreateClusterModal({
         <Form.Item
           name="facilities"
           label="Fasilitas"
-          className="!mb-2"
+          className="!mb-3"
           rules={[{ required: true, message: "Mohon pilih fasilitas!" }]}
         >
           <Select
@@ -150,7 +155,7 @@ export default function CreateClusterModal({
         <Form.Item
           name="images"
           label="Gambar"
-          className="!mb-2"
+          className="!mb-3"
           rules={[
             { required: true, message: "Mohon upload minimal satu gambar!" },
           ]}

@@ -1,12 +1,12 @@
 import { Button, Col, Input, Row, Table, Tag, Tooltip } from "antd";
 import { mockClusterData } from "../../constants";
-import type { Cluster } from "../../types";
 import { Edit, Eye, Plus, Trash } from "lucide-react";
 import { useState } from "react";
 import CreateClusterModal from "./CreateClusterModal";
 import EditClusterModal from "./EditClusterModal";
 import DeleteClusterModal from "./DeleteClusterModal";
 import { useRouter, useParams } from "next/navigation";
+import { Cluster } from "@/types/clusters";
 
 export default function TableCluster({}) {
   const router = useRouter();
@@ -17,6 +17,9 @@ export default function TableCluster({}) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<Cluster | null>(null);
   const [deletingRecord, setDeletingRecord] = useState<Cluster | null>(null);
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<number>>(
+    new Set()
+  );
 
   const filteredData = mockClusterData.filter((item) =>
     item.name.toLowerCase().includes(searchText.toLowerCase())
@@ -36,6 +39,41 @@ export default function TableCluster({}) {
       title: "Deskripsi",
       dataIndex: "description",
       key: "description",
+      render: (description: string, record: Cluster) => {
+        const isExpanded = expandedDescriptions.has(record.id);
+        const shouldTruncate = description && description.length > 100;
+
+        if (!description) return "-";
+
+        return (
+          <div>
+            <span>
+              {shouldTruncate && !isExpanded
+                ? `${description.substring(0, 100)}...`
+                : description}
+            </span>
+
+            {shouldTruncate && (
+              <Button
+                type="text"
+                size="small"
+                className="!p-0 !m-0 h-auto !text-gray-400"
+                onClick={() => {
+                  const newExpanded = new Set(expandedDescriptions);
+                  if (isExpanded) {
+                    newExpanded.delete(record.id);
+                  } else {
+                    newExpanded.add(record.id);
+                  }
+                  setExpandedDescriptions(newExpanded);
+                }}
+              >
+                {isExpanded ? "View Less" : "View More"}
+              </Button>
+            )}
+          </div>
+        );
+      },
     },
     {
       title: "Fasilitas Bersama",

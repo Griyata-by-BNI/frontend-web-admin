@@ -56,7 +56,7 @@ export default function CreateDeveloperModal({
         <Form.Item
           name="name"
           label="Nama"
-          className="!mb-2"
+          className="!mb-3"
           rules={[{ required: true, message: "Mohon masukkan nama!" }]}
         >
           <Input placeholder="Masukkan nama developer" />
@@ -65,7 +65,7 @@ export default function CreateDeveloperModal({
         <Form.Item
           name="image"
           label="Gambar"
-          className="!mb-2"
+          className="!mb-3"
           valuePropName="fileList"
           rules={[{ required: true, message: "Mohon upload gambar!" }]}
         >
@@ -118,7 +118,7 @@ export default function CreateDeveloperModal({
         <Form.Item
           name="cluster_count"
           label="Jumlah Cluster"
-          className="!mb-2"
+          className="!mb-3"
           rules={[
             { required: true, message: "Mohon masukkan jumlah cluster!" },
           ]}
@@ -129,7 +129,7 @@ export default function CreateDeveloperModal({
         <Form.Item
           name="phone_number"
           label="Nomor Telepon"
-          className="!mb-2"
+          className="!mb-3"
           rules={[
             { required: true, message: "Mohon masukkan nomor telepon!" },
             { min: 10, message: "Nomor telepon minimal 10 digit!" },
@@ -141,7 +141,7 @@ export default function CreateDeveloperModal({
         <Form.Item
           name="description"
           label="Deskripsi"
-          className="!mb-2"
+          className="!mb-3"
           rules={[{ required: true, message: "Mohon masukkan deskripsi!" }]}
         >
           <Input.TextArea placeholder="Masukkan deskripsi" rows={3} />

@@ -45,7 +45,7 @@ export default function CreateSalesModal({
         <Form.Item
           name="name"
           label="Nama"
-          className="!mb-2"
+          className="!mb-3"
           rules={[{ required: true, message: "Mohon masukkan nama!" }]}
         >
           <Input placeholder="Masukkan nama lengkap" />
@@ -54,7 +54,7 @@ export default function CreateSalesModal({
         <Form.Item
           name="email"
           label="Email"
-          className="!mb-2"
+          className="!mb-3"
           rules={[
             {
               required: true,
@@ -69,7 +69,7 @@ export default function CreateSalesModal({
         <Form.Item
           name="phone_number"
           label="Nomor Telepon"
-          className="!mb-2"
+          className="!mb-3"
           rules={[
             { required: true, message: "Mohon masukkan nomor telepon!" },
             {
@@ -85,7 +85,7 @@ export default function CreateSalesModal({
         <Form.Item
           name="gender"
           label="Jenis Kelamin"
-          className="!mb-2"
+          className="!mb-3"
           rules={[{ required: true, message: "Mohon pilih jenis kelamin!" }]}
         >
           <Select placeholder="Pilih jenis kelamin">
@@ -97,7 +97,7 @@ export default function CreateSalesModal({
         <Form.Item
           name="address"
           label="Alamat"
-          className="!mb-2"
+          className="!mb-3"
           rules={[
             { required: true, message: "Mohon masukkan alamat!" },
             { min: 5, message: "Alamat minimal 5 karakter!" },
@@ -109,7 +109,7 @@ export default function CreateSalesModal({
         <Form.Item
           name="target_score"
           label="Target Skor"
-          className="!mb-2"
+          className="!mb-3"
           rules={[{ required: true, message: "Mohon masukkan target skor!" }]}
         >
           <InputNumber

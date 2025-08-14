@@ -49,7 +49,7 @@ export default function EditSalesModal({
         <Form.Item
           name="name"
           label="Nama"
-          className="!mb-2"
+          className="!mb-3"
           rules={[{ required: true, message: "Mohon masukkan nama!" }]}
         >
           <Input />
@@ -58,7 +58,7 @@ export default function EditSalesModal({
         <Form.Item
           name="email"
           label="Email"
-          className="!mb-2"
+          className="!mb-3"
           rules={[
             {
               required: true,
@@ -73,7 +73,7 @@ export default function EditSalesModal({
         <Form.Item
           name="phone_number"
           label="Nomor Telepon"
-          className="!mb-2"
+          className="!mb-3"
           rules={[{ required: true, message: "Mohon masukkan nomor telepon!" }]}
         >
           <Input />
@@ -82,7 +82,7 @@ export default function EditSalesModal({
         <Form.Item
           name="gender"
           label="Jenis Kelamin"
-          className="!mb-2"
+          className="!mb-3"
           rules={[{ required: true, message: "Mohon pilih jenis kelamin!" }]}
         >
           <Select>
@@ -94,7 +94,7 @@ export default function EditSalesModal({
         <Form.Item
           name="address"
           label="Alamat"
-          className="!mb-2"
+          className="!mb-3"
           rules={[{ required: true, message: "Mohon masukkan alamat!" }]}
         >
           <Input />
@@ -103,7 +103,7 @@ export default function EditSalesModal({
         <Form.Item
           name="target_score"
           label="Target Skor"
-          className="!mb-2"
+          className="!mb-3"
           rules={[{ required: true, message: "Mohon masukkan target skor!" }]}
         >
           <InputNumber min={0} max={100} style={{ width: "100%" }} />

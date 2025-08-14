@@ -1,4 +1,5 @@
-import type { Cluster, Developer, ClusterType, Property } from "../types";
+import { Cluster } from "@/types/clusters";
+import type { Developer, ClusterType, Property } from "../types";
 
 export const FacitiliesData = [
   "Kolam Renang",
@@ -125,8 +126,8 @@ export const mockPropertyData: Property[] = [
     updatedAt: "2025-08-12T19:22:17.245Z",
     property_photo_urls: [
       "https://images.unsplash.com/photo-1602941525421-8f8b81d3edbb?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      "https://images.unsplash.com/photo-1542687226-54a9a41eeafd?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-    ]
+      "https://images.unsplash.com/photo-1542687226-54a9a41eeafd?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    ],
   },
   {
     id: 2,
@@ -153,8 +154,8 @@ export const mockPropertyData: Property[] = [
     createdAt: "2025-08-12T19:22:17.245Z",
     updatedAt: "2025-08-12T19:22:17.245Z",
     property_photo_urls: [
-      "https://images.unsplash.com/photo-1516156008625-3a9d6067fab5?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-    ]
+      "https://images.unsplash.com/photo-1516156008625-3a9d6067fab5?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    ],
   },
   {
     id: 3,
@@ -181,9 +182,9 @@ export const mockPropertyData: Property[] = [
     createdAt: "2025-08-12T19:22:17.245Z",
     updatedAt: "2025-08-12T19:22:17.245Z",
     property_photo_urls: [
-      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-    ]
-  }
+      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    ],
+  },
 ];
 
 export const mockDeveloperData: Developer[] = [

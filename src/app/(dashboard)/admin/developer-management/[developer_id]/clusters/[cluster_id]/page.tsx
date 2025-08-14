@@ -11,7 +11,7 @@ import DeleteClusterModal from "../../components/DeleteClusterModal";
 import ImageGallery from "./components/ImageGallery";
 import ClusterMap from "./components/ClusterMap";
 import TableClusterType from "./components/TableClusterType";
-import type { Cluster } from "../../../types";
+import { Cluster } from "@/types/clusters";
 
 export default function ClusterDetailPage() {
   const params = useParams();
@@ -48,7 +48,7 @@ export default function ClusterDetailPage() {
           items={[
             { title: "Dashboard" },
             {
-              title: "Manajemen Developer",
+              title: "Developer Management",
               href: "/admin/developer-management",
             },
             {
@@ -157,7 +157,7 @@ export default function ClusterDetailPage() {
                 />
 
                 <div className="mt-2 text-sm text-gray-600">
-                  <p>Address: {cluster.address}</p>
+                  <p>Alamat: {cluster.address}</p>
                 </div>
               </div>
             </Col>

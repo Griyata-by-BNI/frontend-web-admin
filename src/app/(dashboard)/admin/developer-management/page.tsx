@@ -144,7 +144,7 @@ export default function DeveloperManagementPage() {
     <>
       <div className="mb-4 flex flex-col gap-1">
         <p className="text-2xl text-primary-black font-bold">
-          Manajemen Developer
+          Developer Management
         </p>
 
         <Breadcrumb
@@ -153,7 +153,7 @@ export default function DeveloperManagementPage() {
             {
               title: (
                 <p className="text-dark-tosca font-semibold">
-                  Manajemen Developer
+                  Developer Management
                 </p>
               ),
               href: "/admin/developer-management",

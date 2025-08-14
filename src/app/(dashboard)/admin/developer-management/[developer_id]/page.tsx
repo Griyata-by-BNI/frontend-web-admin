@@ -44,7 +44,7 @@ export default function DeveloperDetailPage() {
           items={[
             { title: "Dashboard" },
             {
-              title: "Manajemen Developer",
+              title: "Developer Management",
               href: "/admin/developer-management",
             },
             {
