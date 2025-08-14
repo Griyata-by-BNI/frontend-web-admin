@@ -4,7 +4,6 @@
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-// import Header from '../../../../components/Header';
 import Footer from '../../../../components/Footer';
 import axiosInstance from '../../../../../lib/axios';
 
@@ -199,7 +198,7 @@ const VerifyEmailPage: React.FC = () => {
     setError('');
 
     try {
-      const response = await axiosInstance.post<VerifyResponse>('/api/v1/auth/sign-up-verify', {
+      const response = await axiosInstance.post('/api/v1/auth/sign-up-verify', {
         email: email,
         verifyToken: otpCode
       });
@@ -279,7 +278,6 @@ const VerifyEmailPage: React.FC = () => {
   if (success) {
     return (
       <div className="min-h-screen flex flex-col">
-        {/* <Header /> */}
         <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
           <div className="w-full md:w-1/3 bg-gray-100 p-6 rounded-lg shadow-lg text-center">
             <div className="mb-6">
@@ -305,7 +303,6 @@ const VerifyEmailPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* <Header /> */}
       <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
         <div className="w-full md:w-1/3 bg-gray-100 p-6 rounded-lg shadow-lg">
           <div className="text-center mb-6">
