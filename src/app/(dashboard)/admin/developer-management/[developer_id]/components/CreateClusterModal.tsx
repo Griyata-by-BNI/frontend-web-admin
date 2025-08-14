@@ -5,6 +5,9 @@ import { Upload as UploadIcon, X } from "lucide-react";
 import { useState } from "react";
 import type { Cluster } from "../../types";
 import { FacitiliesData } from "../../constants";
+import dynamic from "next/dynamic";
+
+const MapSelector = dynamic(() => import("./MapSelector"), { ssr: false });
 
 interface CreateClusterModalProps {
   open: boolean;
@@ -19,6 +22,7 @@ export default function CreateClusterModal({
 }: CreateClusterModalProps) {
   const [form] = Form.useForm();
   const [previewImages, setPreviewImages] = useState<string[]>([]);
+  const [coordinates, setCoordinates] = useState<{ lat?: number; lng?: number }>({});
 
   const handleSubmit = (values: any) => {
     onSubmit(values);
@@ -29,7 +33,13 @@ export default function CreateClusterModal({
   const handleCancel = () => {
     form.resetFields();
     setPreviewImages([]);
+    setCoordinates({});
     onCancel();
+  };
+
+  const handleLocationSelect = (lat: number, lng: number) => {
+    setCoordinates({ lat, lng });
+    form.setFieldsValue({ latitude: lat, longitude: lng });
   };
 
   return (
@@ -75,22 +85,42 @@ export default function CreateClusterModal({
         </Form.Item>
 
         <Form.Item
-          name="latitude"
-          label="Latitude"
+          name="address"
+          label="Alamat"
           className="!mb-2"
-          rules={[{ required: true, message: "Mohon masukkan latitude!" }]}
+          rules={[{ required: true, message: "Mohon masukkan alamat!" }]}
         >
-          <Input placeholder="Masukkan latitude" type="number" step="any" />
+          <Input.TextArea placeholder="Masukkan alamat lengkap" rows={2} />
         </Form.Item>
 
-        <Form.Item
-          name="longitude"
-          label="Longitude"
-          className="!mb-2"
-          rules={[{ required: true, message: "Mohon masukkan longitude!" }]}
-        >
-          <Input placeholder="Masukkan longitude" type="number" step="any" />
-        </Form.Item>
+        <div className="grid grid-cols-2 gap-3">
+          <Form.Item
+            name="latitude"
+            label="Latitude"
+            className="!mb-2"
+            rules={[{ required: true, message: "Mohon masukkan latitude!" }]}
+          >
+            <Input placeholder="Masukkan latitude" type="number" step="any" />
+          </Form.Item>
+
+          <Form.Item
+            name="longitude"
+            label="Longitude"
+            className="!mb-2"
+            rules={[{ required: true, message: "Mohon masukkan longitude!" }]}
+          >
+            <Input placeholder="Masukkan longitude" type="number" step="any" />
+          </Form.Item>
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2">Pilih Lokasi di Peta</label>
+          <MapSelector
+            latitude={coordinates.lat}
+            longitude={coordinates.lng}
+            onLocationSelect={handleLocationSelect}
+          />
+        </div>
 
         <Form.Item
           name="description"

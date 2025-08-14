@@ -1,6 +1,6 @@
 "use client";
 
-import { Modal } from "antd";
+import { Modal, Typography } from "antd";
 import type { Developer } from "../types";
 
 interface DeleteDeveloperModalProps {
@@ -18,7 +18,11 @@ export default function DeleteDeveloperModal({
 }: DeleteDeveloperModalProps) {
   return (
     <Modal
-      title="Konfirmasi Hapus"
+      title={
+        <Typography.Title level={5} className="!text-red-500">
+          Hapus Data Developer
+        </Typography.Title>
+      }
       open={open}
       onOk={onConfirm}
       onCancel={onCancel}
@@ -35,6 +39,10 @@ export default function DeleteDeveloperModal({
           </>
         )}
         ?
+      </p>
+
+      <p className="text-gray-500 text-sm mt-2">
+        Tindakan ini tidak dapat dibatalkan.
       </p>
     </Modal>
   );

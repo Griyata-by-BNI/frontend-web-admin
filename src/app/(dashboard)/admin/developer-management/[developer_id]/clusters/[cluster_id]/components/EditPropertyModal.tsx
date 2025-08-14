@@ -12,15 +12,8 @@ import {
   Space,
 } from "antd";
 import { Upload as UploadIcon, X, Plus, Minus } from "lucide-react";
-import { useState } from "react";
-import type { PayloadProperty } from "../../../../types";
-
-interface CreatePropertyModalProps {
-  open: boolean;
-  onCancel: () => void;
-  onSubmit: (values: PayloadProperty) => void;
-  clusterTypeId: number;
-}
+import { useState, useEffect } from "react";
+import type { Property, PayloadProperty } from "../../../../types";
 
 const bniRegions = [
   { value: 1, label: "Wilayah I - Sumatera" },
@@ -34,17 +27,57 @@ const bniRegions = [
   { value: 9, label: "Wilayah IX - Maluku & Papua" },
 ];
 
-export default function CreatePropertyModal({
+interface EditPropertyModalProps {
+  open: boolean;
+  onCancel: () => void;
+  onSubmit: (values: PayloadProperty) => void;
+  editingRecord: Property | null;
+  clusterTypeId: number;
+}
+
+export default function EditPropertyModal({
   open,
   onCancel,
   onSubmit,
+  editingRecord,
   clusterTypeId,
-}: CreatePropertyModalProps) {
+}: EditPropertyModalProps) {
   const [form] = Form.useForm();
   const [previewImages, setPreviewImages] = useState<string[]>([]);
   const [specifications, setSpecifications] = useState<
     { name: string; quantity: number }[]
   >([{ name: "", quantity: 1 }]);
+
+  useEffect(() => {
+    if (editingRecord && open) {
+      const formValues = {
+        name: editingRecord.name,
+        description: editingRecord.description,
+        price: editingRecord.price,
+        landArea: editingRecord.landArea,
+        buildingArea: editingRecord.buildingArea,
+        regionId: 1, // Default region
+        photos: editingRecord.property_photo_urls || [],
+      };
+      form.setFieldsValue(formValues);
+      setPreviewImages([...(editingRecord.property_photo_urls || [])]);
+
+      // Parse existing specifications
+      if (editingRecord.spesifications) {
+        const parsedSpecs = editingRecord.spesifications
+          .split(", ")
+          .map((spec) => {
+            const match = spec.match(/^(\d+)\s+(.+)$/);
+            return match
+              ? { quantity: parseInt(match[1]), name: match[2] }
+              : { name: spec, quantity: 1 };
+          });
+        setSpecifications(
+          parsedSpecs.length > 0 ? parsedSpecs : [{ name: "", quantity: 1 }]
+        );
+      }
+    }
+  }, [editingRecord, form, open]);
 
   const handleSubmit = (values: any) => {
     const specsString = specifications
@@ -57,8 +90,8 @@ export default function CreatePropertyModal({
       clusterTypeId,
       spesifications: specsString,
       photos: values.photos || [],
-      createdBy: "admin",
       updatedBy: "admin",
+      createdBy: "admin",
     });
     form.resetFields();
     setPreviewImages([]);
@@ -97,14 +130,14 @@ export default function CreatePropertyModal({
       centered
       title={
         <Typography.Title level={5} className="!text-dark-tosca">
-          Buat Data Properti
+          Edit Data Properti
         </Typography.Title>
       }
       maskClosable={false}
       open={open}
       onCancel={handleCancel}
       onOk={() => form.submit()}
-      okText="Buat"
+      okText="Simpan"
       classNames={{
         body: "!pt-2 max-h-[75vh] overflow-y-auto !px-6",
         content: "!p-0",
@@ -262,38 +295,38 @@ export default function CreatePropertyModal({
               Upload Gambar
             </Button>
           </Upload>
-
-          {previewImages.length > 0 && (
-            <div className="grid grid-cols-2 gap-3 mt-3">
-              {previewImages.map((image, index) => (
-                <div
-                  key={index}
-                  className="relative border border-gray-200 rounded-lg overflow-hidden"
-                >
-                  <img
-                    src={image}
-                    alt={`Preview ${index + 1}`}
-                    className="h-24 w-full object-cover"
-                  />
-
-                  <Button
-                    shape="circle"
-                    size="small"
-                    icon={<X className="w-4 h-4" />}
-                    className="!absolute top-1 right-1 !z-[9999999]"
-                    onClick={() => {
-                      const newImages = previewImages.filter(
-                        (_, i) => i !== index
-                      );
-                      setPreviewImages(newImages);
-                      form.setFieldValue("photos", newImages);
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
         </Form.Item>
+
+        {previewImages.length > 0 && (
+          <div className="grid grid-cols-2 gap-3 mt-3">
+            {previewImages.map((image, index) => (
+              <div
+                key={index}
+                className="relative border border-gray-200 rounded-lg overflow-hidden"
+              >
+                <img
+                  src={image}
+                  alt={`Preview ${index + 1}`}
+                  className="h-24 w-full object-cover"
+                />
+
+                <Button
+                  shape="circle"
+                  size="small"
+                  icon={<X className="w-4 h-4" />}
+                  className="!absolute top-1 right-1 !z-[9999999]"
+                  onClick={() => {
+                    const newImages = previewImages.filter(
+                      (_, i) => i !== index
+                    );
+                    setPreviewImages(newImages);
+                    form.setFieldValue("photos", newImages);
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </Form>
     </Modal>
   );

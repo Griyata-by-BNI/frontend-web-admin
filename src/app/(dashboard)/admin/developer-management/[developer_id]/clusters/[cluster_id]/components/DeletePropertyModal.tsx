@@ -1,24 +1,26 @@
-import { Modal, Typography } from "antd";
-import type { ClusterType } from "../../../../types";
+"use client";
 
-interface DeleteClusterTypeModalProps {
+import { Modal, Typography } from "antd";
+import type { Property } from "../../../../types";
+
+interface DeletePropertyModalProps {
   open: boolean;
   onCancel: () => void;
   onConfirm: () => void;
-  clusterTypeData: ClusterType | null;
+  propertyData: Property | null;
 }
 
-export default function DeleteClusterTypeModal({
+export default function DeletePropertyModal({
   open,
   onCancel,
   onConfirm,
-  clusterTypeData,
-}: DeleteClusterTypeModalProps) {
+  propertyData,
+}: DeletePropertyModalProps) {
   return (
     <Modal
       title={
         <Typography.Title level={5} className="!text-red-500">
-          Hapus Data Cluster Type
+          Hapus Data Properti
         </Typography.Title>
       }
       open={open}
@@ -27,10 +29,16 @@ export default function DeleteClusterTypeModal({
       okText="Hapus"
       cancelText="Batal"
       okButtonProps={{ danger: true }}
+      classNames={{
+        content: "!p-0",
+        header: "!pt-5 !px-6",
+        body: "!px-6",
+        footer: "!pb-5 !px-6",
+      }}
     >
       <p>
-        Apakah Anda yakin ingin menghapus cluster type{" "}
-        <strong>{clusterTypeData?.name}</strong>?
+        Apakah Anda yakin ingin menghapus properti{" "}
+        <strong>{propertyData?.name}</strong>?
       </p>
 
       <p className="text-gray-500 text-sm mt-2">

@@ -66,3 +66,17 @@ export type Property = {
   updatedAt: string;
   property_photo_urls: string[];
 };
+
+export type PayloadProperty = {
+  clusterTypeId: number;
+  name: string;
+  description: string;
+  price: string;
+  spesifications: string;
+  landArea: string;
+  buildingArea: string;
+  regionId: number;
+  updatedBy: string;
+  createdBy: string;
+  photos: File[];
+};

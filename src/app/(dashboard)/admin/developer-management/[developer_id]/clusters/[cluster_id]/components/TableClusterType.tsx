@@ -7,7 +7,10 @@ import CreateClusterTypeModal from "./CreateClusterTypeModal";
 import EditClusterTypeModal from "./EditClusterTypeModal";
 import DeleteClusterTypeModal from "./DeleteClusterTypeModal";
 import CreatePropertyModal from "./CreatePropertyModal";
+import EditPropertyModal from "./EditPropertyModal";
+import DeletePropertyModal from "./DeletePropertyModal";
 import TableProperty from "./TableProperty";
+import type { Property } from "../../../../types";
 
 interface TableClusterTypeProps {
   clusterId: number;
@@ -19,8 +22,12 @@ export default function TableClusterType({ clusterId }: TableClusterTypeProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCreatePropertyModalOpen, setIsCreatePropertyModalOpen] = useState(false);
+  const [isEditPropertyModalOpen, setIsEditPropertyModalOpen] = useState(false);
+  const [isDeletePropertyModalOpen, setIsDeletePropertyModalOpen] = useState(false);
   const [selectedClusterTypeId, setSelectedClusterTypeId] = useState<number | null>(null);
   const [editingRecord, setEditingRecord] = useState<ClusterType | null>(null);
+  const [editingProperty, setEditingProperty] = useState<Property | null>(null);
+  const [deletingProperty, setDeletingProperty] = useState<Property | null>(null);
   const [deletingRecord, setDeletingRecord] = useState<ClusterType | null>(
     null
   );
@@ -125,7 +132,18 @@ export default function TableClusterType({ clusterId }: TableClusterTypeProps) {
                 </Button>
               </div>
 
-              <TableProperty clusterTypeId={record.id} />
+              <TableProperty 
+                clusterTypeId={record.id} 
+                onEdit={(property) => {
+                  setEditingProperty(property);
+                  setSelectedClusterTypeId(record.id);
+                  setIsEditPropertyModalOpen(true);
+                }}
+                onDelete={(property) => {
+                  setDeletingProperty(property);
+                  setIsDeletePropertyModalOpen(true);
+                }}
+              />
             </div>
           ),
           rowExpandable: (record: ClusterType) => {
@@ -186,6 +204,37 @@ export default function TableClusterType({ clusterId }: TableClusterTypeProps) {
           setSelectedClusterTypeId(null);
         }}
         clusterTypeId={selectedClusterTypeId || 0}
+      />
+
+      <EditPropertyModal
+        open={isEditPropertyModalOpen}
+        onCancel={() => {
+          setIsEditPropertyModalOpen(false);
+          setEditingProperty(null);
+          setSelectedClusterTypeId(null);
+        }}
+        onSubmit={(values) => {
+          console.log("Updated property:", values);
+          setIsEditPropertyModalOpen(false);
+          setEditingProperty(null);
+          setSelectedClusterTypeId(null);
+        }}
+        editingRecord={editingProperty}
+        clusterTypeId={selectedClusterTypeId || 0}
+      />
+
+      <DeletePropertyModal
+        open={isDeletePropertyModalOpen}
+        onCancel={() => {
+          setIsDeletePropertyModalOpen(false);
+          setDeletingProperty(null);
+        }}
+        onConfirm={() => {
+          console.log("Deleted property:", deletingProperty);
+          setIsDeletePropertyModalOpen(false);
+          setDeletingProperty(null);
+        }}
+        propertyData={deletingProperty}
       />
     </>
   );

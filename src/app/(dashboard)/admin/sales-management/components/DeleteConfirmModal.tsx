@@ -1,6 +1,6 @@
 "use client";
 
-import { Modal } from "antd";
+import { Modal, Typography } from "antd";
 import type { Sales } from "../types";
 
 interface DeleteConfirmModalProps {
@@ -18,7 +18,11 @@ export default function DeleteConfirmModal({
 }: DeleteConfirmModalProps) {
   return (
     <Modal
-      title="Konfirmasi Hapus"
+      title={
+        <Typography.Title level={5} className="!text-red-500">
+          Hapus Data Sales
+        </Typography.Title>
+      }
       open={open}
       onOk={onConfirm}
       onCancel={onCancel}
@@ -33,7 +37,12 @@ export default function DeleteConfirmModal({
           <>
             <strong>{salesData.name}</strong>
           </>
-        )}?
+        )}
+        ?
+      </p>
+
+      <p className="text-gray-500 text-sm mt-2">
+        Tindakan ini tidak dapat dibatalkan.
       </p>
     </Modal>
   );
