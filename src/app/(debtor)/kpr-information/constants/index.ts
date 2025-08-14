@@ -111,7 +111,7 @@ export const jenisFitur = [
       "Beli rumah baru atau seken kini lebih mudah dengan KPR Griyata by BNI.",
     imageUrl:
       "https://images.unsplash.com/photo-1568605114967-8130f3a36994?q=80&w=2070&auto=format&fit=crop",
-    link: "/info-kpr/detail",
+    link: "/kpr-information/detail",
   },
   {
     type: "Pembangunan",
