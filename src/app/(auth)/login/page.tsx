@@ -1,285 +1,324 @@
-// app/login/page.tsx
 'use client';
-
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useState } from 'react';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
-import Footer from '../../../components/Footer';
-// import ads from '@/app/assets/aset_login.jpg';
-const ads = '/assets/aset_login.jpg'; // Place aset_login.jpg in the public/assets folder
+
+// Import axios instance from separate config
 import axiosInstance from '@/lib/axios';
 
-interface LoginFormData {
+// Types
+interface LoginRequest {
   email: string;
   password: string;
 }
 
-interface ApiResponse {
-  success?: boolean;
-  token?: string;
-  user?: any;
-  message?: string;
+interface LoginResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    token: string;
+    user: {
+      id: string;
+      email: string;
+      name: string;
+    };
+  };
 }
 
 const LoginPage: React.FC = () => {
-  const [formData, setFormData] = useState<LoginFormData>({
-    email: '',
-    password: ''
-  });
-  const [errors, setErrors] = useState({
-    email: '',
-    password: '',
-    general: ''
-  });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
   const router = useRouter();
 
-  // Validation functions
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    return emailRegex.test(email.trim());
   };
 
   const validatePassword = (password: string): boolean => {
-    return password.length >= 4;
+    return password.trim().length >= 8;
   };
 
-  // Clear specific error when user starts typing
-  const clearError = (field: keyof typeof errors) => {
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  };
-
-  // Handle input changes
-  const handleInputChange = (field: keyof LoginFormData) => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const value = e.target.value;
-    setFormData(prev => ({ ...prev, [field]: value }));
-    clearError(field);
-    clearError('general');
-
-    // Real-time validation
-    if (value) {
-      if (field === 'email' && !validateEmail(value)) {
-        setErrors(prev => ({ ...prev, email: 'Format email tidak valid' }));
-      } else if (field === 'password' && !validatePassword(value)) {
-        setErrors(prev => ({ 
-          ...prev, 
-          password: 'Password harus minimal 4 karakter' 
-        }));
-      }
-    }
-  };
-
-  // Handle API errors
-  const handleApiError = (error: any) => {
-    if (error.response) {
-      const { status, data } = error.response;
-      const message = data?.message || '';
-
-      switch (status) {
-        case 400:
-          if (message.toLowerCase().includes('email') && message.toLowerCase().includes('not found')) {
-            return 'Email tidak terdaftar. Silakan daftar terlebih dahulu.';
-          } else if (message.toLowerCase().includes('password') && message.toLowerCase().includes('incorrect')) {
-            return 'Password yang Anda masukkan salah.';
-          } else if (message.toLowerCase().includes('invalid credentials')) {
-            return 'Email atau password salah.';
-          }
-          return message || 'Data yang Anda masukkan tidak valid.';
-
-        case 401:
-          return 'Email atau password salah.';
-
-        case 404:
-          return 'Akun tidak ditemukan. Silakan daftar terlebih dahulu.';
-
-        case 422:
-          if (message.toLowerCase().includes('email')) {
-            return 'Format email tidak valid.';
-          } else if (message.toLowerCase().includes('password')) {
-            return 'Format password tidak valid.';
-          }
-          return 'Data tidak dapat diproses. Silakan periksa kembali.';
-
-        case 500:
-          return 'Terjadi kesalahan pada server. Silakan coba lagi.';
-
-        case 503:
-          return 'Layanan sedang tidak tersedia. Silakan coba lagi nanti.';
-
-        default:
-          return message || `Terjadi kesalahan (${status}). Silakan coba lagi.`;
-      }
-    } else if (error.code === 'NETWORK_ERROR' || error.message?.includes('Network Error')) {
-      return 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    if (!value) {
+      setEmailError('Email wajib diisi');
+    } else if (!validateEmail(value)) {
+      setEmailError('Email tidak valid');
     } else {
-      return 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+      setEmailError('');
     }
   };
 
-  // Form validation before submission
-  const validateForm = (): boolean => {
-    const newErrors = { email: '', password: '', general: '' };
-    let isValid = true;
-
-    if (!validateEmail(formData.email)) {
-      newErrors.email = 'Format email tidak valid. Contoh: user@example.com';
-      isValid = false;
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+    if (!value) {
+      setPasswordError('Password wajib diisi');
+    } else if (!validatePassword(value)) {
+      setPasswordError('Password harus minimal 8 karakter');
+    } else {
+      setPasswordError('');
     }
-
-    if (!validatePassword(formData.password)) {
-      newErrors.password = 'Password harus minimal 4 karakter';
-      isValid = false;
-    }
-
-    setErrors(newErrors);
-    return isValid;
   };
 
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) {
+    setLoading(true);
+    setError('');
+
+    // Validate inputs
+    let hasError = false;
+    if (!email) {
+      setEmailError('Email wajib diisi');
+      hasError = true;
+    } else if (!validateEmail(email)) {
+      setEmailError('Email tidak valid');
+      hasError = true;
+    }
+
+    if (!password) {
+      setPasswordError('Password wajib diisi');
+      hasError = true;
+    } else if (!validatePassword(password)) {
+      setPasswordError('Password harus minimal 8 karakter');
+      hasError = true;
+    }
+
+    if (hasError) {
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
-    setErrors({ email: '', password: '', general: '' });
-
     try {
-      const response = await axiosInstance.post<ApiResponse>('/api/v1/auth/sign-in', {
-        email: formData.email,
-        password: formData.password,
-      });
+      const loginData = {
+        email: email.trim(),
+        password: password.trim(),
+      };
 
-      const { data } = response;
-
-      // Store authentication data
-      if (data.token) {
-        localStorage.setItem('authToken', data.token);
-      }
+      const response = await axiosInstance.post<LoginResponse>('/api/v1/auth/sign-in', loginData);
       
-      if (data.user) {
-        localStorage.setItem('userData', JSON.stringify(data.user));
+      if (response.status === 200) {
+        // Check if response has token (different response structures)
+        const token = response.data?.token || response.data?.data?.token || response.data?.access_token;
+        const userData = response.data?.user || response.data?.data?.user || response.data?.data;
+        
+        if (token) {
+          // Store token if remember me is checked
+          if (rememberMe) {
+            localStorage.setItem('authToken', token);
+            if (userData) localStorage.setItem('userData', JSON.stringify(userData));
+          } else {
+            // Store in session storage if not remember me
+            sessionStorage.setItem('authToken', token);
+            if (userData) sessionStorage.setItem('userData', JSON.stringify(userData));
+          }
+
+          // Show success message
+          setError('');
+          
+          // Add success notification
+          const successMessage = document.createElement('div');
+          successMessage.innerHTML = '✅ Login berhasil! Mengalihkan...';
+          successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+          document.body.appendChild(successMessage);
+          
+          setTimeout(() => {
+            successMessage.remove();
+          }, 3000);
+
+          // Redirect to / or home after short delay
+          setTimeout(() => {
+            router.push('/');
+          }, 1500);
+        } else {
+          setError('Login berhasil tapi token tidak ditemukan. Silakan coba lagi.');
+        }
+      } else {
+        setError(response.data?.message || 'Login failed');
       }
-
-      // Success feedback and redirect
-      // alert('Login berhasil!');
-      router.push('/');
-
-    } catch (error: any) {
-      console.error('Login error:', error);
-      const errorMessage = handleApiError(error);
-      setErrors(prev => ({ ...prev, general: errorMessage }));
+    } catch (err: any) {
+      if (err.response?.status === 400) {
+        setError(err.response?.data?.message || 'Email atau password tidak valid');
+      } else if (err.response?.status === 500) {
+        setError('Terjadi kesalahan server. Silakan coba lagi nanti.');
+      } else if (err.code === 'ECONNABORTED') {
+        setError('Koneksi timeout. Periksa koneksi internet Anda.');
+      } else if (err.response?.status === 404) {
+        setError('API endpoint tidak ditemukan. Periksa konfigurasi server.');
+      } else if (!err.response) {
+        setError('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.');
+      } else {
+        setError(err.response?.data?.message || 'Terjadi kesalahan. Silakan coba lagi.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <main className="flex-grow container mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between">
-        {/* Image Section */}
-        <div className="md:w-1/2 mb-8 md:mb-0">
-          <Image 
-            src={ads} 
-            alt="Family" 
-            width={600} 
-            height={400} 
-            className="rounded-lg shadow-md w-full md:w-auto" 
+    <div className="min-h-screen bg-white">
+      
+      {/* Header Navigation */}
+
+
+      {/* Main Content */}
+      <div className="flex" style={{ height: 'calc(100vh - 72px)' }}>
+        
+        {/* Left Side - Image Only */}
+        <div className="w-1/2 relative">
+          <Image
+            src="/aset_login.jpg"
+            alt="Happy family"
+            fill
+            className="object-cover"
+            priority
           />
         </div>
 
-        {/* Login Form Section */}
-        <div className="md:w-1/3 bg-gray-100 p-6 rounded-lg shadow-lg">
-          <h3 className="text-2xl font-bold text-teal-500 mb-4">
-            Masuk aplikasi dengan akun anda
-          </h3>
-          <p className="text-gray-600 mb-6">
-            Masukkan email dan password untuk login
-          </p>
-
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            {/* Email Input */}
-            <div>
-              <input
-                type="email"
-                placeholder="Alamat email"
-                value={formData.email}
-                onChange={handleInputChange('email')}
-                className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition ${
-                  errors.email 
-                    ? 'border-red-500 focus:ring-red-500' 
-                    : 'border-gray-300 focus:ring-teal-500'
-                }`}
-                disabled={loading}
-                required
-              />
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-              )}
+        {/* Right Side - Login Form */}
+        <div className="w-1/2 bg-gray-50 flex items-center justify-center p-8">
+          <div className="max-w-md w-full">
+            
+            {/* Header */}
+            <div className="mb-6">
+              <h2 className="text-3xl font-bold text-teal-600 mb-1 text-center">
+                Masuk aplikasi
+              </h2>
+              <h3 className="text-3xl font-bold text-teal-600 mb-4 text-center">
+                dengan akun anda
+              </h3>
+              <p className="text-gray-600">
+                Masukkan email dan password untuk login
+              </p>
             </div>
 
-            {/* Password Input */}
-            <div>
-              <input
-                type="password"
-                placeholder="Kata sandi"
-                value={formData.password}
-                onChange={handleInputChange('password')}
-                className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition ${
-                  errors.password 
-                    ? 'border-red-500 focus:ring-red-500' 
-                    : 'border-gray-300 focus:ring-teal-500'
-                }`}
-                disabled={loading}
-                required
-              />
-              {errors.password && (
-                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
-              )}
-            </div>
-
-            {/* General Error Message */}
-            {errors.general && (
-              <p className="text-red-500 text-sm">{errors.general}</p>
+            {/* Error Message */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-600 text-sm">{error}</p>
+              </div>
             )}
 
-            {/* Remember Me & Forgot Password */}
-            <div className="flex justify-between items-center mb-4">
-              <Link 
-                href="/forgot-password" 
-                className="text-teal-500 hover:underline"
+            {/* Login Form */}
+            <form onSubmit={handleLogin} className="space-y-4">
+              
+              {/* Email Input */}
+              <div>
+                <input
+                  type="email"
+                  placeholder="Alamat email"
+                  value={email}
+                  onChange={(e) => handleEmailChange(e.target.value)}
+                  className={`w-full px-4 py-3 border ${emailError ? 'border-red-300' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all duration-200 bg-white disabled:bg-gray-100`}
+                  required
+                  disabled={loading}
+                  autoComplete="email"
+                />
+                {emailError && (
+                  <p className="mt-1 text-red-600 text-sm">{emailError}</p>
+                )}
+              </div>
+
+              {/* Password Input */}
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Kata sandi"
+                  value={password}
+                  onChange={(e) => handlePasswordChange(e.target.value)}
+                  className={`w-full px-4 py-3 pr-12 border ${passwordError ? 'border-red-300' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all duration-200 bg-white disabled:bg-gray-100`}
+                  required
+                  disabled={loading}
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 disabled:cursor-not-allowed"
+                  disabled={loading}
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="h-6 w-6" />
+                  ) : (
+                    <EyeIcon className="h-6 w-6" />
+                  )}
+                </button>
+                {passwordError && (
+                  <p className="mt-1 text-red-600 text-sm">{passwordError}</p>
+                )}
+              </div>
+
+              {/* Remember Me & Forgot Password */}
+              <div className="flex items-center justify-between">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="h-4 w-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500 disabled:cursor-not-allowed"
+                    disabled={loading}
+                  />
+                  <span className="ml-2 text-gray-600">Ingat Saya</span>
+                </label>
+                <Link 
+                  href="/forgot-password" 
+                  className={`text-teal-600 hover:text-teal-700 font-medium ${loading ? 'pointer-events-none opacity-50' : ''}`}
+                >
+                  Lupa password?
+                </Link>
+              </div>
+
+              {/* Login Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-teal-500 text-white py-3 px-4 rounded-lg font-semibold hover:bg-teal-600 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
               >
-                Lupa password?
-              </Link>
-            </div>
+                {loading ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Memproses...
+                  </>
+                ) : (
+                  'Masuk'
+                )}
+              </button>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className="w-full bg-teal-500 text-white p-3 rounded-lg hover:bg-teal-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={loading}
-            >
-              {loading ? 'Sedang masuk...' : 'Masuk'}
-            </button>
-          </form>
-
-          {/* Register Link */}
-          <p className="text-center mt-6 text-gray-700">
-            Belum memiliki akun?{' '}
-            <Link href="/register" className="text-teal-500 hover:underline">
-              Registrasi
-            </Link>
-          </p>
+              {/* Registration Link */}
+              <p className="text-center text-gray-600 mt-4">
+                Belum memiliki akun?{' '}
+                <Link 
+                  href="/register" 
+                  className={`text-teal-600 hover:text-teal-700 font-semibold ${loading ? 'pointer-events-none opacity-50' : ''}`}
+                >
+                  Registrasi
+                </Link>
+              </p>
+            </form>
+          </div>
         </div>
-      </main>
-      <Footer />
+      </div>
+
+      {/* Footer */}
+      <footer className="bg-teal-500 text-white py-4">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <p className="text-white mb-1">Butuh Informasi Lebih Lanjut?</p>
+          <h3 className="text-xl font-bold text-white">BNI Call - 1500046</h3>
+        </div>
+      </footer>
     </div>
   );
 };

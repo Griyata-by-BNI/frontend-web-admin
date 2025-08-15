@@ -1,7 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { X, ChevronLeft, ChevronRight, FileText, Shield, Users, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import axiosInstance from '@/lib/axios';
+import VerifyEmailPage from './verify-email/page'; // Import the verification component
 
 // Define types
 type FieldStatus = 'valid' | 'invalid' | null;
@@ -16,7 +19,7 @@ interface PasswordValidation {
 }
 
 interface FormData {
-  name: string;
+  fullName: string;
   phoneNumber: string;
   email: string;
   password: string;
@@ -25,14 +28,25 @@ interface FormData {
 }
 
 interface FieldStatusState {
-  name: FieldStatus;
+  fullName: FieldStatus;
   phoneNumber: FieldStatus;
   email: FieldStatus;
   password: FieldStatus;
   confirmPassword: FieldStatus;
 }
 
-// Terms Modal Component
+// API payload interface matching the contract
+interface RegisterPayload {
+  fullName: string;
+  phoneNumber: string;
+  email: string;
+  password: string;
+}
+
+// Add new state for navigation
+type PageState = 'register' | 'verify-email' | 'success';
+
+// Terms Modal Component (same as before)
 const TermsModal: React.FC<{ isOpen: boolean; onClose: () => void; onAgree: () => void }> = ({ isOpen, onClose, onAgree }) => {
   const [currentSection, setCurrentSection] = useState(0);
 
@@ -206,11 +220,11 @@ const TermsModal: React.FC<{ isOpen: boolean; onClose: () => void; onAgree: () =
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={onClose}></div>
+    <div className="fixed inset-0 z-[9999] overflow-y-auto" style={{ zIndex: 9999 }}>
+      <div className="flex items-center justify-center min-h-screen p-4">
+        <div className="fixed inset-0 transition-opacity" onClick={onClose}></div>
         
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+        <div className="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-w-4xl mx-auto" style={{ zIndex: 10000 }}>
           {/* Header */}
           <div className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white p-6">
             <div className="flex items-center justify-between">
@@ -265,7 +279,7 @@ const TermsModal: React.FC<{ isOpen: boolean; onClose: () => void; onAgree: () =
           </div>
 
           {/* Content */}
-          <div className="p-6 max-h-96 overflow-y-auto">
+          <div className="p-6 max-h-80 overflow-y-auto">
             <div className="max-w-full">
               <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
                 <span className="p-2 bg-teal-100 text-teal-600 rounded-lg mr-3">
@@ -333,8 +347,12 @@ const TermsModal: React.FC<{ isOpen: boolean; onClose: () => void; onAgree: () =
 
 // Main Register Component
 const RegisterPage: React.FC = () => {
+  // Add page state for navigation
+  const [currentPage, setCurrentPage] = useState<PageState>('register');
+  const [registeredEmail, setRegisteredEmail] = useState('');
+
   const [formData, setFormData] = useState<FormData>({
-    name: '',
+    fullName: '',
     phoneNumber: '',
     email: '',
     password: '',
@@ -351,7 +369,7 @@ const RegisterPage: React.FC = () => {
   ]);
   
   const [fieldStatus, setFieldStatus] = useState<FieldStatusState>({
-    name: null,
+    fullName: null,
     phoneNumber: null,
     email: null,
     password: null,
@@ -365,15 +383,15 @@ const RegisterPage: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
 
-  // Validation functions (unchanged from original)
-  const validateName = (name: string): { isValid: boolean; message: string } => {
-    if (!name.trim()) {
+  // Validation functions (same as before)
+  const validateName = (fullName: string): { isValid: boolean; message: string } => {
+    if (!fullName.trim()) {
       return { isValid: false, message: 'Nama lengkap wajib diisi' };
     }
-    if (name.trim().length < 2) {
+    if (fullName.trim().length < 2) {
       return { isValid: false, message: 'Nama minimal 2 karakter' };
     }
-    if (!/^[a-zA-Z\s]+$/.test(name)) {
+    if (!/^[a-zA-Z\s]+$/.test(fullName)) {
       return { isValid: false, message: 'Nama hanya boleh berisi huruf dan spasi' };
     }
     return { isValid: true, message: '' };
@@ -455,7 +473,7 @@ const RegisterPage: React.FC = () => {
     let validation: { isValid: boolean; message: string };
     
     switch (fieldName) {
-      case 'name':
+      case 'fullName':
         validation = validateName(value);
         break;
       case 'phoneNumber':
@@ -514,14 +532,35 @@ const RegisterPage: React.FC = () => {
     setFormData(prev => ({ ...prev, agreeToTerms: true }));
   };
 
-  // Submit handler
+  // API call function using axiosInstance
+  const registerUser = async (payload: RegisterPayload): Promise<any> => {
+    try {
+      const response = await axiosInstance.post('/api/v1/auth/sign-up', payload);
+      return response.data;
+    } catch (error: any) {
+      // Handle axios error response
+      if (error.response) {
+        // Server responded with error status
+        const message = error.response.data?.message || 'Registration failed';
+        throw new Error(message);
+      } else if (error.request) {
+        // Network error
+        throw new Error('Network error. Please check your connection.');
+      } else {
+        // Other error
+        throw new Error(error.message || 'Registration failed');
+      }
+    }
+  };
+
+  // Submit handler - Modified to navigate to verification page
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setGlobalError('');
 
     // Validate all fields
-    const isNameValid = validateField('name', formData.name);
+    const isNameValid = validateField('fullName', formData.fullName);
     const isPhoneValid = validateField('phoneNumber', formData.phoneNumber);
     const isEmailValid = validateField('email', formData.email);
     const passwordResult = validatePassword(formData.password);
@@ -542,15 +581,53 @@ const RegisterPage: React.FC = () => {
       return;
     }
 
-    // Simulate API call
+    // Prepare API payload according to contract
+    const apiPayload: RegisterPayload = {
+      fullName: formData.fullName,
+      phoneNumber: formData.phoneNumber,
+      email: formData.email,
+      password: formData.password,
+    };
+
+    // Call API
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      alert('Registrasi berhasil! Kode OTP verifikasi telah dikirim ke email Anda.');
+      const result = await registerUser(apiPayload);
+      
+      // Check if registration was successful
+      if (result.success || result) {
+        // Store the registered email
+        setRegisteredEmail(formData.email);
+        
+        // Navigate to verification page
+        setCurrentPage('verify-email');
+        
+        console.log('Registration successful:', result.data || result);
+      }
     } catch (error) {
-      setGlobalError('Terjadi kesalahan. Silakan coba lagi.');
+      console.error('Registration failed:', error);
+      
+      if (error instanceof Error) {
+        setGlobalError(error.message);
+      } else {
+        setGlobalError('Terjadi kesalahan yang tidak diketahui. Silakan coba lagi.');
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle back from verification page
+  const handleBackFromVerification = () => {
+    setCurrentPage('register');
+  };
+
+  // Handle verification success
+  const handleVerificationSuccess = () => {
+    setCurrentPage('success');
+    // Auto redirect to login after 3 seconds
+    setTimeout(() => {
+      window.location.href = '/login';
+    }, 3000);
   };
 
   // Get input styling based on field status
@@ -570,6 +647,40 @@ const RegisterPage: React.FC = () => {
            !loading;
   };
 
+  // Render different pages based on current state
+  if (currentPage === 'verify-email') {
+    return (
+      <VerifyEmailPage 
+        email={registeredEmail}
+        onBack={handleBackFromVerification}
+        onVerificationSuccess={handleVerificationSuccess}
+      />
+    );
+  }
+
+  if (currentPage === 'success') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-2xl text-center">
+          <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+            <Shield className="w-8 h-8 text-white" />
+          </div>
+          <h3 className="text-2xl font-bold text-green-600 mb-2">Registrasi Berhasil!</h3>
+          <p className="text-gray-600 mb-6">
+            Akun Anda telah berhasil dibuat dan diverifikasi. Selamat datang di Griyata by BNI!
+          </p>
+          <Link
+            href="/login"
+            className="w-full py-3 px-4 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] block text-center"
+          >
+            Masuk ke Akun
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Render registration form (default page)
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-2xl">
@@ -582,21 +693,21 @@ const RegisterPage: React.FC = () => {
         </div>
         
         <form className="space-y-4" onSubmit={handleSubmit}>
-          {/* Name Field */}
+          {/* Full Name Field */}
           <div>
             <input
               type="text"
               placeholder="Nama lengkap"
-              value={formData.name}
-              onChange={(e) => handleInputChange('name', e.target.value)}
-              className={getInputClass('name')}
+              value={formData.fullName}
+              onChange={(e) => handleInputChange('fullName', e.target.value)}
+              className={getInputClass('fullName')}
               disabled={loading}
               required
             />
-            {fieldErrors.name && (
+            {fieldErrors.fullName && (
               <p className="text-red-500 text-sm mt-1 flex items-center">
                 <AlertCircle className="w-4 h-4 mr-1" />
-                {fieldErrors.name}
+                {fieldErrors.fullName}
               </p>
             )}
           </div>
@@ -787,9 +898,9 @@ const RegisterPage: React.FC = () => {
         <div className="mt-6 text-center">
           <p className="text-gray-600">
             Sudah memiliki akun?{' '}
-            <button className="text-teal-600 hover:text-teal-700 font-medium underline">
+            <Link href="/login" className="text-teal-600 hover:text-teal-700 font-medium underline">
               Masuk
-            </button>
+            </Link>
           </p>
         </div>
       </div>
