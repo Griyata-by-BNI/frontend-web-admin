@@ -33,8 +33,11 @@ export default function SummaryForm({
         <Row gutter={[24, 24]}>
           <Col span={24}>
             <Descriptions title="Informasi Pinjaman" bordered size="small">
-              <Descriptions.Item label="Jumlah Pinjaman" span={3}>
+              <Descriptions.Item label="Jumlah Pinjaman" span={2}>
                 {formData?.loanAmount ? formatCurrency(formData.loanAmount) : "-"}
+              </Descriptions.Item>
+              <Descriptions.Item label="Uang Muka">
+                {formData?.downPayment ? formatCurrency(formData.downPayment) : "-"}
               </Descriptions.Item>
               <Descriptions.Item label="Tenor" span={3}>
                 {formData?.tenor ? `${formData.tenor} bulan` : "-"}

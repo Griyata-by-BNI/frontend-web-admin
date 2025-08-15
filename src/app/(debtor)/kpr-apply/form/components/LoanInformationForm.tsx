@@ -19,6 +19,7 @@ export default function LoanInformationForm({
 
   const housePrice = 850000000;
   const maxLoanAmount = housePrice * 0.9;
+  const minDownPayment = housePrice * 0.1;
 
   const getMinTenorFromInterestRate = () => {
     if (!selectedInterestRate) return 12;
@@ -32,7 +33,7 @@ export default function LoanInformationForm({
       .getFieldsError()
       .some(({ errors }) => errors.length > 0);
     const allFieldsFilled =
-      values.loanAmount && values.tenor && values.interestRate;
+      values.loanAmount && values.downPayment && values.tenor && values.interestRate;
     setIsFormValid(allFieldsFilled && !hasErrors);
   };
 
@@ -90,6 +91,45 @@ export default function LoanInformationForm({
                 className="!w-full"
                 size="large"
                 placeholder="Masukkan jumlah pinjaman"
+                prefix={<p className="font-semibold text-dark-tosca">Rp</p>}
+                formatter={(value) => {
+                  if (!value) return "";
+                  const parts = value.toString().split(",");
+                  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                  return parts.join(",");
+                }}
+                parser={(value) => {
+                  if (!value) return "";
+                  return value.replace(/[^0-9,]/g, "").replace(",", ".");
+                }}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
+            <Form.Item
+              className="!mb-3 md:!mb-4"
+              label="Uang Muka"
+              name="downPayment"
+              rules={[
+                {
+                  required: true,
+                  message: "Uang muka wajib diisi",
+                },
+                {
+                  min: minDownPayment,
+                  type: "number",
+                  message: `Uang muka minimal 10% dari harga rumah (Rp ${minDownPayment.toLocaleString(
+                    "id-ID"
+                  )})`,
+                },
+              ]}
+            >
+              <InputNumber
+                controls={false}
+                className="!w-full"
+                size="large"
+                placeholder="Masukkan uang muka"
                 prefix={<p className="font-semibold text-dark-tosca">Rp</p>}
                 formatter={(value) => {
                   if (!value) return "";

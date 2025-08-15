@@ -17,6 +17,7 @@ export default function KprApplyForm() {
   const [formData, setFormData] = useState({
     // Loan Information
     loanAmount: 500000000,
+    downPayment: 85000000,
     tenor: 120,
     interestRate: 1,
 
