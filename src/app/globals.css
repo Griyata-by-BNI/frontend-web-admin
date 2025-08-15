@@ -11,3 +11,7 @@
   --color-primary-purple: #9b7eda;
   --color-dark-purple: #745fa4;
 }
+
+.ant-table-tbody > tr:nth-child(even) > td {
+  background-color: #eaf6f6;
+}

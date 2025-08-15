@@ -127,6 +127,7 @@ const EditProfilePage: React.FC = () => {
                   </p>
                 </div>
               )}
+
               <img
                 src={profile.profilePicture}
                 alt="Profile"
