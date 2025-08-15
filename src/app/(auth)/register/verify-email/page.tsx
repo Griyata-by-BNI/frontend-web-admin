@@ -1,395 +1,356 @@
-// app/register/verify-email/page.tsx
 'use client';
 
-import Link from 'next/link';
-import React, { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Footer from '../../../../components/Footer';
+import React, { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, Mail, RefreshCw, CheckCircle, AlertCircle, Shield } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import axiosInstance from '@/lib/axios';
 
-interface VerifyResponse {
-  status?: {
-    code: number;
-    message: string;
-  };
-  message?: string;
-  success?: boolean;
+interface VerifyEmailProps {
+  email?: string;
+  onBack?: () => void;
+  onVerificationSuccess?: () => void;
 }
 
-interface ResendResponse {
-  status?: {
-    code: number;
-    message: string;
-  };
-  message?: string;
-  success?: boolean;
-}
-
-const VerifyEmailPage: React.FC = () => {
-  const [otp, setOtp] = useState<string[]>(['', '', '', '']);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isResending, setIsResending] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-  const [countdown, setCountdown] = useState(0);
-  const [email, setEmail] = useState('');
-  
+const VerifyEmailPage: React.FC<VerifyEmailProps> = ({ 
+  email: propEmail, 
+  onBack, 
+  onVerificationSuccess 
+}) => {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const [email, setEmail] = useState(propEmail || '');
+  const [otp, setOtp] = useState(['', '', '', '']);
+  const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [isVerified, setIsVerified] = useState(false);
+  const [attemptCount, setAttemptCount] = useState(0);
+  
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const maxAttempts = 5;
 
-  // Get email from multiple possible sources
   useEffect(() => {
-    const getEmailFromSources = () => {
-      // 1. Try to get from URL params (most reliable)
-      const emailFromUrl = searchParams.get('email');
-      if (emailFromUrl) {
-        setEmail(decodeURIComponent(emailFromUrl));
-        return;
-      }
-
-      // 2. Try to get from localStorage (registration data)
-      const registrationData = localStorage.getItem('registrationData');
-      if (registrationData) {
-        try {
-          const parsed = JSON.parse(registrationData);
-          if (parsed.email) {
-            setEmail(parsed.email);
-            return;
-          }
-        } catch (error) {
-          console.error('Error parsing registration data:', error);
-        }
-      }
-
-      // 3. Try to get from sessionStorage
-      const sessionEmail = sessionStorage.getItem('pendingVerificationEmail');
-      if (sessionEmail) {
-        setEmail(sessionEmail);
-        return;
-      }
-
-      // 4. If no email found, redirect to register
-      console.warn('No email found for verification');
-      setError('Email tidak ditemukan. Silakan lakukan registrasi terlebih dahulu.');
-      setTimeout(() => {
-        router.push('/register');
-      }, 3000);
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
+  }, []);
 
-    getEmailFromSources();
-  }, [searchParams, router]);
-
-  // Countdown timer for resend OTP
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (countdown > 0) {
-      interval = setInterval(() => {
-        setCountdown(prev => prev - 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [countdown]);
-
-  // Auto-redirect after successful verification
-  useEffect(() => {
-    if (success) {
-      const timer = setTimeout(() => {
-        // Clear any temporary data
-        localStorage.removeItem('registrationData');
-        sessionStorage.removeItem('pendingVerificationEmail');
-        router.push('/login?verified=true');
-      }, 3000);
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
       return () => clearTimeout(timer);
     }
-  }, [success, router]);
+  }, [resendCooldown]);
 
-  // Handle OTP input changes
+  useEffect(() => {
+    const otpString = otp.join('');
+    if (otpString.length === 4 && !loading && attemptCount < maxAttempts) {
+      const timer = setTimeout(() => handleVerify(), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [otp, loading, attemptCount]);
+
   const handleOtpChange = (index: number, value: string) => {
-    if (value.length > 1) return;
-    
+    const sanitizedValue = value.replace(/\D/g, '').slice(0, 1);
     const newOtp = [...otp];
-    newOtp[index] = value;
+    newOtp[index] = sanitizedValue;
     setOtp(newOtp);
-    setError(''); // Clear error when user types
+    
+    if (error) setError('');
+    if (success) setSuccess('');
 
-    // Auto focus to next input
-    if (value && index < 3) {
-      const nextInput = document.getElementById(`otp-${index + 1}`);
-      nextInput?.focus();
+    if (sanitizedValue && index < 3) {
+      otpRefs.current[index + 1]?.focus();
     }
   };
 
-  // Handle backspace navigation
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      const prevInput = document.getElementById(`otp-${index - 1}`);
-      prevInput?.focus();
+      otpRefs.current[index - 1]?.focus();
     }
   };
 
-  // Handle paste functionality
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 4);
-    const newOtp = ['', '', '', ''];
     
-    for (let i = 0; i < pastedData.length; i++) {
-      newOtp[i] = pastedData[i];
-    }
-    
-    setOtp(newOtp);
-    setError('');
-  };
-
-  // Handle API errors
-  const handleApiError = (error: any): string => {
-    if (error.response?.data?.status) {
-      const { code, message } = error.response.data.status;
-      
-      switch (code) {
-        case 400:
-          if (message.toLowerCase().includes('invalid') && message.toLowerCase().includes('token')) {
-            return 'Kode OTP tidak valid. Silakan periksa kembali kode yang Anda masukkan.';
-          } else if (message.toLowerCase().includes('expired')) {
-            return 'Kode OTP telah kedaluwarsa. Silakan minta kode baru.';
-          }
-          return message || 'Data yang Anda masukkan tidak valid.';
-          
-        case 404:
-          if (message.toLowerCase().includes('user') && message.toLowerCase().includes('not found')) {
-            return 'Email tidak terdaftar dalam sistem. Silakan lakukan registrasi terlebih dahulu.';
-          }
-          return 'Data tidak ditemukan. Silakan periksa email Anda.';
-          
-        case 422:
-          return 'Format kode OTP tidak valid. Pastikan memasukkan 4 digit angka.';
-          
-        case 429:
-          return 'Terlalu banyak percobaan. Silakan tunggu beberapa menit sebelum mencoba lagi.';
-          
-        case 500:
-          return 'Terjadi kesalahan pada server. Silakan coba lagi dalam beberapa saat.';
-          
-        default:
-          return message || `Terjadi kesalahan (${code}). Silakan coba lagi.`;
-      }
-    } else if (error.code === 'NETWORK_ERROR' || error.message?.includes('Network Error')) {
-      return 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
-    } else {
-      return 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+    if (pastedData.length === 4) {
+      setOtp(pastedData.split(''));
+      setError('');
+      setSuccess('');
+      otpRefs.current[3]?.focus();
     }
   };
 
-  // Verify OTP
-  const handleVerifyOtp = async () => {
-    const otpCode = otp.join('');
-    
-    if (otpCode.length !== 4) {
-      setError('Mohon masukkan kode OTP yang lengkap (4 digit)');
+  const handleVerify = async () => {
+    if (!email.trim()) {
+      setError('Email wajib diisi');
       return;
     }
 
-    if (!email) {
-      setError('Email tidak ditemukan. Silakan kembali ke halaman registrasi.');
+    const otpString = otp.join('');
+    if (otpString.length !== 4) {
+      setError('Kode verifikasi harus 4 digit');
       return;
     }
 
-    setIsLoading(true);
+    if (attemptCount >= maxAttempts) {
+      setError('Terlalu banyak percobaan gagal. Silakan tunggu beberapa menit.');
+      return;
+    }
+
+    setLoading(true);
     setError('');
+    setSuccess('');
 
     try {
       const response = await axiosInstance.post('/api/v1/auth/sign-up-verify', {
-        email: email,
-        verifyToken: otpCode
+        email: email.trim().toLowerCase(),
+        verifyToken: otpString
       });
-
-      // Check if verification was successful
-      if (response.data.success || response.status === 200 || response.status === 201) {
-        setSuccess(true);
-        // Store success state
-        sessionStorage.setItem('emailVerified', 'true');
+      
+     
+        setSuccess(response.data.message || 'Email berhasil diverifikasi!');
+        setIsVerified(true);
+        setAttemptCount(0);
         
-        // Clear registration data since verification is complete
-        localStorage.removeItem('registrationData');
-        sessionStorage.removeItem('pendingVerificationEmail');
-      } else {
-        setError('Verifikasi gagal. Silakan periksa kode OTP Anda.');
-      }
-
+        timeoutRef.current = setTimeout(() => {
+          onVerificationSuccess?.() || router.push('/');
+        }, 1500);
+      
     } catch (error: any) {
-      console.error('Verification error:', error);
-      const errorMessage = handleApiError(error);
-      setError(errorMessage);
-
-      // If user not found, suggest going back to register
-      if (error.response?.data?.status?.code === 404) {
-        setTimeout(() => {
-          const shouldRedirect = confirm('Email tidak ditemukan. Apakah Anda ingin kembali ke halaman registrasi?');
-          if (shouldRedirect) {
-            // Clear any stored data
-            localStorage.removeItem('registrationData');
-            sessionStorage.removeItem('pendingVerificationEmail');
-            router.push('/register');
-          }
-        }, 2000);
-      }
+      setAttemptCount(prev => prev + 1);
+      const message = error.response?.data?.message || 'Terjadi kesalahan. Silakan coba lagi.';
+      setError(message);
+      setOtp(['', '', '', '']);
+      otpRefs.current[0]?.focus();
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  // Resend OTP
   const handleResendOtp = async () => {
-    if (!email) {
-      setError('Email tidak ditemukan. Silakan kembali ke halaman registrasi.');
+    if (!email.trim()) {
+      setError('Email wajib diisi');
       return;
     }
 
-    setIsResending(true);
+    if (resendCooldown > 0) {
+      setError(`Tunggu ${resendCooldown} detik sebelum mengirim ulang`);
+      return;
+    }
+
+    setResendLoading(true);
     setError('');
-    setCountdown(60);
+    setSuccess('');
 
     try {
-      // Use the same endpoint as registration but for resend
-      const response = await axiosInstance.post<ResendResponse>('/api/v1/auth/sign-up-verify-resend-otp', {
-        email: email
+      const response = await axiosInstance.post('/api/v1/auth/resend-otp', { 
+        email: email.trim().toLowerCase() 
       });
-
-      if (response.data.success || response.status === 200 || response.status === 201) {
-        alert('Kode OTP baru telah dikirim ke email Anda!');
-        // Clear current OTP
+      
+      if (response.data.success) {
+        setSuccess(response.data.message || 'Kode verifikasi berhasil dikirim!');
         setOtp(['', '', '', '']);
+        setResendCooldown(60);
+        otpRefs.current[0]?.focus();
       } else {
-        setError('Gagal mengirim kode OTP. Silakan coba lagi.');
-        setCountdown(0);
+        setError(response.data.message || 'Gagal mengirim kode verifikasi.');
       }
-
     } catch (error: any) {
-      console.error('Resend error:', error);
-      const errorMessage = handleApiError(error);
-      setError(`Gagal mengirim ulang kode: ${errorMessage}`);
-      setCountdown(0);
+      const message = error.response?.data?.message || 'Gagal mengirim kode verifikasi.';
+      setError(message);
     } finally {
-      setIsResending(false);
+      setResendLoading(false);
     }
   };
 
-  // Success state rendering
-  if (success) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
-          <div className="w-full md:w-1/3 bg-gray-100 p-6 rounded-lg shadow-lg text-center">
-            <div className="mb-6">
-              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-bold text-green-500 mb-4">Email Terverifikasi!</h3>
-              <p className="text-gray-600 mb-4">
-                Selamat! Email <strong>{email}</strong> telah berhasil diverifikasi.
-              </p>
-              <p className="text-gray-500 text-sm">
-                Anda akan diarahkan ke halaman login dalam beberapa detik...
-              </p>
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loading && !resendLoading) {
+      handleVerify();
+    }
+  };
+
+  const isBlocked = attemptCount >= maxAttempts;
+  const otpStatus = error ? 'error' : success ? 'success' : 'neutral';
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
-        <div className="w-full md:w-1/3 bg-gray-100 p-6 rounded-lg shadow-lg">
-          <div className="text-center mb-6">
-            <h3 className="text-2xl font-bold text-teal-500 mb-4">Verifikasi Email Anda</h3>
-            <p className="text-gray-600 mb-4">
-              Kami telah mengirimkan kode OTP 4 digit ke:
-            </p>
-            <p className="font-semibold text-gray-800 mb-4">
-              {email || 'Loading...'}
-            </p>
-            <p className="text-gray-600 text-sm">
-              Silakan masukkan kode tersebut di bawah ini.
-            </p>
-          </div>
-
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              {error}
-            </div>
-          )}
-
-          <div className="mb-6">
-            <label className="block text-gray-700 text-sm font-medium mb-2 text-center">
-              Masukkan Kode OTP
-            </label>
-            <div className="flex gap-2 justify-center">
-              {otp.map((digit, index) => (
-                <input
-                  key={index}
-                  id={`otp-${index}`}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handleOtpChange(index, e.target.value.replace(/\D/g, ''))}
-                  onKeyDown={(e) => handleKeyDown(index, e)}
-                  onPaste={handlePaste}
-                  className="w-12 h-12 text-center text-xl font-semibold border-2 border-gray-300 rounded-lg focus:border-teal-500 focus:outline-none transition-colors"
-                  disabled={isLoading}
-                />
-              ))}
-            </div>
-          </div>
-
-          <button
-            onClick={handleVerifyOtp}
-            disabled={isLoading || otp.join('').length !== 4 || !email}
-            className="w-full bg-teal-500 text-white p-3 rounded-lg hover:bg-teal-600 transition disabled:bg-gray-400 disabled:cursor-not-allowed mb-4"
-          >
-            {isLoading ? 'Memverifikasi...' : 'Verifikasi OTP'}
-          </button>
-
-          <div className="text-center">
-            <p className="text-gray-600 text-sm mb-2">
-              Tidak menerima kode?
-            </p>
-            {countdown > 0 ? (
-              <p className="text-gray-500 text-sm">
-                Kirim ulang dalam {countdown} detik
-              </p>
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-2xl">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+            {isVerified ? (
+              <CheckCircle className="w-8 h-8 text-white" />
             ) : (
-              <button
-                onClick={handleResendOtp}
-                disabled={!email || isResending}
-                className="text-teal-500 hover:underline text-sm font-medium disabled:text-gray-400 disabled:cursor-not-allowed"
-              >
-                {isResending ? 'Mengirim...' : 'Kirim Ulang Kode OTP'}
-              </button>
+              <Mail className="w-8 h-8 text-white" />
             )}
           </div>
-
-          <div className="text-center mt-6 space-y-2">
-            <p className="text-gray-700">
-              <Link href="/login" className="text-teal-500 hover:underline">
-                Kembali ke Login
-              </Link>
-            </p>
-            <p className="text-gray-700">
-              Email salah?{' '}
-              <Link href="/register" className="text-teal-500 hover:underline">
-                Registrasi Ulang
-              </Link>
-            </p>
-          </div>
+          
+          <h3 className="text-2xl font-bold text-teal-600 mb-2">
+            {isVerified ? 'Email Terverifikasi!' : 'Verifikasi Email Anda'}
+          </h3>
+          
+          <p className="text-gray-600 mb-4">
+            {isVerified 
+              ? 'Akun Anda berhasil diverifikasi dan siap digunakan.'
+              : 'Masukkan kode verifikasi 4 digit yang telah dikirim ke:'}
+          </p>
+          
+          {!isVerified && (
+            <div className="bg-teal-50 border border-teal-200 rounded-lg p-3 mb-4">
+              <p className="text-teal-700 font-medium text-sm flex items-center justify-center">
+                <Mail className="w-4 h-4 mr-2" />
+                {email}
+              </p>
+            </div>
+          )}
         </div>
-      </main>
-      <Footer />
+
+        {!isVerified ? (
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Email input (if not provided as prop) */}
+            {!propEmail && (
+              <div>
+                <input
+                  type="email"
+                  placeholder="Masukkan email Anda"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200"
+                  disabled={loading}
+                  required
+                />
+              </div>
+            )}
+
+            {/* OTP Input */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3 text-center">
+                Kode Verifikasi
+              </label>
+              <div className="flex justify-center space-x-2" onPaste={handlePaste}>
+                {otp.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={(el) => { otpRefs.current[index] = el; }}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleOtpChange(index, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(index, e)}
+                    className={`w-12 h-12 text-center text-xl font-bold border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
+                      otpStatus === 'success' ? 'border-green-500 bg-green-50' :
+                      otpStatus === 'error' ? 'border-red-500 bg-red-50' :
+                      'border-gray-300 hover:border-gray-400'
+                    }`}
+                    disabled={loading}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-start">
+                  <AlertCircle className="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <p className="text-red-600 text-sm font-medium">{error}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Success Message */}
+            {success && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                  <p className="text-green-600 text-sm font-medium">{success}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 ${
+                otp.join('').length === 4 && !loading
+                  ? 'bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+              disabled={otp.join('').length !== 4 || loading || resendLoading || isBlocked}
+            >
+              {loading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  Memverifikasi...
+                </div>
+              ) : (
+                'Verifikasi Email'
+              )}
+            </button>
+
+            {/* Resend Code */}
+            <div className="text-center">
+              <p className="text-gray-600 text-sm mb-2">
+                Tidak menerima kode?
+              </p>
+              <button
+                type="button"
+                onClick={handleResendOtp}
+                disabled={resendCooldown > 0 || resendLoading || loading || isBlocked}
+                className={`text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 rounded px-2 py-1 ${
+                  resendCooldown > 0 || resendLoading || loading || isBlocked
+                    ? 'text-gray-400 cursor-not-allowed'
+                    : 'text-teal-600 hover:text-teal-700 underline hover:bg-teal-50'
+                }`}
+              >
+                {resendLoading ? (
+                  <span className="flex items-center justify-center">
+                    <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
+                    Mengirim...
+                  </span>
+                ) : resendCooldown > 0 ? (
+                  `Kirim ulang dalam ${resendCooldown}s`
+                ) : (
+                  'Kirim ulang kode'
+                )}
+              </button>
+            </div>
+          </form>
+        ) : (
+          /* Success State */
+          <div className="text-center space-y-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+              <Shield className="w-12 h-12 text-green-500 mx-auto mb-4" />
+              <h4 className="text-lg font-semibold text-green-800 mb-2">
+                Verifikasi Berhasil!
+              </h4>
+              <p className="text-green-600 text-sm">
+                Email Anda telah berhasil diverifikasi. Anda akan dialihkan ke halaman utama dalam beberapa saat.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Back Button */}
+        {onBack && !isVerified && (
+          <div className="mt-6">
+            <button
+              onClick={onBack}
+              className="flex items-center justify-center w-full text-gray-600 hover:text-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 rounded px-4 py-2 disabled:opacity-50"
+              disabled={loading || resendLoading || isBlocked}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Kembali ke halaman registrasi
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
