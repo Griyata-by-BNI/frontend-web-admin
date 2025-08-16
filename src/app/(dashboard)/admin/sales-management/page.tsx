@@ -13,10 +13,10 @@ import {
 } from "antd";
 import { Edit, Plus, Trash } from "lucide-react";
 import { useState } from "react";
-import EditSalesModal from "./components/EditSalesModal";
-import DeleteConfirmModal from "./components/DeleteConfirmModal";
-import CreateSalesModal from "./components/CreateSalesModal";
-import type { Sales } from "./types";
+import EditSalesModal from "./_components/EditSalesModal";
+import DeleteConfirmModal from "./_components/DeleteConfirmModal";
+import CreateSalesModal from "./_components/CreateSalesModal";
+import type { Sales } from "./_types";
 
 const mockData: Sales[] = [
   {
@@ -119,9 +119,7 @@ export default function SalesManagementPage() {
   return (
     <>
       <div className="mb-4 flex flex-col gap-1">
-        <p className="text-2xl text-primary-black font-bold">
-          Manajemen Sales
-        </p>
+        <p className="text-2xl text-primary-black font-bold">Manajemen Sales</p>
 
         <Breadcrumb
           items={[
@@ -130,9 +128,7 @@ export default function SalesManagementPage() {
             },
             {
               title: (
-                <p className="text-dark-tosca font-semibold">
-                  Manajemen Sales
-                </p>
+                <p className="text-dark-tosca font-semibold">Manajemen Sales</p>
               ),
               href: "/admin/sales-management",
             },

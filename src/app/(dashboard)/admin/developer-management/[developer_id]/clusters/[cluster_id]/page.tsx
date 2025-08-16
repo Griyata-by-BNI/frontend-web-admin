@@ -5,13 +5,13 @@ import { Breadcrumb, Button, Col, Row, Tag } from "antd";
 import { Edit, Trash } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { mockClusterData, mockDeveloperData } from "../../../constants";
-import EditClusterModal from "../../components/EditClusterModal";
-import DeleteClusterModal from "../../components/DeleteClusterModal";
-import ImageGallery from "./components/ImageGallery";
-import ClusterMap from "./components/ClusterMap";
-import TableClusterType from "./components/TableClusterType";
-import { Cluster } from "@/types/clusters";
+import { mockClusterData, mockDeveloperData } from "../../../_constants";
+import EditClusterModal from "../../_components/EditClusterModal";
+import DeleteClusterModal from "../../_components/DeleteClusterModal";
+import ImageGallery from "./_components/ImageGallery";
+import ClusterMap from "./_components/ClusterMap";
+import TableClusterType from "./_components/TableClusterType";
+import { Cluster } from "@/types/cluster";
 
 export default function ClusterDetailPage() {
   const params = useParams();

@@ -1,4 +1,4 @@
-import { KPRAffordability } from "./components/KPRAffordability";
+import { KPRAffordability } from "./_components/KPRAffordability";
 
 export default function KprAffordabilityPage() {
   return (

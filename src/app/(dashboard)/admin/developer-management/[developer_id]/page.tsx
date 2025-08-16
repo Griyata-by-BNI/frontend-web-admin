@@ -6,11 +6,11 @@ import { Edit, Trash } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { mockDeveloperData } from "../constants";
-import EditDeveloperModal from "../components/EditDeveloperModal";
-import DeleteDeveloperModal from "../components/DeleteDeveloperModal";
-import type { Developer } from "../types";
-import TableCluster from "./components/TableCluster";
+import { mockDeveloperData } from "../_constants";
+import EditDeveloperModal from "../_components/EditDeveloperModal";
+import DeleteDeveloperModal from "../_components/DeleteDeveloperModal";
+import type { Developer } from "../_types";
+import TableCluster from "./_components/TableCluster";
 
 export default function DeveloperDetailPage() {
   const params = useParams();

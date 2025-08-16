@@ -15,10 +15,10 @@ import { Edit, Eye, Plus, Trash } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import CreateDeveloperModal from "./components/CreateDeveloperModal";
-import DeleteDeveloperModal from "./components/DeleteDeveloperModal";
-import EditDeveloperModal from "./components/EditDeveloperModal";
-import type { Developer } from "./types";
+import CreateDeveloperModal from "./_components/CreateDeveloperModal";
+import DeleteDeveloperModal from "./_components/DeleteDeveloperModal";
+import EditDeveloperModal from "./_components/EditDeveloperModal";
+import type { Developer } from "./_types";
 
 const mockData: Developer[] = [
   {

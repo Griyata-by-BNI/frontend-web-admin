@@ -1,6 +1,6 @@
-export { KPRAffordability } from "./components/KPRAffordability";
+export { KPRAffordability } from "./_components/KPRAffordability";
 export type {
   KPRAffordabilityProps,
   AffordabilityParams,
   JobType,
-} from "./types";
+} from "./_types";

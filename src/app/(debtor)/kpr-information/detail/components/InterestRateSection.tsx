@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { InterestRatesData, TabType, RateTypeId } from "../../types";
+import { InterestRatesData, TabType, RateTypeId } from "../../_types";
 import { InterestRateTable } from "./InterestRateTable";
 import { InterestRateModal } from "./InterestRateModal";
 import { IconInfo } from "./Icons";
@@ -76,9 +76,7 @@ export const InterestRateSection = ({ data }: InterestRateSectionProps) => {
           )}
 
           <div className="mt-5 border-t-2 border-dashed border-gray-200 pt-5 grid grid-cols-[150px_1fr] gap-2 text-sm">
-            <strong className="font-semibold text-gray-600">
-              Provisi
-            </strong>
+            <strong className="font-semibold text-gray-600">Provisi</strong>
             <span>{data.fees.provisi}</span>
             <strong className="font-semibold text-gray-600">
               Administrasi

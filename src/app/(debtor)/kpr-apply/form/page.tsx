@@ -5,12 +5,12 @@ import { DownOutlined } from "@ant-design/icons";
 import Image from "next/image";
 import { useState } from "react";
 import dayjs from "dayjs";
-import LoanInformationForm from "./components/LoanInformationForm";
-import DebtorInformationForm from "./components/DebtorInformationForm";
-import SpouseInformationForm from "./components/SpouseInformationForm";
-import EmploymentInformationForm from "./components/EmploymentInformationForm";
-import DocumentUploadForm from "./components/DocumentUploadForm";
-import SummaryForm from "./components/SummaryForm";
+import LoanInformationForm from "./_components/LoanInformationForm";
+import DebtorInformationForm from "./_components/DebtorInformationForm";
+import SpouseInformationForm from "./_components/SpouseInformationForm";
+import EmploymentInformationForm from "./_components/EmploymentInformationForm";
+import DocumentUploadForm from "./_components/DocumentUploadForm";
+import SummaryForm from "./_components/SummaryForm";
 
 export default function KprApplyForm() {
   const [currentStep, setCurrentStep] = useState(0);

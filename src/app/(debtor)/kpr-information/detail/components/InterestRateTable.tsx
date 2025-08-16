@@ -1,4 +1,4 @@
-import { SingleFixedRate, FixedBerjenjangRate, RateTypeId } from "../../types";
+import { SingleFixedRate, FixedBerjenjangRate, RateTypeId } from "../../_types";
 
 interface InterestRateTableProps {
   data: SingleFixedRate[] | FixedBerjenjangRate[];

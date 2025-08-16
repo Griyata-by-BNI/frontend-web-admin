@@ -4,7 +4,7 @@ import interestRatesData from "@/data/list-interest.json";
 import { RequirementsSection } from "./components/RequirementsSection";
 import { InterestRateSection } from "./components/InterestRateSection";
 import { CTASection } from "./components/CTASection";
-import { InterestRatesData } from "../types";
+import { InterestRatesData } from "../_types";
 
 const DetailInfoKprPage = () => {
   return (

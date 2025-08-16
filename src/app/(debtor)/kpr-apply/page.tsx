@@ -1,5 +1,5 @@
-import { StepCard } from "./components/StepCard";
-import { DocumentChecklist } from "./components/DocumentChecklist";
+import { StepCard } from "./_components/StepCard";
+import { DocumentChecklist } from "./_components/DocumentChecklist";
 
 const steps = [
   {

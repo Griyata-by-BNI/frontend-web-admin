@@ -1,4 +1,4 @@
-import { KPRSimulator } from "./components/KPRSimulator";
+import { KPRSimulator } from "./_components/KPRSimulator";
 
 export default function KprSimulatorPage() {
   return (
