@@ -1,5 +1,5 @@
 import { IconFlag, IconUser, IconBriefcase, IconCheckmark } from "./Icons";
-import { DOCUMENT_REQUIREMENTS } from "../../constants";
+import { DOCUMENT_REQUIREMENTS } from "../../_constants";
 
 export const RequirementsSection = () => {
   return (

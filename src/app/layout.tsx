@@ -1,14 +1,16 @@
 // app/layout.tsx
-
+import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { ConfigProvider } from "antd";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-import { AntdRegistry } from "@ant-design/nextjs-registry";
+import QueryProvider from "@/providers/queryClient";
+import ProgressProvider from "@/providers/progressProvider";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-jakarta",
+  weight: ["200", "300", "400", "500", "600", "700", "800"],
 });
 
 const geistSans = Geist({
@@ -35,16 +37,22 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${jakarta.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
+        style={{ fontFamily: "var(--font-jakarta), sans-serif" }}
       >
-        <ConfigProvider
-          theme={{
-            token: {
-              colorPrimary: "#30a5a2",
-            },
-          }}
-        >
-          <AntdRegistry>{children}</AntdRegistry>
-        </ConfigProvider>
+        <QueryProvider>
+          <ConfigProvider
+            theme={{
+              token: {
+                colorPrimary: "#30a5a2",
+                fontFamily: "var(--font-jakarta), sans-serif",
+              },
+            }}
+          >
+            <AntdRegistry>
+              <ProgressProvider>{children}</ProgressProvider>
+            </AntdRegistry>
+          </ConfigProvider>
+        </QueryProvider>
       </body>
     </html>
   );

@@ -1,12 +1,12 @@
 "use client";
 
 import React from "react";
-import { BniGriyaSection } from "./components/BniGriyaSection";
-import { KeunggulanSection } from "./components/KeunggulanSection";
-import { JenisFiturSection } from "./components/JenisFiturSection";
-import { FaqSection } from "./components/FaqSection";
-import { ContactSection } from "./components/ContactSection";
-import { faqData, jenisFitur } from "./constants";
+import { BniGriyaSection } from "./_components/BniGriyaSection";
+import { KeunggulanSection } from "./_components/KeunggulanSection";
+import { JenisFiturSection } from "./_components/JenisFiturSection";
+import { FaqSection } from "./_components/FaqSection";
+import { ContactSection } from "./_components/ContactSection";
+import { faqData, jenisFitur } from "./_constants";
 
 const InfoKprPage: React.FC = () => {
   return (
