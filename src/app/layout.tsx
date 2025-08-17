@@ -4,6 +4,7 @@ import { ConfigProvider } from "antd";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import QueryProvider from "@/providers/queryClient";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -37,16 +38,18 @@ export default function RootLayout({
         className={`${jakarta.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
         style={{ fontFamily: "var(--font-jakarta), sans-serif" }}
       >
-        <ConfigProvider
-          theme={{
-            token: {
-              colorPrimary: "#30a5a2",
-              fontFamily: "var(--font-jakarta), sans-serif",
-            },
-          }}
-        >
-          <AntdRegistry>{children}</AntdRegistry>
-        </ConfigProvider>
+        <QueryProvider>
+          <ConfigProvider
+            theme={{
+              token: {
+                colorPrimary: "#30a5a2",
+                fontFamily: "var(--font-jakarta), sans-serif",
+              },
+            }}
+          >
+            <AntdRegistry>{children}</AntdRegistry>
+          </ConfigProvider>
+        </QueryProvider>
       </body>
     </html>
   );

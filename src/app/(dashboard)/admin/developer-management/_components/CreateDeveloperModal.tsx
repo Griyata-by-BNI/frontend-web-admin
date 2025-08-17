@@ -1,11 +1,9 @@
 "use client";
 
-import { Form, Input, Modal, Typography, Upload, message } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
-import type { UploadProps } from "antd";
-import type { Developer } from "../_types";
+import { Form, Input, Modal, Typography, Upload } from "antd";
 import { UploadCloud } from "lucide-react";
 import { useState } from "react";
+import type { Developer } from "../_types";
 
 interface CreateDeveloperModalProps {
   open: boolean;
