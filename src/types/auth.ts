@@ -29,13 +29,14 @@ export interface LoginResponse {
   };
   data: {
     token: string;
-    user: {
-      id: string;
-      email: string;
-      name: string;
-    };
   };
 }
+
+export type UserLogin = {
+  id: string;
+  email: string;
+  name: string;
+};
 
 export type VerifyEmailPayload = {
   email: string;

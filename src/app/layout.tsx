@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import QueryProvider from "@/providers/queryClient";
+import ProgressProvider from "@/providers/progressProvider";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -47,7 +48,9 @@ export default function RootLayout({
               },
             }}
           >
-            <AntdRegistry>{children}</AntdRegistry>
+            <AntdRegistry>
+              <ProgressProvider>{children}</ProgressProvider>
+            </AntdRegistry>
           </ConfigProvider>
         </QueryProvider>
       </body>
