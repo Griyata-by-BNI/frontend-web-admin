@@ -47,7 +47,7 @@ export const useVerifyEmailRegister = () => {
   });
 };
 
-export const useResendOtpRegister = () => {
+export const useResendOtp = () => {
   return useMutation({
     mutationFn: async (email: string) => {
       const response = await axiosInstance.post("/api/v1/auth/resend-otp", {
@@ -62,11 +62,58 @@ export const useResendOtpRegister = () => {
 export const useForgotPassword = () => {
   return useMutation({
     mutationFn: async (email: string) => {
-      const response = await axiosInstance.post("/api/v1/auth/forgot-password", {
-        email: email.trim().toLowerCase(),
-      });
+      const response = await axiosInstance.post(
+        "/api/v1/auth/forgot-password",
+        {
+          email: email.trim().toLowerCase(),
+        }
+      );
 
       return response.data;
     },
   });
 };
+
+export const useVerifyOtpForgotPassword = () => {
+  return useMutation({
+    mutationFn: async ({ email, otp }: { email: string; otp: string }) => {
+      const response = await axiosInstance.post(
+        "/api/v1/auth/forgot-password-verify-otp",
+        {
+          email: email.trim().toLowerCase(),
+          otp,
+        }
+      );
+
+      return response.data;
+    },
+  });
+};
+
+export const useResetPassword = () => {
+  return useMutation({
+    mutationFn: async ({
+      email,
+      token,
+      newPassword,
+    }: {
+      email: string;
+      token: string;
+      newPassword: string;
+    }) => {
+      const response = await axiosInstance.post(
+        "/api/v1/auth/reset-password",
+        {
+          email: email.trim().toLowerCase(),
+          tokenReset: token,
+          newPassword,
+        }
+      );
+
+      return response.data;
+    },
+  });
+};
+
+export const useResendOtpRegister = useResendOtp;
+export const useResendOtpForgotPassword = useResendOtp;

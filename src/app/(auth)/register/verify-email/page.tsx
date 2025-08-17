@@ -15,6 +15,7 @@ import {
   Typography,
   message,
 } from "antd";
+import clsx from "clsx";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -90,8 +91,11 @@ const VerifyEmailPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md" style={{ borderRadius: 16 }}>
-        <div className="text-center mb-8">
+      <Card
+        className="w-full max-w-md shadow-2xl shadow-gray-500/20 !border-gray-200"
+        style={{ borderRadius: 16 }}
+      >
+        <div className="text-center mb-4">
           <div className="w-16 h-16 bg-gradient-to-r from-teal-500 to-teal-600 rounded-full mx-auto mb-4 flex items-center justify-center">
             {isVerified ? (
               <CheckCircleOutlined className="text-2xl !text-white" />
@@ -107,31 +111,13 @@ const VerifyEmailPage: React.FC = () => {
           <Text type="secondary" className="block mb-4">
             {isVerified
               ? "Akun Anda berhasil diverifikasi dan siap digunakan."
-              : "Masukkan kode verifikasi 4 digit yang telah dikirim ke:"}
+              : `Masukkan kode verifikasi 4 digit yang telah dikirim ke:  ${email}`}
           </Text>
-
-          {!isVerified && (
-            <Alert
-              message={
-                <>
-                  <MailOutlined className="mr-2" />
-                  {email}
-                </>
-              }
-              type="info"
-              showIcon={false}
-              className="mb-4"
-            />
-          )}
         </div>
 
         {!isVerified ? (
           <Space direction="vertical" size="large" className="w-full">
             <div className="flex flex-col items-center">
-              <Text strong className="block text-center mb-3">
-                Kode Verifikasi
-              </Text>
-
               <Input.OTP
                 length={4}
                 value={otp}
@@ -164,7 +150,12 @@ const VerifyEmailPage: React.FC = () => {
                 loading={resendOtpMutation.isPending}
                 disabled={!canResend}
                 onClick={handleResendOtp}
-                className="!p-0 h-max"
+                className={clsx("!p-0 h-max", {
+                  "!text-primary-tosca hover:!text-dark-tosca":
+                    !resendOtpMutation.isPending || resendCooldown < 1,
+                  "!text-gray-400":
+                    resendOtpMutation.isPending || resendCooldown > 0,
+                })}
               >
                 {resendOtpMutation.isPending ? (
                   <Spin size="small" className="mr-1" />
