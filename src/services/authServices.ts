@@ -1,10 +1,11 @@
-import axiosInstance from "@/lib/axios";
+import axiosInstance from "@/utils/axios";
 import {
   LoginRequest,
   LoginResponse,
   RegisterPayload,
   RegisterResponse,
   VerifyEmailPayload,
+  VerifyOtpForgotPasswordResponse,
 } from "@/types/auth";
 import { useMutation } from "@tanstack/react-query";
 
@@ -75,15 +76,20 @@ export const useForgotPassword = () => {
 };
 
 export const useVerifyOtpForgotPassword = () => {
-  return useMutation({
-    mutationFn: async ({ email, otp }: { email: string; otp: string }) => {
-      const response = await axiosInstance.post(
-        "/api/v1/auth/forgot-password-verify-otp",
-        {
-          email: email.trim().toLowerCase(),
-          otp,
-        }
-      );
+  return useMutation<
+    VerifyOtpForgotPasswordResponse,
+    Error,
+    { email: string; otp: string }
+  >({
+    mutationFn: async ({ email, otp }) => {
+      const response =
+        await axiosInstance.post<VerifyOtpForgotPasswordResponse>(
+          "/api/v1/auth/forgot-password-verify-otp",
+          {
+            email: email.trim().toLowerCase(),
+            otp,
+          }
+        );
 
       return response.data;
     },
@@ -102,7 +108,7 @@ export const useResetPassword = () => {
       newPassword: string;
     }) => {
       const response = await axiosInstance.post(
-        "/api/v1/auth/reset-password",
+        "/api/v1/auth/forgot-password-reset",
         {
           email: email.trim().toLowerCase(),
           tokenReset: token,

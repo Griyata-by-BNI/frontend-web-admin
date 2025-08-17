@@ -1,8 +1,8 @@
 "use client";
-
+import "@ant-design/v5-patch-for-react-19";
 import React from "react";
 import Link from "next/link";
-import { Form, Input, Button, Checkbox, Alert } from "antd";
+import { Form, Input, Button, Checkbox, Alert, App } from "antd";
 import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { FormData } from "./types";
@@ -10,6 +10,7 @@ import { useRegister } from "@/services/authServices";
 
 const RegisterForm: React.FC = ({}) => {
   const router = useRouter();
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const { mutateAsync: register, status, error } = useRegister();
 
@@ -22,8 +23,13 @@ const RegisterForm: React.FC = ({}) => {
         password: values.password.trim(),
       });
 
-      router.push("/(auth)/register/verify-email");
-    } catch (err) {}
+      router.push("/register/verify-email");
+    } catch (err: any) {
+      const errorMessage =
+        err.response?.data?.message || "Terjadi kesalahan. Silakan coba lagi.";
+
+      message.error(errorMessage);
+    }
   };
 
   const loading = status === "pending";

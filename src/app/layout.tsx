@@ -1,11 +1,13 @@
 // app/layout.tsx
+import "@ant-design/v5-patch-for-react-19";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
-import { ConfigProvider } from "antd";
+import { ConfigProvider, App } from "antd";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import QueryProvider from "@/providers/queryClient";
 import ProgressProvider from "@/providers/progressProvider";
+import { AuthProvider } from "@/contexts/authContext";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -49,7 +51,11 @@ export default function RootLayout({
             }}
           >
             <AntdRegistry>
-              <ProgressProvider>{children}</ProgressProvider>
+              <App>
+                <ProgressProvider>
+                  <AuthProvider>{children}</AuthProvider>
+                </ProgressProvider>
+              </App>
             </AntdRegistry>
           </ConfigProvider>
         </QueryProvider>

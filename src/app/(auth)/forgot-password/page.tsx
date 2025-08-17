@@ -2,16 +2,7 @@
 import { useForgotPassword } from "@/services/authServices";
 import { KeyOutlined, MailOutlined } from "@ant-design/icons";
 import "@ant-design/v5-patch-for-react-19";
-import {
-  Alert,
-  Button,
-  Card,
-  Form,
-  Input,
-  Space,
-  Typography,
-  message,
-} from "antd";
+import { Alert, App, Button, Card, Form, Input, Space, Typography } from "antd";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useState } from "react";
 
@@ -19,6 +10,7 @@ const { Title, Text } = Typography;
 
 const ForgotPasswordPage: React.FC = () => {
   const router = useRouter();
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const [isSuccess, setIsSuccess] = useState(false);
   const [email, setEmail] = useState("");
@@ -35,11 +27,9 @@ const ForgotPasswordPage: React.FC = () => {
           message.success(data.message || "Kode verifikasi berhasil dikirim!");
           setIsSuccess(true);
 
-          setTimeout(() => {
-            router.push(
-              `/forgot-password/otp?email=${encodeURIComponent(emailValue)}`
-            );
-          }, 1500);
+          router.push(
+            `/forgot-password/otp?email=${encodeURIComponent(emailValue)}`
+          );
         },
         onError: (error: any) => {
           const errorMessage =
@@ -63,7 +53,7 @@ const ForgotPasswordPage: React.FC = () => {
             <KeyOutlined className="text-2xl !text-white" />
           </div>
 
-          <Title level={3} className="!text-primary-black !mb-2">
+          <Title level={3} className="!text-primary-tosca !mb-2">
             Lupa Password?
           </Title>
 

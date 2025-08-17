@@ -1,6 +1,6 @@
 "use client";
 
-import { UserLogin } from "@/types/auth";
+import { AuthContextType, DecodedUser, JwtPayload } from "@/types/auth";
 import {
   createContext,
   useContext,
@@ -8,50 +8,71 @@ import {
   useState,
   ReactNode,
 } from "react";
-
-type AuthContextType = {
-  user: UserLogin | null;
-  token: string | null;
-  login: (token: string, user: UserLogin, remember?: boolean) => void;
-  logout: () => void;
-};
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
+import { Spin } from "antd";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<UserLogin | null>(null);
+  const [user, setUser] = useState<DecodedUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const saved = localStorage.getItem("auth");
+    const savedToken = Cookies.get("auth_token");
 
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.expiry && parsed.expiry > Date.now()) {
-        setUser(parsed.user);
-        setToken(parsed.token);
-      } else {
-        localStorage.removeItem("auth");
+    if (savedToken) {
+      try {
+        const decoded = jwtDecode<JwtPayload>(savedToken);
+
+        if (decoded.exp * 1000 > Date.now()) {
+          setToken(savedToken);
+          setUser({
+            userId: decoded.userId,
+            email: decoded.email,
+          });
+        } else {
+          Cookies.remove("auth_token");
+        }
+      } catch {
+        Cookies.remove("auth_token");
       }
     }
+
+    setLoading(false);
   }, []);
 
-  const login = (token: string, user: UserLogin) => {
-    setUser(user);
+  const login = (token: string) => {
+    const decoded = jwtDecode<JwtPayload>(token);
+    setUser({
+      userId: decoded.userId,
+      email: decoded.email,
+    });
     setToken(token);
-
-    const expiry = Date.now() + 7 * 24 * 60 * 60 * 1000;
-    localStorage.setItem("auth", JSON.stringify({ token, user, expiry }));
+    Cookies.set("auth_token", token, {
+      expires: 7,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
   };
 
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem("auth");
+    Cookies.remove("auth_token");
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen w-screen bg-white">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

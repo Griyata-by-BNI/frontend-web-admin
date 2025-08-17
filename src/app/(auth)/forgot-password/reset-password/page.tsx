@@ -38,10 +38,7 @@ const ResetPasswordPage: React.FC = () => {
           onSuccess: (data) => {
             message.success(data.message || "Password berhasil direset!");
             setIsSuccess(true);
-
-            setTimeout(() => {
-              router.push("/login");
-            }, 1500);
+            router.push("/login");
           },
           onError: (error: any) => {
             const errorMessage =

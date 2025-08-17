@@ -53,8 +53,8 @@ const Sidebar = () => {
               href={item.href}
               className={`flex items-center px-6 py-4 font-medium transition-colors text-sm ${
                 isActive
-                  ? "bg-primary-tosca/30 text-white border-l-4 border-primary-tosca"
-                  : "text-white hover:bg-dark-tosca/25 hover:text-primary-tosca border-l-4 border-transparent"
+                  ? "!bg-primary-tosca/30 !text-white border-l-4 border-primary-tosca"
+                  : "!text-white hover:!bg-dark-tosca/25 hover:!text-primary-tosca border-l-4 border-transparent"
               }`}
             >
               <Icon className="w-5 h-5 mr-3" />

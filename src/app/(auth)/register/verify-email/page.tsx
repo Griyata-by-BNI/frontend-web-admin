@@ -1,20 +1,11 @@
 "use client";
-
+import "@ant-design/v5-patch-for-react-19";
 import {
   useVerifyEmailRegister,
   useResendOtpRegister,
 } from "@/services/authServices";
 import { CheckCircleOutlined, MailOutlined } from "@ant-design/icons";
-import {
-  Alert,
-  Button,
-  Card,
-  Input,
-  Space,
-  Spin,
-  Typography,
-  message,
-} from "antd";
+import { Alert, Button, Card, Input, Space, Spin, Typography, App } from "antd";
 import clsx from "clsx";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -23,6 +14,7 @@ const { Title, Text } = Typography;
 
 const VerifyEmailPage: React.FC = () => {
   const router = useRouter();
+  const { message } = App.useApp();
   const searchParams = useSearchParams();
   const email = useMemo(() => searchParams.get("email") || "", [searchParams]);
 
@@ -56,9 +48,7 @@ const VerifyEmailPage: React.FC = () => {
           message.success(data.message || "Email berhasil diverifikasi!");
           setIsVerified(true);
 
-          setTimeout(() => {
-            router.push("/login");
-          }, 1500);
+          router.push("/login");
         },
         onError: (error: any) => {
           const errorMessage =
