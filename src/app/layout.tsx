@@ -8,6 +8,7 @@ import "./globals.css";
 import QueryProvider from "@/providers/queryClient";
 import ProgressProvider from "@/providers/progressProvider";
 import { AuthProvider } from "@/contexts/authContext";
+import QueryProgress from "@/components/QueryProgress";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -53,7 +54,11 @@ export default function RootLayout({
             <AntdRegistry>
               <App>
                 <ProgressProvider>
-                  <AuthProvider>{children}</AuthProvider>
+                  <AuthProvider>
+                    {children}
+
+                    <QueryProgress />
+                  </AuthProvider>
                 </ProgressProvider>
               </App>
             </AntdRegistry>

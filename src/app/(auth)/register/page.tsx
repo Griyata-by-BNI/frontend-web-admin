@@ -23,10 +23,11 @@ const RegisterForm: React.FC = ({}) => {
         password: values.password.trim(),
       });
 
-      router.push("/register/verify-email");
+      router.push(`/register/verify-email?email=${values.email}`);
     } catch (err: any) {
       const errorMessage =
-        err.response?.data?.message || "Terjadi kesalahan. Silakan coba lagi.";
+        err.response?.data?.status?.message ||
+        "Terjadi kesalahan. Silakan coba lagi.";
 
       message.error(errorMessage);
     }
@@ -45,14 +46,6 @@ const RegisterForm: React.FC = ({}) => {
           Masukkan identitas diri untuk mendaftar
         </p>
       </div>
-
-      {error && (
-        <Alert
-          message={"Terjadi kesalahan. Silakan coba lagi."}
-          type="error"
-          className="mb-4"
-        />
-      )}
 
       <Form form={form} onFinish={handleSubmit} layout="vertical">
         <Form.Item

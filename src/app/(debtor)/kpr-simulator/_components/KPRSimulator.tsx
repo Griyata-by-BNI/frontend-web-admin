@@ -117,6 +117,7 @@ export const KPRSimulator = ({
         </Row>
 
         <Modal
+          centered
           destroyOnHidden
           title="Detail Angsuran Bulanan"
           open={showDetailedSchedule}
