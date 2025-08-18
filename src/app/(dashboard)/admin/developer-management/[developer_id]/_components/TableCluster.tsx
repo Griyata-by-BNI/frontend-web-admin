@@ -164,6 +164,7 @@ export default function TableCluster({}) {
       </Row>
 
       <Table
+        bordered
         columns={columns}
         dataSource={filteredData}
         rowKey="id"

@@ -112,6 +112,7 @@ export const KPRResults = ({
                 <p className="text-sm text-gray-600 mb-3">Tabel Angsuran</p>
 
                 <Table
+                  bordered
                   dataSource={paymentSchedule}
                   columns={columns}
                   pagination={false}

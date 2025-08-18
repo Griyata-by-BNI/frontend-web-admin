@@ -86,7 +86,7 @@ export const RequirementsSection = () => {
         </h3>
 
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
+          <Table bordered className="w-full border-collapse">
             <thead>
               <tr>
                 <th className="p-3 text-left border-b border-gray-200 text-sm bg-gray-50 font-semibold text-gray-800">

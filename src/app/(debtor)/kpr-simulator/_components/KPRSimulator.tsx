@@ -133,6 +133,7 @@ export const KPRSimulator = ({
           )}
 
           <Table
+            bordered
             dataSource={detailedSchedule}
             columns={detailedColumns}
             pagination={{ pageSize: 12 }}

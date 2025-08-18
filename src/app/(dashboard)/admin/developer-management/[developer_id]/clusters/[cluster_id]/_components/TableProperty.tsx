@@ -79,6 +79,7 @@ export default function TableProperty({
 
   return (
     <Table
+      bordered
       dataSource={filteredData}
       rowKey="id"
       pagination={false}

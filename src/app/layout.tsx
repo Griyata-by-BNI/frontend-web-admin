@@ -49,6 +49,12 @@ export default function RootLayout({
                 colorPrimary: "#30a5a2",
                 fontFamily: "var(--font-jakarta), sans-serif",
               },
+              components: {
+                Table: {
+                  headerBg: "#efefef",
+                  borderColor: "#dfdfdf",
+                },
+              },
             }}
           >
             <AntdRegistry>

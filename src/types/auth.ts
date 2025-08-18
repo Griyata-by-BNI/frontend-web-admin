@@ -25,6 +25,8 @@ export interface LoginRequest {
 export interface DecodedUser {
   email: string;
   userId: string;
+  fullname: string;
+  role: string;
 }
 
 export interface LoginResponse {

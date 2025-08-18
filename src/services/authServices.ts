@@ -38,10 +38,13 @@ export const useLogin = () => {
 export const useVerifyEmailRegister = () => {
   return useMutation({
     mutationFn: async ({ email, otp }: VerifyEmailPayload) => {
-      const response = await axiosInstance.post("/auth/sign-up-verify", {
-        email: email.trim().toLowerCase(),
-        verifyToken: otp,
-      });
+      const response = await axiosInstance.post<LoginResponse>(
+        "/auth/sign-up-verify",
+        {
+          email: email.trim().toLowerCase(),
+          verifyToken: otp,
+        }
+      );
 
       return response.data;
     },
