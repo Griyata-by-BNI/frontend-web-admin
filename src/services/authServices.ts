@@ -13,7 +13,7 @@ export const useRegister = () => {
   return useMutation({
     mutationFn: async (data: RegisterPayload) => {
       const response = await axiosInstance.post<RegisterResponse>(
-        "/api/v1/auth/sign-up",
+        "/auth/sign-up",
         data
       );
 
@@ -26,7 +26,7 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: async (data: LoginRequest) => {
       const response = await axiosInstance.post<LoginResponse>(
-        "/api/v1/auth/sign-in",
+        "/auth/sign-in",
         data
       );
 
@@ -38,7 +38,7 @@ export const useLogin = () => {
 export const useVerifyEmailRegister = () => {
   return useMutation({
     mutationFn: async ({ email, otp }: VerifyEmailPayload) => {
-      const response = await axiosInstance.post("/api/v1/auth/sign-up-verify", {
+      const response = await axiosInstance.post("/auth/sign-up-verify", {
         email: email.trim().toLowerCase(),
         verifyToken: otp,
       });
@@ -51,7 +51,7 @@ export const useVerifyEmailRegister = () => {
 export const useResendOtp = () => {
   return useMutation({
     mutationFn: async (email: string) => {
-      const response = await axiosInstance.post("/api/v1/auth/resend-otp", {
+      const response = await axiosInstance.post("/auth/resend-otp", {
         email: email.trim().toLowerCase(),
       });
 
@@ -63,12 +63,9 @@ export const useResendOtp = () => {
 export const useForgotPassword = () => {
   return useMutation({
     mutationFn: async (email: string) => {
-      const response = await axiosInstance.post(
-        "/api/v1/auth/forgot-password",
-        {
-          email: email.trim().toLowerCase(),
-        }
-      );
+      const response = await axiosInstance.post("/auth/forgot-password", {
+        email: email.trim().toLowerCase(),
+      });
 
       return response.data;
     },
@@ -84,7 +81,7 @@ export const useVerifyOtpForgotPassword = () => {
     mutationFn: async ({ email, otp }) => {
       const response =
         await axiosInstance.post<VerifyOtpForgotPasswordResponse>(
-          "/api/v1/auth/forgot-password-verify-otp",
+          "/auth/forgot-password-verify-otp",
           {
             email: email.trim().toLowerCase(),
             otp,
@@ -107,14 +104,11 @@ export const useResetPassword = () => {
       token: string;
       newPassword: string;
     }) => {
-      const response = await axiosInstance.post(
-        "/api/v1/auth/forgot-password-reset",
-        {
-          email: email.trim().toLowerCase(),
-          tokenReset: token,
-          newPassword,
-        }
-      );
+      const response = await axiosInstance.post("/auth/forgot-password-reset", {
+        email: email.trim().toLowerCase(),
+        tokenReset: token,
+        newPassword,
+      });
 
       return response.data;
     },

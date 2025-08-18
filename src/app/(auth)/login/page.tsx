@@ -37,7 +37,7 @@ const LoginPage: React.FC = () => {
       }
 
       router.push("/");
-    } catch (err) {
+    } catch (err: any) {
       messageApi.error("Login gagal. Mohon periksa email dan password anda!");
     }
   };

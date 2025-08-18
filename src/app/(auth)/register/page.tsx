@@ -1,12 +1,12 @@
 "use client";
-import "@ant-design/v5-patch-for-react-19";
-import React from "react";
-import Link from "next/link";
-import { Form, Input, Button, Checkbox, Alert, App } from "antd";
-import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
-import { useRouter } from "next/navigation";
-import { FormData } from "./types";
 import { useRegister } from "@/services/authServices";
+import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
+import "@ant-design/v5-patch-for-react-19";
+import { App, Button, Checkbox, Form, Input } from "antd";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React from "react";
+import { FormData } from "./types";
 
 const RegisterForm: React.FC = ({}) => {
   const router = useRouter();
@@ -26,7 +26,7 @@ const RegisterForm: React.FC = ({}) => {
       router.push(`/register/verify-email?email=${values.email}`);
     } catch (err: any) {
       const errorMessage =
-        err.response?.data?.status?.message ||
+        err?.response?.data?.status?.message ||
         "Terjadi kesalahan. Silakan coba lagi.";
 
       message.error(errorMessage);
