@@ -116,6 +116,7 @@ export default function TableClusterType({ clusterId }: TableClusterTypeProps) {
       </Row>
 
       <Table
+        bordered
         dataSource={filteredData}
         rowKey="id"
         columns={columns}
@@ -138,7 +139,8 @@ export default function TableClusterType({ clusterId }: TableClusterTypeProps) {
                 </Button>
               </div>
 
-              <TableProperty
+              <Table
+                borderedProperty
                 clusterTypeId={record.id}
                 onEdit={(property) => {
                   setEditingProperty(property);

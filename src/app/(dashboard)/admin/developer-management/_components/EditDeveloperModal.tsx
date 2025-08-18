@@ -1,14 +1,15 @@
 "use client";
 
-import { Form, Input, Modal, Typography, Upload } from "antd";
+import { Form, Input, Modal, Typography, Upload, message } from "antd";
 import { UploadCloud } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { Developer } from "../_types";
+import { Developer } from "@/types/developer";
+import { useUpdateDeveloper } from "@/services/developerServices";
 
 interface EditDeveloperModalProps {
   open: boolean;
   onCancel: () => void;
-  onSubmit: (values: Developer) => void;
+  onSubmit: () => void;
   editingRecord: Developer | null;
 }
 
@@ -20,21 +21,36 @@ export default function EditDeveloperModal({
 }: EditDeveloperModalProps) {
   const [form] = Form.useForm();
   const [previewImage, setPreviewImage] = useState<string>("");
+  const updateMutation = useUpdateDeveloper();
 
   useEffect(() => {
     if (editingRecord && open) {
-      const formData = { ...editingRecord };
-      // Convert image string to empty fileList for Upload component
-      (formData as any).image = [];
-      form.setFieldsValue(formData);
-      setPreviewImage(editingRecord.image || "");
+      form.setFieldsValue({
+        name: editingRecord.name,
+        description: editingRecord.description
+      });
+      setPreviewImage(editingRecord.developerPhotoUrl || "");
     }
   }, [editingRecord, form, open]);
 
-  const handleSubmit = (values: any) => {
-    onSubmit(values);
-    form.resetFields();
-    setPreviewImage("");
+  const handleSubmit = async (values: any) => {
+    if (!editingRecord) return;
+    try {
+      const payload: Developer = {
+        ...editingRecord,
+        name: values.name,
+        description: values.description,
+        updatedBy: 1,
+        developerPhotoUrl: values.image || editingRecord.developerPhotoUrl
+      };
+      await updateMutation.mutateAsync(payload);
+      message.success('Developer berhasil diperbarui');
+      onSubmit();
+      form.resetFields();
+      setPreviewImage("");
+    } catch (error) {
+      message.error('Gagal memperbarui developer');
+    }
   };
 
   const handleCancel = () => {
@@ -77,8 +93,6 @@ export default function EditDeveloperModal({
           name="image"
           label="Gambar"
           className="!mb-3"
-          valuePropName="fileList"
-          rules={[{ required: true, message: "Mohon upload gambar!" }]}
         >
           <Upload.Dragger
             maxCount={1}
@@ -87,17 +101,16 @@ export default function EditDeveloperModal({
               if (info.fileList.length > 0) {
                 const file = info.fileList[0].originFileObj;
                 if (file) {
+                  form.setFieldValue("image", file);
                   const reader = new FileReader();
                   reader.onload = () => {
-                    const result = reader.result as string;
-                    form.setFieldValue("image", result);
-                    setPreviewImage(result);
+                    setPreviewImage(reader.result as string);
                   };
                   reader.readAsDataURL(file);
                 }
               } else {
-                form.setFieldValue("image", "");
-                setPreviewImage("");
+                form.setFieldValue("image", null);
+                setPreviewImage(editingRecord?.developerPhotoUrl || "");
               }
             }}
           >
@@ -126,25 +139,7 @@ export default function EditDeveloperModal({
           </Upload.Dragger>
         </Form.Item>
 
-        <Form.Item
-          name="cluster_count"
-          label="Jumlah Cluster"
-          className="!mb-3"
-          rules={[
-            { required: true, message: "Mohon masukkan jumlah cluster!" },
-          ]}
-        >
-          <Input />
-        </Form.Item>
 
-        <Form.Item
-          name="phone_number"
-          label="Nomor Telepon"
-          className="!mb-3"
-          rules={[{ required: true, message: "Mohon masukkan nomor telepon!" }]}
-        >
-          <Input />
-        </Form.Item>
 
         <Form.Item
           name="description"

@@ -22,6 +22,13 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface DecodedUser {
+  email: string;
+  userId: string;
+  fullname: string;
+  role: string;
+}
+
 export interface LoginResponse {
   status: {
     code: number;
@@ -41,4 +48,26 @@ export type UserLogin = {
 export type VerifyEmailPayload = {
   email: string;
   otp: string;
+};
+
+export type AuthContextType = {
+  user: DecodedUser | null;
+  token: string | null;
+  login: (token: string) => void;
+  logout: () => void;
+  loading: boolean;
+};
+
+export interface JwtPayload extends DecodedUser {
+  exp: number;
+}
+
+export type VerifyOtpForgotPasswordResponse = {
+  status: {
+    code: number;
+    message: string;
+  };
+  data: {
+    tokenReset: string;
+  };
 };

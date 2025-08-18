@@ -1,7 +1,7 @@
 "use client";
 
 import { Modal, Typography } from "antd";
-import type { Developer } from "../_types";
+import { Developer } from "@/types/developer";
 
 interface DeleteDeveloperModalProps {
   open: boolean;
@@ -33,12 +33,7 @@ export default function DeleteDeveloperModal({
     >
       <p>
         Apakah Anda yakin ingin menghapus data{" "}
-        {developerData && (
-          <>
-            <strong>{developerData.name}</strong>
-          </>
-        )}
-        ?
+        <strong>{developerData?.name}</strong>?
       </p>
 
       <p className="text-gray-500 text-sm mt-2">

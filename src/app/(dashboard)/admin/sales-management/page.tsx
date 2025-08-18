@@ -119,7 +119,9 @@ export default function SalesManagementPage() {
   return (
     <>
       <div className="mb-4 flex flex-col gap-1">
-        <p className="text-2xl text-primary-black font-bold">Manajemen Sales</p>
+        <p className="text-2xl text-primary-black font-bold">
+          Sales Management
+        </p>
 
         <Breadcrumb
           items={[
@@ -128,7 +130,9 @@ export default function SalesManagementPage() {
             },
             {
               title: (
-                <p className="text-dark-tosca font-semibold">Manajemen Sales</p>
+                <p className="text-dark-tosca font-semibold">
+                  Sales Management
+                </p>
               ),
               href: "/admin/sales-management",
             },
@@ -172,6 +176,7 @@ export default function SalesManagementPage() {
       </Row>
 
       <Table
+        bordered
         columns={columns}
         dataSource={filteredData}
         rowKey="id"

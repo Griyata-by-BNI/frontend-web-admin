@@ -117,6 +117,7 @@ export const KPRSimulator = ({
         </Row>
 
         <Modal
+          centered
           destroyOnHidden
           title="Detail Angsuran Bulanan"
           open={showDetailedSchedule}
@@ -132,6 +133,7 @@ export const KPRSimulator = ({
           )}
 
           <Table
+            bordered
             dataSource={detailedSchedule}
             columns={detailedColumns}
             pagination={{ pageSize: 12 }}

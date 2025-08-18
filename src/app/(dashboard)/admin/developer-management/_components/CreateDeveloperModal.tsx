@@ -1,14 +1,15 @@
 "use client";
 
-import { Form, Input, Modal, Typography, Upload } from "antd";
+import { Form, Input, Modal, Typography, Upload, message } from "antd";
 import { UploadCloud } from "lucide-react";
 import { useState } from "react";
-import type { Developer } from "../_types";
+import { PayloadDeveloper } from "@/types/developer";
+import { useCreateDeveloper } from "@/services/developerServices";
 
 interface CreateDeveloperModalProps {
   open: boolean;
   onCancel: () => void;
-  onSubmit: (values: Omit<Developer, "id">) => void;
+  onSubmit: () => void;
 }
 
 export default function CreateDeveloperModal({
@@ -18,10 +19,25 @@ export default function CreateDeveloperModal({
 }: CreateDeveloperModalProps) {
   const [form] = Form.useForm();
   const [previewImage, setPreviewImage] = useState<string>("");
+  const createMutation = useCreateDeveloper();
 
-  const handleSubmit = (values: any) => {
-    onSubmit(values);
-    form.resetFields();
+  const handleSubmit = async (values: any) => {
+    try {
+      const payload: PayloadDeveloper = {
+        name: values.name,
+        description: values.description,
+        createdBy: 1,
+        updatedBy: 1,
+        developerPhotoUrl: values.image
+      };
+      await createMutation.mutateAsync(payload);
+      message.success('Developer berhasil dibuat');
+      onSubmit();
+      form.resetFields();
+      setPreviewImage("");
+    } catch (error) {
+      message.error('Gagal membuat developer');
+    }
   };
 
   const handleCancel = () => {
@@ -64,7 +80,6 @@ export default function CreateDeveloperModal({
           name="image"
           label="Gambar"
           className="!mb-3"
-          valuePropName="fileList"
           rules={[{ required: true, message: "Mohon upload gambar!" }]}
         >
           <Upload.Dragger
@@ -74,16 +89,15 @@ export default function CreateDeveloperModal({
               if (info.fileList.length > 0) {
                 const file = info.fileList[0].originFileObj;
                 if (file) {
+                  form.setFieldValue("image", file);
                   const reader = new FileReader();
                   reader.onload = () => {
-                    const result = reader.result as string;
-                    form.setFieldValue("image", result);
-                    setPreviewImage(result);
+                    setPreviewImage(reader.result as string);
                   };
                   reader.readAsDataURL(file);
                 }
               } else {
-                form.setFieldValue("image", "");
+                form.setFieldValue("image", null);
                 setPreviewImage("");
               }
             }}
@@ -113,28 +127,7 @@ export default function CreateDeveloperModal({
           </Upload.Dragger>
         </Form.Item>
 
-        <Form.Item
-          name="cluster_count"
-          label="Jumlah Cluster"
-          className="!mb-3"
-          rules={[
-            { required: true, message: "Mohon masukkan jumlah cluster!" },
-          ]}
-        >
-          <Input placeholder="Masukkan jumlah cluster" />
-        </Form.Item>
 
-        <Form.Item
-          name="phone_number"
-          label="Nomor Telepon"
-          className="!mb-3"
-          rules={[
-            { required: true, message: "Mohon masukkan nomor telepon!" },
-            { min: 10, message: "Nomor telepon minimal 10 digit!" },
-          ]}
-        >
-          <Input placeholder="081234567890" />
-        </Form.Item>
 
         <Form.Item
           name="description"

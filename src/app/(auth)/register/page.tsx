@@ -1,15 +1,16 @@
 "use client";
-
-import React from "react";
-import Link from "next/link";
-import { Form, Input, Button, Checkbox, Alert } from "antd";
-import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
-import { useRouter } from "next/navigation";
-import { FormData } from "./types";
 import { useRegister } from "@/services/authServices";
+import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
+import "@ant-design/v5-patch-for-react-19";
+import { App, Button, Checkbox, Form, Input } from "antd";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React from "react";
+import { FormData } from "./types";
 
 const RegisterForm: React.FC = ({}) => {
   const router = useRouter();
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const { mutateAsync: register, status, error } = useRegister();
 
@@ -22,8 +23,14 @@ const RegisterForm: React.FC = ({}) => {
         password: values.password.trim(),
       });
 
-      router.push("/(auth)/register/verify-email");
-    } catch (err) {}
+      router.push(`/register/verify-email?email=${values.email}`);
+    } catch (err: any) {
+      const errorMessage =
+        err?.response?.data?.status?.message ||
+        "Terjadi kesalahan. Silakan coba lagi.";
+
+      message.error(errorMessage);
+    }
   };
 
   const loading = status === "pending";
@@ -39,14 +46,6 @@ const RegisterForm: React.FC = ({}) => {
           Masukkan identitas diri untuk mendaftar
         </p>
       </div>
-
-      {error && (
-        <Alert
-          message={"Terjadi kesalahan. Silakan coba lagi."}
-          type="error"
-          className="mb-4"
-        />
-      )}
 
       <Form form={form} onFinish={handleSubmit} layout="vertical">
         <Form.Item

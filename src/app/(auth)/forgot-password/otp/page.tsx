@@ -16,7 +16,6 @@ import {
   message,
 } from "antd";
 import clsx from "clsx";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -54,20 +53,19 @@ const OTPForgotPasswordPage: React.FC = () => {
     verifyOtpMutation.mutate(
       { email, otp },
       {
-        onSuccess: (data) => {
-          const token = data.tokenReset || data.token || data.resetToken || "";
+        onSuccess: (response) => {
+          console.log(response);
+          const token = response.data.tokenReset;
 
-          message.success(data.message || "OTP berhasil diverifikasi!");
+          message.success("OTP berhasil diverifikasi!");
           setResetToken(token);
           setIsVerified(true);
 
-          setTimeout(() => {
-            router.push(
-              `/forgot-password/reset-password?email=${encodeURIComponent(
-                email
-              )}&token=${encodeURIComponent(token)}`
-            );
-          }, 1500);
+          router.push(
+            `/forgot-password/reset-password?email=${encodeURIComponent(
+              email
+            )}&token=${encodeURIComponent(token)}`
+          );
         },
         onError: (error: any) => {
           const errorMessage =

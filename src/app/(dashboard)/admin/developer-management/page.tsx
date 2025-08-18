@@ -10,6 +10,7 @@ import {
   Row,
   Table,
   Tooltip,
+  message,
 } from "antd";
 import { Edit, Eye, Plus, Trash } from "lucide-react";
 import Link from "next/link";
@@ -18,32 +19,11 @@ import { useState } from "react";
 import CreateDeveloperModal from "./_components/CreateDeveloperModal";
 import DeleteDeveloperModal from "./_components/DeleteDeveloperModal";
 import EditDeveloperModal from "./_components/EditDeveloperModal";
-import type { Developer } from "./_types";
-
-const mockData: Developer[] = [
-  {
-    id: "1",
-    name: "PT Ciputra Development",
-    image:
-      "https://images.unsplash.com/photo-1516156008625-3a9d6067fab5?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    cluster_count: "15",
-    phone_number: "081234567890",
-    description: "Leading property developer in Indonesia",
-    created_at: "2025-08-13T04:42:53.000Z",
-    updated_at: "2025-08-13T04:42:53.000Z",
-  },
-  {
-    id: "2",
-    name: "PT Agung Podomoro Land",
-    image:
-      "https://images.unsplash.com/photo-1516156008625-3a9d6067fab5?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    cluster_count: "8",
-    phone_number: "081234567891",
-    description: "Premium residential and commercial developer",
-    created_at: "2025-08-13T04:42:53.000Z",
-    updated_at: "2025-08-13T04:42:53.000Z",
-  },
-];
+import { Developer } from "@/types/developer";
+import {
+  useGetDevelopers,
+  useDeleteDeveloper,
+} from "@/services/developerServices";
 
 export default function DeveloperManagementPage() {
   const [searchText, setSearchText] = useState("");
@@ -54,15 +34,17 @@ export default function DeveloperManagementPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const router = useRouter();
+  const { data: developers = [], isLoading, refetch } = useGetDevelopers();
+  const deleteMutation = useDeleteDeveloper();
 
   const handleEdit = (record: Developer) => {
     setEditingRecord(record);
     setIsEditModalOpen(true);
   };
 
-  const handleEditSubmit = (values: Developer) => {
-    console.log("Updated values:", values);
+  const handleEditSubmit = () => {
     setIsEditModalOpen(false);
+    refetch();
   };
 
   const handleDelete = (record: Developer) => {
@@ -70,18 +52,29 @@ export default function DeveloperManagementPage() {
     setIsDeleteModalOpen(true);
   };
 
-  const handleDeleteConfirm = () => {
-    console.log("Deleting:", deletingRecord);
+  const handleDeleteConfirm = async () => {
+    if (deletingRecord) {
+      try {
+        await deleteMutation.mutateAsync({
+          id: deletingRecord.id,
+          updatedBy: 1,
+        });
+        message.success("Developer berhasil dihapus");
+        refetch();
+      } catch (error) {
+        message.error("Gagal menghapus developer");
+      }
+    }
     setIsDeleteModalOpen(false);
     setDeletingRecord(null);
   };
 
-  const handleCreateSubmit = (values: Omit<Developer, "id">) => {
-    console.log("Creating:", values);
+  const handleCreateSubmit = () => {
     setIsCreateModalOpen(false);
+    refetch();
   };
 
-  const filteredData = mockData.filter((item) =>
+  const filteredData = developers?.filter((item) =>
     item.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
@@ -92,18 +85,11 @@ export default function DeveloperManagementPage() {
       key: "name",
       render: (text: string, record: Developer) => (
         <div className="flex items-center gap-3">
-          <Avatar src={record.image} size={48} />
-
+          <Avatar src={record.developerPhotoUrl} size={48} />
           <span>{text}</span>
         </div>
       ),
     },
-    {
-      title: "Jumlah Cluster",
-      dataIndex: "cluster_count",
-      key: "cluster_count",
-    },
-    { title: "Telepon", dataIndex: "phone_number", key: "phone_number" },
     { title: "Deskripsi", dataIndex: "description", key: "description" },
     {
       title: "Aksi",
@@ -185,9 +171,11 @@ export default function DeveloperManagementPage() {
       </Row>
 
       <Table
+        bordered
         columns={columns}
         dataSource={filteredData}
         rowKey="id"
+        loading={isLoading}
         pagination={{ pageSize: 10 }}
       />
 

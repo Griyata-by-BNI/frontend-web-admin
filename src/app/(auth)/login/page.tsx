@@ -1,14 +1,19 @@
 "use client";
 import "@ant-design/v5-patch-for-react-19";
-import React from "react";
-import Image from "next/image";
-import { Alert, Button, Checkbox, Form, Input, message } from "antd";
 import { useLogin } from "@/services/authServices";
+import { App, Button, Checkbox, Form, Input } from "antd";
+import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useEffect } from "react";
+import { useAuth } from "@/contexts/authContext";
 
 const LoginPage: React.FC = () => {
-  const { mutateAsync: login, error, status } = useLogin();
+  const router = useRouter();
+  const { login } = useAuth();
   const [form] = Form.useForm();
+  const { message: messageApi } = App.useApp();
+  const { mutateAsync: loginApi, status } = useLogin();
 
   const handleSubmit = async (values: {
     email: string;
@@ -18,7 +23,9 @@ const LoginPage: React.FC = () => {
     try {
       const { email, password, rememberMe } = values;
 
-      await login({ email, password });
+      const response = await loginApi({ email, password });
+
+      login(response.data.token);
 
       if (rememberMe) {
         window.localStorage.setItem(
@@ -28,10 +35,28 @@ const LoginPage: React.FC = () => {
       } else {
         window.localStorage.removeItem("credential");
       }
-    } catch (err) {
-      message.error("Login gagal. Mohon periksa email dan password anda!");
+
+      router.push("/");
+    } catch (err: any) {
+      messageApi.error("Login gagal. Mohon periksa email dan password anda!");
     }
   };
+
+  useEffect(() => {
+    const savedCredential = localStorage.getItem("credential");
+    if (savedCredential) {
+      try {
+        const { email, password } = JSON.parse(savedCredential);
+        form.setFieldsValue({
+          email,
+          password,
+          rememberMe: true,
+        });
+      } catch {
+        localStorage.removeItem("credential");
+      }
+    }
+  }, [form]);
 
   const loading = status === "pending";
 
@@ -62,10 +87,6 @@ const LoginPage: React.FC = () => {
                 Masukkan email dan password untuk login
               </p>
             </div>
-
-            {error && (
-              <Alert message={error.message} type="error" className="mb-4" />
-            )}
 
             <Form
               form={form}

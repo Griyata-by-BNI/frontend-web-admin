@@ -6,22 +6,22 @@ import { Edit, Trash } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { mockDeveloperData } from "../_constants";
 import EditDeveloperModal from "../_components/EditDeveloperModal";
 import DeleteDeveloperModal from "../_components/DeleteDeveloperModal";
-import type { Developer } from "../_types";
+import { Developer } from "@/types/developer";
+import { useGetDevelopers } from "@/services/developerServices";
 import TableCluster from "./_components/TableCluster";
 
 export default function DeveloperDetailPage() {
   const params = useParams();
-  const developerId = params.developer_id as string;
+  const developerId = parseInt(params.developer_id as string);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const developer = mockDeveloperData.find((dev) => dev.id === developerId);
+  const { data: developers = [] } = useGetDevelopers();
+  const developer = developers.find((dev) => dev.id === developerId);
 
-  const handleEditSubmit = (values: Developer) => {
-    console.log("Updated values:", values);
+  const handleEditSubmit = () => {
     setIsEditModalOpen(false);
   };
 
@@ -62,7 +62,7 @@ export default function DeveloperDetailPage() {
             <Col xs={24} md={8}>
               <div className="w-full h-[200px] rounded-lg">
                 <Image
-                  src={developer.image}
+                  src={developer.developerPhotoUrl}
                   width={400}
                   height={200}
                   alt={developer.name}
@@ -106,7 +106,7 @@ export default function DeveloperDetailPage() {
                 Daftar Cluster
               </p>
 
-              <TableCluster />
+              <Table borderedCluster />
             </Col>
           </Row>
         </div>

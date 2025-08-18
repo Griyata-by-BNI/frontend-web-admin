@@ -168,7 +168,7 @@ export default function ClusterDetailPage() {
                   Cluster Type
                 </p>
 
-                <TableClusterType clusterId={cluster.id} />
+                <Table borderedClusterType clusterId={cluster.id} />
               </div>
             </Col>
           </Row>

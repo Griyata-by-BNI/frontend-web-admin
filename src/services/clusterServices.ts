@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import axiosInstance from "@/lib/axios";
+import axiosInstance from "@/utils/axios";
 import { GetClustersResponse } from "@/types/cluster";
 
 export const fetchClusters = async (): Promise<GetClustersResponse> => {
