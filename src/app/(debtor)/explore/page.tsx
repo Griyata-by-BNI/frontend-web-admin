@@ -1,213 +1,232 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { Developer, Cluster, MOCK_DEVELOPERS, HomeType } from '@/app/(debtor)/developers/types/developers'; // Impor dari file data Anda
+import axios from 'axios';
+import FilterPopup, { FilterState } from './components/FilterPopup';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBed, faShower, faHouse, faChartArea } from "@fortawesome/free-solid-svg-icons";
+import axiosInstance from '@/lib/axios'; 
 
-// --- Ikon SVG ---
+// --- DEFINISI TIPE ---
+interface Facility {
+    name: 'KT' | 'KM' | 'LB' | 'LT';
+    value: number;
+}
+interface Property {
+    id: number;
+    location: string; 
+    propertyName: string;
+    developerName: string;
+    price: number;
+    // 'installment' tidak lagi wajib ada di data API
+    installment?: number; 
+    facilities: Facility[];
+    updatedAt: string;
+    photoUrl: string | null;
+}
+
+// --- IKON SVG ---
 const SearchIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
 const SortIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 4h18M3 10h12M3 16h6"/></svg>;
+const FilterIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>;
 const LocationPinIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-teal-600"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>;
-const BedIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600"><path d="M2 4v16h20V4Z"/><path d="M2 10h20"/></svg>;
-const BathIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600"><path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-2.12 0L2 6"/><path d="m2 16 6 6"/><path d="M22 16 16 22"/><path d="M17 11h.01"/><path d="M15 13h.01"/><path d="M13 15h.01"/><path d="M22 8 12 18"/><path d="M15 3 5 13"/><path d="M22 8a6 6 0 0 0-8.49-8.49"/></svg>;
-const LandAreaIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600"><path d="M21.2,12.3H20V9.8c0-1.1-0.9-2-2-2h-2.5V5.8c0-1.1-0.9-2-2-2h-5c-1.1,0-2,0.9-2,2v2H3.8c-1.1,0-2,0.9-2,2v10c0,1.1,0.9,2,2,2h15c1.1,0,2-0.9,2-2v-2.5h1.2c0.7,0,1.2-0.5,1.2-1.2V13.5C22.5,12.8,21.9,12.3,21.2,12.3z M18.8,20H3.8c-0.6,0-1-0.4-1-1v-9.2c0-0.6,0.4-1,1-1h15c0.6,0,1,0.4,1,1V20z"/><path d="M11.5,15.3h-5c-0.3,0-0.5-0.2-0.5-0.5v-5c0-0.3,0.2-0.5,0.5-0.5h5c0.3,0,0.5,0.2,0.5,0.5v5C12,15.1,11.8,15.3,11.5,15.3z"/></svg>;
-const BuildingAreaIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600"><path d="M16 12a4 4 0 1 0-8 0 4 4 0 0 0 8 0Z"/><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>;
-
-
-// --- Komponen-komponen ---
 
 const HeroSearchBar: React.FC<{
-    searchTerm: string;
-    setSearchTerm: (term: string) => void;
-    sortOption: string;
-    setSortOption: (option: string) => void;
-    isLocationEnabled: boolean;
-}> = ({ searchTerm, setSearchTerm, sortOption, setSortOption, isLocationEnabled }) => {
-    return (
-        <div className="bg-white p-4 rounded-2xl shadow-lg max-w-4xl mx-auto">
-            <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-grow flex items-center border border-gray-300 rounded-md focus-within:ring-2 focus-within:ring-cyan-500 transition-shadow">
-                    <div className="pl-4 text-gray-400 pointer-events-none"><SearchIcon /></div>
-                    <input 
-                        type="text" 
-                        placeholder="Cari cluster, developer, tipe rumah, atau lokasi..." 
-                        className="w-full pr-4 py-3 pl-2 border-none focus:outline-none bg-transparent"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <div className="relative">
+    searchTerm: string; setSearchTerm: (term: string) => void; sortOption: string; setSortOption: (option: string) => void; onFilterClick: () => void;
+}> = ({ searchTerm, setSearchTerm, sortOption, setSortOption, onFilterClick }) => (
+    <div className="bg-white p-4 rounded-2xl shadow-lg max-w-4xl mx-auto">
+        <div className="flex flex-col md:flex-row gap-4 items-center">
+            <div className="flex-grow w-full flex items-center border border-gray-300 rounded-md focus-within:ring-2 focus-within:ring-cyan-500 transition-shadow">
+                <div className="pl-4 text-gray-400 pointer-events-none"><SearchIcon /></div>
+                <input type="text" placeholder="Cari nama properti, developer, lokasi..." className="w-full pr-4 py-3 pl-2 border-none focus:outline-none bg-transparent" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            </div>
+            <div className="w-full md:w-auto flex-shrink-0 flex gap-4">
+                 <div className="relative w-full">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"><SortIcon /></div>
-                    <select 
-                        className="w-full md:w-48 appearance-none pl-12 pr-4 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                        value={sortOption}
-                        onChange={(e) => setSortOption(e.target.value)}
-                    >
-                        <option value="terbaru">Urutkan: Terbaru</option>
-                        <option value="harga-tertinggi">Harga Tertinggi</option>
-                        <option value="harga-terendah">Harga Terendah</option>
-                        <option value="jarak-terdekat" disabled={!isLocationEnabled}>Jarak Terdekat</option>
+                    <select className="w-full md:w-48 appearance-none pl-12 pr-4 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-cyan-500" value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
+                        <option value="updatedAt">Urutkan: Terbaru</option>
+                        <option value="highestPrice">Harga Tertinggi</option>
+                        <option value="lowestPrice">Harga Terendah</option>
                     </select>
                 </div>
+                <button onClick={onFilterClick} className="w-full md:w-auto px-4 py-3 flex items-center justify-center gap-2 font-semibold text-white bg-teal-600 rounded-lg hover:bg-teal-700 transition-colors">
+                    <FilterIcon />
+                    <span>Filter</span>
+                </button>
             </div>
         </div>
-    );
-};
+    </div>
+);
 
-const ClusterCard: React.FC<{ cluster: Cluster & { developerName: string } }> = ({ cluster }) => {
-    const getTimeAgo = (dateUploaded: string) => {
-        const now = new Date();
-        const uploadedDate = new Date(dateUploaded);
-        const diffInMonths = (now.getFullYear() - uploadedDate.getFullYear()) * 12 + (now.getMonth() - uploadedDate.getMonth());
-        return `${diffInMonths} Bulan Lalu`;
+const PropertyCard: React.FC<{ property: Property }> = ({ property }) => {
+    const getFacilityValue = (name: Facility['name']): number | string => property.facilities.find(f => f.name === name)?.value ?? 'N/A';
+    const formatCurrency = (amount: number) => {
+        if (amount >= 1000000000) return `Rp ${(amount / 1000000000).toLocaleString('id-ID', { maximumFractionDigits: 1 })} M`;
+        if (amount >= 1000000) return `Rp ${(amount / 1000000).toLocaleString('id-ID')} JT`;
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
     };
-    const exampleHomeType = cluster.homeType[0];
+    const formatInstallment = (amount: number) => {
+        if (amount >= 1000000) return `Rp ${(amount / 1000000).toLocaleString('id-ID', { maximumFractionDigits: 1 })} jt`;
+        return `Rp ${amount.toLocaleString('id-ID')}`;
+    };
+    const getTimeAgo = (dateString: string) => {
+        const seconds = Math.floor((new Date().getTime() - new Date(dateString).getTime()) / 1000);
+        let interval = seconds / 31536000; if (interval > 1) return `${Math.floor(interval)} tahun lalu`;
+        interval = seconds / 2592000; if (interval > 1) return `${Math.floor(interval)} bulan lalu`;
+        interval = seconds / 86400; if (interval > 1) return `${Math.floor(interval)} hari lalu`;
+        interval = seconds / 3600; if (interval > 1) return `${Math.floor(interval)} jam lalu`;
+        interval = seconds / 60; if (interval > 1) return `${Math.floor(interval)} menit lalu`;
+        return `beberapa detik lalu`;
+    };
+
+    // --- FUNGSI BARU UNTUK MENGHITUNG ANGSURAN ---
+    const calculateInstallment = (price: number): number => {
+        const interestRate = 3.25 / 100 / 12; // Bunga per bulan
+        const tenorInMonths = 3 * 12;
+
+        // Rumus cicilan KPR (Anuitas)
+        const principal = price;
+        if (principal === 0 || interestRate === 0) return 0;
+        
+        const monthlyPayment = principal * interestRate / (1 - Math.pow(1 + interestRate, -tenorInMonths));
+        return monthlyPayment;
+    };
+
+    const monthlyInstallment = calculateInstallment(property.price);
+
     return (
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105">
-            <div className="relative w-full h-56">
-                <Image src={cluster.imageUrl} alt={cluster.name} layout="fill" objectFit="cover" />
-            </div>
+            <div className="relative w-full h-56 bg-gray-200"><Image src={property.photoUrl || "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800"} alt={property.propertyName} layout="fill" objectFit="cover" /></div>
             <div className="p-5">
                 <div className="flex justify-between items-center mb-2">
-                    <div className="flex items-center text-sm text-teal-700">
-                        <LocationPinIcon />
-                        <span className="ml-1">{cluster.location}</span>
-                    </div>
-                    <div className="text-xs bg-teal-500 text-white font-semibold px-3 py-1 rounded-full">
-                        {getTimeAgo(cluster.dateUploaded)}
-                    </div>
+                    <div className="flex items-center text-sm text-teal-700"><LocationPinIcon /><span className="ml-1">{property.location}</span></div>
+                    <div className="text-xs bg-teal-500 text-white font-semibold px-3 py-1 rounded-full">{getTimeAgo(property.updatedAt)}</div>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900">{exampleHomeType.name} - Tipe {exampleHomeType.type}</h3>
-                <p className="text-sm text-gray-500">{cluster.developerName}</p>
-                <div className="my-4 flex items-center border-y py-3">
+                <h3 className="text-xl font-bold text-gray-900 truncate" title={property.propertyName}>{property.propertyName}</h3>
+                <p className="text-sm text-gray-500">{property.developerName}</p>
+                <div className="my-4 flex items-center py-3">
                     <div className="flex-1">
                         <p className="text-xs text-gray-500">Harga</p>
-                        <p className="text-xl font-bold text-gray-800">Rp {exampleHomeType.price}</p>
+                        <p className="text-xl font-bold text-gray-800">{formatCurrency(property.price ?? 0)}</p>
                     </div>
                     <div className="h-10 w-px bg-gray-200 mx-4"></div>
                     <div className="flex-1">
                         <p className="text-xs text-gray-500">Angsuran</p>
-                        <p className="text-xl font-bold text-gray-800">Rp {exampleHomeType.installment} <span className="text-sm font-normal text-gray-500">/bulan</span></p>
+                        <p className="text-xl font-bold text-gray-800">
+                            {/* Menggunakan hasil perhitungan dinamis */}
+                            {formatInstallment(monthlyInstallment)}
+                            <span className="text-sm font-normal text-gray-500"> /bulan</span>
+                        </p>
                     </div>
                 </div>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-gray-700">
-                    <div className="flex items-center gap-2"><BedIcon /><span>KT: 3</span></div>
-                    <div className="flex items-center gap-2"><BuildingAreaIcon /><span>LB: 117 m²</span></div>
-                    <div className="flex items-center gap-2"><BathIcon /><span>KM: 3</span></div>
-                    <div className="flex items-center gap-2"><LandAreaIcon /><span>LT: 135 m²</span></div>
-                </div>
+                  <div className="flex items-center gap-2">
+                      <FontAwesomeIcon icon={faBed} className="w-4 text-gray-500" />
+                      <span>KT: {getFacilityValue('KT')}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                      <FontAwesomeIcon icon={faHouse} className="w-4 text-gray-500" />
+                      <span>LB: {getFacilityValue('LB')} m²</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                      <FontAwesomeIcon icon={faShower} className="w-4 text-gray-500" />
+                      <span>KM: {getFacilityValue('KM')}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                      <FontAwesomeIcon icon={faChartArea} className="w-4 text-gray-500" />
+                      <span>LT: {getFacilityValue('LT')} m²</span>
+                  </div>
+              </div>
             </div>
         </div>
     );
 };
 
-// --- Komponen Utama Halaman ---
-export default function ExplorePage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortOption, setSortOption] = useState('terbaru');
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setUserLocation([position.coords.latitude, position.coords.longitude]);
-      },
-      (error) => {
-        console.error("Error getting user location:", error);
-      }
-    );
-  }, []);
-
-  const parsePrice = (priceStr: string): number => {
-    const parts = priceStr.split(' ');
-    const value = parseFloat(parts[0].replace(',', '.'));
-    const multiplier = parts[1]?.toUpperCase() === 'M' ? 1000000 : 1;
-    return value * multiplier;
-  };
-
-  const haversineDistance = (coords1: [number, number], coords2: [number, number]): number => {
-    const toRad = (x: number) => (x * Math.PI) / 180;
-    const R = 6371;
-    const dLat = toRad(coords2[0] - coords1[0]);
-    const dLon = toRad(coords2[1] - coords1[1]);
-    const lat1 = toRad(coords1[0]);
-    const lat2 = toRad(coords2[0]);
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  };
-
-  const sortedAndFilteredClusters = useMemo(() => {
-    const allClusters = MOCK_DEVELOPERS.flatMap(developer => 
-      developer.clusters.map(cluster => ({
-        ...cluster,
-        developerName: developer.name
-      }))
-    );
-
-    // UPDATED Filtering logic
-    const filtered = allClusters.filter(cluster => {
-        const lowercasedTerm = searchTerm.toLowerCase();
-        const matchesClusterName = cluster.name.toLowerCase().includes(lowercasedTerm);
-        const matchesDeveloperName = cluster.developerName.toLowerCase().includes(lowercasedTerm);
-        const matchesLocation = cluster.location.toLowerCase().includes(lowercasedTerm);
-        // Cek apakah ada homeType yang cocok dengan pencarian
-        const matchesHomeType = cluster.homeType.some(ht => 
-            ht.name.toLowerCase().includes(lowercasedTerm) || 
-            ht.type.toLowerCase().includes(lowercasedTerm)
-        );
-        return matchesClusterName || matchesDeveloperName || matchesLocation || matchesHomeType;
-    });
-
-    return filtered.sort((a, b) => {
-      switch (sortOption) {
-        case 'harga-tertinggi':
-          return parsePrice(b.homeType[0].price) - parsePrice(a.homeType[0].price);
-        case 'harga-terendah':
-          return parsePrice(a.homeType[0].price) - parsePrice(b.homeType[0].price);
-        case 'jarak-terdekat':
-          if (!userLocation) return 0;
-          const distA = haversineDistance(userLocation, a.coordinates);
-          const distB = haversineDistance(userLocation, b.coordinates);
-          return distA - distB;
-        case 'terbaru':
-        default:
-          return new Date(b.dateUploaded).getTime() - new Date(a.dateUploaded).getTime();
-      }
-    });
-  }, [searchTerm, sortOption, userLocation]);
-
-  return (
-    <div className="bg-gray-50 font-sans">
-      <section className="relative h-[50vh] flex items-center justify-center">
-        <Image src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200&h=600&fit=crop" alt="Cityscape background" layout="fill" objectFit="cover" className="z-0"/>
-        <div className="absolute inset-0 bg-black/40"></div>
-        <div className="relative z-10 w-full px-4">
-            <h1 className="text-4xl font-bold text-white text-center mb-6">Jelajahi Properti Impian Anda</h1>
-            <HeroSearchBar 
-                searchTerm={searchTerm} 
-                setSearchTerm={setSearchTerm}
-                sortOption={sortOption}
-                setSortOption={setSortOption}
-                isLocationEnabled={!!userLocation}
-            />
-        </div>
-      </section>
-
-      <div className="container mx-auto px-4 py-12">
-        <section>
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">Menampilkan {sortedAndFilteredClusters.length} Cluster Unggulan</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {sortedAndFilteredClusters.length > 0 ? (
-                    sortedAndFilteredClusters.map(cluster => (
-                        <ClusterCard key={cluster.idCluster} cluster={cluster} />
-                    ))
-                ) : (
-                    <p className="md:col-span-2 lg:col-span-3 text-center text-gray-500">Tidak ada properti yang cocok dengan pencarian Anda.</p>
-                )}
-            </div>
-        </section>
-      </div>
+const SkeletonCard = () => (
+    <div className="bg-white rounded-2xl shadow-lg p-5 animate-pulse">
+        <div className="h-56 bg-gray-200 rounded-lg"></div><div className="mt-4 h-6 w-3/4 bg-gray-200 rounded"></div><div className="mt-2 h-4 w-1/2 bg-gray-200 rounded"></div><div className="my-4 border-y py-3 h-10"></div>
+        <div className="grid grid-cols-2 gap-4 mt-2"><div className="h-4 bg-gray-200 rounded"></div><div className="h-4 bg-gray-200 rounded"></div><div className="h-4 bg-gray-200 rounded"></div><div className="h-4 bg-gray-200 rounded"></div></div>
     </div>
-  );
+);
+
+// --- KOMPONEN HALAMAN UTAMA ---
+export default function ExplorePage() {
+    const [properties, setProperties] = useState<Property[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortOption, setSortOption] = useState('updatedAt');
+    const [isFilterOpen, setFilterOpen] = useState(false);
+    const [appliedFilters, setAppliedFilters] = useState<FilterState | null>(null);
+
+    const fetchProperties = useCallback(async (
+        currentSearchTerm: string, currentSortOption: string, currentFilters: FilterState | null
+    ) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const params: any = {
+                search: currentSearchTerm, sortBy: currentSortOption, pageNumber: 1, pageSize: 10,
+            };
+            if (currentFilters) {
+                if (currentFilters.price.min > 0) params.kisaranHargaMin = currentFilters.price.min;
+                if (currentFilters.price.max < 15500000) params.kisaranHargaMax = currentFilters.price.max;
+                if (currentFilters.bedrooms > 0) params.jumlahKamarTidur = currentFilters.bedrooms;
+                if (currentFilters.bathrooms > 0) params.jumlahKamarMandi = currentFilters.bathrooms;
+                if (currentFilters.floors > 0) params.jumlahLantai = currentFilters.floors;
+                if (currentFilters.landArea.min > 0) params.luasTanahMin = currentFilters.landArea.min;
+                if (currentFilters.landArea.max < 200) params.luasTanahMax = currentFilters.landArea.max;
+                if (currentFilters.buildingArea.min > 0) params.luasBangunanMin = currentFilters.buildingArea.min;
+                if (currentFilters.buildingArea.max < 180) params.luasBangunanMax = currentFilters.buildingArea.max;
+            }
+            const response = await axiosInstance.get(`/api/v1/properties/explore`, {
+                params, headers: { 'ngrok-skip-browser-warning': 'true' },
+            });
+            const result = response.data;
+            if (result.data && Array.isArray(result.data.properties)) {
+                setProperties(result.data.properties);
+            } else { throw new Error("Struktur data dari API tidak sesuai"); }
+        } catch (err: any) {
+            console.error("Gagal mengambil data properti:", err);
+            if (axios.isAxiosError(err)) setError(err.response?.data?.status?.message || "Gagal menghubungi server.");
+            else setError(err.message || "Terjadi kesalahan.");
+            setProperties([]);
+        } finally { setLoading(false); }
+    }, []);
+
+    useEffect(() => {
+        const handler = setTimeout(() => { fetchProperties(searchTerm, sortOption, appliedFilters); }, 500); 
+        return () => clearTimeout(handler);
+    }, [searchTerm, sortOption, appliedFilters, fetchProperties]);
+
+    const handleApplyFilters = (filters: FilterState) => {
+        setAppliedFilters(filters);
+        setFilterOpen(false);
+    };
+
+    const renderContent = () => {
+        if (loading) return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">{[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}</div>;
+        if (error) return <div className="md:col-span-3 text-center py-10"><p className="text-red-600 font-semibold">{error}</p></div>;
+        if (properties.length === 0) return <div className="md:col-span-3 text-center py-10"><p className="text-gray-500">Tidak ada properti yang cocok.</p></div>;
+        return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">{properties.map(property => <PropertyCard key={property.id} property={property} />)}</div>;
+    };
+
+    return (
+        <div className="bg-gray-50 font-sans min-h-screen">
+            <section className="relative h-[50vh] flex items-center justify-center bg-gray-700">
+                <Image src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200&h=600&fit=crop" alt="Cityscape background" layout="fill" objectFit="cover" className="z-0 opacity-50" priority/>
+                <div className="absolute inset-0 bg-black/40"></div>
+                <div className="relative z-10 w-full px-4">
+                    <h1 className="text-4xl lg:text-5xl font-bold text-white text-center mb-6">Jelajahi Properti Impian Anda</h1>
+                    <HeroSearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} sortOption={sortOption} setSortOption={setSortOption} onFilterClick={() => setFilterOpen(true)} />
+                </div>
+            </section>
+            <main className="container mx-auto px-4 py-12">
+                <h2 className="text-3xl font-bold text-gray-800 mb-6">{loading ? 'Mencari...' : `Menampilkan ${properties.length} Properti`}</h2>
+                {renderContent()}
+            </main>
+            <FilterPopup isOpen={isFilterOpen} onCloseAction={() => setFilterOpen(false)} onApplyAction={handleApplyFilters} />
+        </div>
+    );
 }

@@ -13,7 +13,7 @@ import {
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 
-interface FilterState {
+export interface FilterState {
   price: { min: number; max: number };
   bedrooms: number;
   bathrooms: number;
