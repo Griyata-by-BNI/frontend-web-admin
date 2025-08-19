@@ -4,9 +4,9 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import PropertyCard from './(debtor)/developers/components/PropertyCard';
-import { KPRSimulator } from './(debtor)/kpr-simulator';
-import { CTASection } from './(debtor)/kpr-information/detail/components/CTASection';
+import PropertyCard from '@/app/(debtor)/developers/components/PropertyCard';
+import { KPRSimulator } from '@/app/(debtor)/kpr-simulator/_components/KPRSimulator';
+import { CTASection } from '@/app/(debtor)/kpr-information/detail/components/CTASection';
 import Navbar from '@/components/navbar';
 
 // --- Ikon SVG ---
@@ -36,8 +36,6 @@ const MOCK_PROPERTIES: Property[] = [
 export default function HomePage() {
   return (
     <div className="bg-gray-50 font-sans">
-      <Navbar/>
-      
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-teal-100 to-white pt-20 pb-10 text-center relative overflow-hidden">
         <div className="container mx-auto px-4">
