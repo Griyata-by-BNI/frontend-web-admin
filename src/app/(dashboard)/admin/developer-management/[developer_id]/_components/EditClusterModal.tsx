@@ -1,26 +1,38 @@
 "use client";
 
-import { Cluster } from "@/types/cluster";
-import { Button, Form, Input, Modal, Select, Typography, Upload } from "antd";
-import { Upload as UploadIcon, X } from "lucide-react";
+import { Cluster, DetailCluster } from "@/types/cluster";
+import { Button, Form, Input, Modal, Select, Spin, Typography, Upload } from "antd";
+import { Upload as UploadIcon, X, MapPin } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { FacitiliesData } from "../../_constants";
+import { useClusterById } from "@/services/clusterServices";
+import { useNearbyPlaces } from "../_hooks/useNearbyPlaces";
 
 const MapSelector = dynamic(() => import("./MapSelector"), { ssr: false });
+
+const categories = [
+  { key: "hospitals", label: "Rumah Sakit" },
+  { key: "schools", label: "Sekolah" },
+  { key: "colleges", label: "Perguruan Tinggi" },
+  { key: "supermarkets", label: "Supermarket" },
+  { key: "publicPlaces", label: "Tempat Umum" },
+  { key: "trainStations", label: "Stasiun Kereta" },
+  { key: "busStops", label: "Halte Bus" },
+];
 
 interface EditClusterModalProps {
   open: boolean;
   onCancel: () => void;
-  onSubmit: (values: Cluster) => void;
-  editingRecord: Cluster | null;
+  onSubmit: (values: DetailCluster) => void;
+  clusterId: string | null;
 }
 
 export default function EditClusterModal({
   open,
   onCancel,
   onSubmit,
-  editingRecord,
+  clusterId,
 }: EditClusterModalProps) {
   const [form] = Form.useForm();
   const [previewImages, setPreviewImages] = useState<string[]>([]);
@@ -29,27 +41,36 @@ export default function EditClusterModal({
     lng?: number;
   }>({});
 
+  const { data: clusterData, isLoading } = useClusterById(clusterId || "");
+  const {
+    nearbyPlaces,
+    loading: loadingPlaces,
+    fetchNearbyPlaces,
+    resetPlaces,
+  } = useNearbyPlaces();
+
   useEffect(() => {
-    if (editingRecord && open) {
+    if (clusterData?.data?.clusters?.[0] && open) {
+      const cluster = clusterData.data.clusters[0];
       const formValues = {
-        ...editingRecord,
-        facilities: editingRecord.facilities
-          ? editingRecord.facilities.split(", ")
+        ...cluster,
+        facilities: cluster.facilities
+          ? cluster.facilities.split(", ")
           : [],
-        images: editingRecord.cluster_photo_urls || [],
+        images: cluster.cluster_photo_urls || [],
       };
       form.setFieldsValue(formValues);
-      setPreviewImages([...(editingRecord.cluster_photo_urls || [])]);
+      setPreviewImages([...(cluster.cluster_photo_urls || [])]);
       setCoordinates({
-        lat: editingRecord.latitude
-          ? Number(editingRecord.latitude)
+        lat: cluster.latitude
+          ? Number(cluster.latitude)
           : undefined,
-        lng: editingRecord.longitude
-          ? Number(editingRecord.longitude)
+        lng: cluster.longitude
+          ? Number(cluster.longitude)
           : undefined,
       });
     }
-  }, [editingRecord, form, open]);
+  }, [clusterData, form, open]);
 
   const handleSubmit = (values: any) => {
     onSubmit(values);
@@ -61,12 +82,14 @@ export default function EditClusterModal({
     form.resetFields();
     setPreviewImages([]);
     setCoordinates({});
+    resetPlaces();
     onCancel();
   };
 
   const handleLocationSelect = (lat: number, lng: number) => {
     setCoordinates({ lat, lng });
     form.setFieldsValue({ latitude: lat, longitude: lng });
+    fetchNearbyPlaces(lat, lng);
   };
 
   return (
@@ -82,6 +105,7 @@ export default function EditClusterModal({
       onCancel={handleCancel}
       onOk={() => form.submit()}
       okText="Perbarui"
+      confirmLoading={isLoading}
       classNames={{
         body: "!pt-2 max-h-[75vh] overflow-y-auto !px-6",
         content: "!p-0",
@@ -151,6 +175,43 @@ export default function EditClusterModal({
             onLocationSelect={handleLocationSelect}
           />
         </div>
+
+        <Spin
+          spinning={loadingPlaces}
+          tip="Memuat data tempat terdekat..."
+          wrapperClassName="min-h-[50px]"
+        >
+          {categories.some(
+            ({ key }) =>
+              (nearbyPlaces[key as keyof typeof nearbyPlaces] || []).length > 0
+          ) && (
+            <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <MapPin className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-medium">Tempat Terdekat</span>
+              </div>
+
+              {categories.map(({ key, label }) => {
+                const places =
+                  nearbyPlaces[key as keyof typeof nearbyPlaces] || [];
+                if (places.length === 0) return null;
+
+                return (
+                  <div key={key} className="mb-2">
+                    <p className="text-xs font-medium text-gray-700 mb-1">
+                      {label}:
+                    </p>
+                    {places.map((place, idx) => (
+                      <p key={idx} className="text-xs text-gray-600">
+                        • {place.name} ({place.distance}m)
+                      </p>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Spin>
 
         <Form.Item
           name="description"

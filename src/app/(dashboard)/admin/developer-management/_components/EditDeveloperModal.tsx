@@ -1,155 +1,206 @@
 "use client";
 
-import { Form, Input, Modal, Typography, Upload, message } from "antd";
-import { UploadCloud } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Developer } from "@/types/developer";
 import { useUpdateDeveloper } from "@/services/developerServices";
+import { Developer } from "@/types/developer";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  App,
+  Button,
+  Form,
+  Input,
+  Modal,
+  Tooltip,
+  Typography,
+  Upload,
+} from "antd";
+import { Edit, UploadCloud } from "lucide-react";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface EditDeveloperModalProps {
-  open: boolean;
-  onCancel: () => void;
-  onSubmit: () => void;
-  editingRecord: Developer | null;
+  developerData: Developer;
 }
 
 export default function EditDeveloperModal({
-  open,
-  onCancel,
-  onSubmit,
-  editingRecord,
+  developerData,
 }: EditDeveloperModalProps) {
+  const router = useRouter();
   const [form] = Form.useForm();
-  const [previewImage, setPreviewImage] = useState<string>("");
+  const pathname = usePathname();
+  const { message } = App.useApp();
+  const queryClient = useQueryClient();
   const updateMutation = useUpdateDeveloper();
 
+  const [previewImage, setPreviewImage] = useState<string>("");
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+
+  const isDetailPage = pathname.includes(`${developerData.id}`);
+
   useEffect(() => {
-    if (editingRecord && open) {
+    if (developerData && modalOpen) {
       form.setFieldsValue({
-        name: editingRecord.name,
-        description: editingRecord.description
+        name: developerData.name,
+        description: developerData.description,
+        image: developerData.developerPhotoUrl
+          ? [
+              {
+                uid: "-1",
+                name: `${developerData.name}.jpg`,
+                status: "done",
+                url: developerData.developerPhotoUrl,
+              },
+            ]
+          : [],
       });
-      setPreviewImage(editingRecord.developerPhotoUrl || "");
+      setPreviewImage(developerData.developerPhotoUrl || "");
     }
-  }, [editingRecord, form, open]);
+  }, [developerData, form, modalOpen]);
 
   const handleSubmit = async (values: any) => {
-    if (!editingRecord) return;
     try {
-      const payload: Developer = {
-        ...editingRecord,
+      const { updatedAt, createdAt, ...rest } = developerData;
+      const payload = {
+        ...rest,
         name: values.name,
         description: values.description,
         updatedBy: 1,
-        developerPhotoUrl: values.image || editingRecord.developerPhotoUrl
+        developerPhotoUrl: Array.isArray(values.image)
+          ? values.image?.[0]?.originFileObj
+          : undefined,
       };
       await updateMutation.mutateAsync(payload);
-      message.success('Developer berhasil diperbarui');
-      onSubmit();
+      message.success("Developer berhasil diperbarui");
+
+      isDetailPage
+        ? router.push("/admin/developer-management")
+        : queryClient.invalidateQueries({ queryKey: ["developers"] });
+
       form.resetFields();
       setPreviewImage("");
+      setModalOpen(false);
     } catch (error) {
-      message.error('Gagal memperbarui developer');
+      message.error("Gagal memperbarui developer");
     }
   };
 
   const handleCancel = () => {
     form.resetFields();
     setPreviewImage("");
-    onCancel();
+    setModalOpen(false);
   };
 
   return (
-    <Modal
-      centered
-      title={
-        <Typography.Title level={5} className="!text-dark-tosca">
-          Edit Data Developer
-        </Typography.Title>
-      }
-      maskClosable={false}
-      open={open}
-      onCancel={handleCancel}
-      onOk={() => form.submit()}
-      okText="Perbarui"
-      classNames={{
-        body: "!pt-2 max-h-[75vh] overflow-y-auto !px-6",
-        content: "!p-0",
-        header: "!pt-5 !px-6",
-        footer: "!pb-5 !px-6",
-      }}
-    >
-      <Form form={form} layout="vertical" onFinish={handleSubmit}>
-        <Form.Item
-          name="name"
-          label="Nama"
-          className="!mb-3"
-          rules={[{ required: true, message: "Mohon masukkan nama!" }]}
-        >
-          <Input />
-        </Form.Item>
-
-        <Form.Item
-          name="image"
-          label="Gambar"
-          className="!mb-3"
-        >
-          <Upload.Dragger
-            maxCount={1}
-            beforeUpload={() => false}
-            onChange={(info) => {
-              if (info.fileList.length > 0) {
-                const file = info.fileList[0].originFileObj;
-                if (file) {
-                  form.setFieldValue("image", file);
-                  const reader = new FileReader();
-                  reader.onload = () => {
-                    setPreviewImage(reader.result as string);
-                  };
-                  reader.readAsDataURL(file);
-                }
-              } else {
-                form.setFieldValue("image", null);
-                setPreviewImage(editingRecord?.developerPhotoUrl || "");
-              }
-            }}
+    <>
+      <Modal
+        centered
+        title={
+          <Typography.Title level={5} className="!text-dark-tosca">
+            Edit Data Developer
+          </Typography.Title>
+        }
+        maskClosable={false}
+        open={modalOpen}
+        onCancel={handleCancel}
+        onOk={() => form.submit()}
+        okText="Perbarui"
+        classNames={{
+          body: "!pt-2 max-h-[75vh] overflow-y-auto !px-6",
+          content: "!p-0",
+          header: "!pt-5 !px-6",
+          footer: "!pb-5 !px-6",
+        }}
+      >
+        <Form form={form} layout="vertical" onFinish={handleSubmit}>
+          <Form.Item
+            name="name"
+            label="Nama"
+            className="!mb-3"
+            rules={[{ required: true, message: "Mohon masukkan nama!" }]}
           >
-            {previewImage ? (
-              <div className="flex flex-col items-center">
-                <img
-                  src={previewImage}
-                  alt="Preview"
-                  className="w-72 aspect-video object-contain rounded mb-2"
-                />
-                <p className="text-gray-500">
-                  Klik atau seret file untuk mengganti gambar
-                </p>
-              </div>
-            ) : (
-              <>
-                <div className="flex justify-center w-full">
-                  <UploadCloud className="w-10 h-10 stroke-primary-tosca" />
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            name="image"
+            label="Gambar"
+            className="!mb-3"
+            valuePropName="fileList"
+            getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
+            rules={[{ required: true, message: "Mohon upload gambar!" }]}
+          >
+            <Upload.Dragger
+              maxCount={1}
+              beforeUpload={() => false}
+              onChange={(info) => {
+                const file = info.fileList[0]?.originFileObj;
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = () =>
+                    setPreviewImage(reader.result as string);
+                  reader.readAsDataURL(file);
+                } else {
+                  setPreviewImage("");
+                }
+              }}
+            >
+              {previewImage ? (
+                <div className="flex flex-col items-center">
+                  <Image
+                    key={previewImage}
+                    src={previewImage}
+                    alt={previewImage}
+                    width={288}
+                    height={288}
+                    className="w-72 aspect-video object-contain rounded mb-2"
+                  />
+                  <p className="text-gray-500">
+                    Klik atau seret file untuk mengganti gambar
+                  </p>
                 </div>
-                <p className="text-gray-700 text-md mt-2">
-                  Klik atau seret file untuk upload gambar
-                </p>
-                <p className="ant-upload-hint">Mendukung upload satu gambar.</p>
-              </>
-            )}
-          </Upload.Dragger>
-        </Form.Item>
+              ) : (
+                <>
+                  <div className="flex justify-center w-full">
+                    <UploadCloud className="w-10 h-10 stroke-primary-tosca" />
+                  </div>
+                  <p className="text-gray-700 text-md mt-2">
+                    Klik atau seret file untuk upload gambar
+                  </p>
+                  <p className="ant-upload-hint">
+                    Mendukung upload satu gambar.
+                  </p>
+                </>
+              )}
+            </Upload.Dragger>
+          </Form.Item>
 
+          <Form.Item
+            name="description"
+            label="Deskripsi"
+            className="!mb-3"
+            rules={[{ required: true, message: "Mohon masukkan deskripsi!" }]}
+          >
+            <Input.TextArea rows={3} />
+          </Form.Item>
+        </Form>
+      </Modal>
 
-
-        <Form.Item
-          name="description"
-          label="Deskripsi"
-          className="!mb-3"
-          rules={[{ required: true, message: "Mohon masukkan deskripsi!" }]}
+      {isDetailPage ? (
+        <Button
+          icon={<Edit className="w-4 h-4" />}
+          className="w-max"
+          onClick={() => setModalOpen(true)}
         >
-          <Input.TextArea rows={3} />
-        </Form.Item>
-      </Form>
-    </Modal>
+          Edit
+        </Button>
+      ) : (
+        <Tooltip title="Edit Data">
+          <Button
+            icon={<Edit className="w-4 h-4" />}
+            onClick={() => setModalOpen(true)}
+          />
+        </Tooltip>
+      )}
+    </>
   );
 }

@@ -157,7 +157,7 @@ export default function CreateClusterModal({
         </div>
 
         <Spin
-          spinning={true}
+          spinning={loadingPlaces}
           tip="Memuat data tempat terdekat..."
           wrapperClassName="min-h-[50px]"
         >

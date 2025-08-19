@@ -1,12 +1,12 @@
-import { Button, Col, Input, Row, Table, Tag, Tooltip } from "antd";
-import { mockClusterData } from "../../_constants";
+import { Cluster, DetailCluster } from "@/types/cluster";
+import { Button, Col, Input, Row, Table, Tag, Tooltip, Typography } from "antd";
 import { Edit, Eye, Plus, Trash } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
+import { useClustersByDeveloper } from "@/services/clusterServices";
 import CreateClusterModal from "./CreateClusterModal";
-import EditClusterModal from "./EditClusterModal";
 import DeleteClusterModal from "./DeleteClusterModal";
-import { useRouter, useParams } from "next/navigation";
-import { Cluster } from "@/types/cluster";
+import EditClusterModal from "./EditClusterModal";
 
 export default function TableCluster({}) {
   const router = useRouter();
@@ -15,87 +15,48 @@ export default function TableCluster({}) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [editingRecord, setEditingRecord] = useState<Cluster | null>(null);
-  const [deletingRecord, setDeletingRecord] = useState<Cluster | null>(null);
-  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<number>>(
-    new Set()
+  const [editingClusterId, setEditingClusterId] = useState<string | null>(null);
+
+  const { data: clustersData, isLoading } = useClustersByDeveloper(
+    developer_id as string
   );
 
-  const filteredData = mockClusterData.filter((item) =>
-    item.name.toLowerCase().includes(searchText.toLowerCase())
+  const filteredData = (clustersData?.data?.clusters || []).filter(
+    (item: Cluster) =>
+      item.name.toLowerCase().includes(searchText.toLowerCase())
   );
+
   const columns = [
+    {
+      title: "No",
+      key: "index",
+      render: (_: any, __: any, index: number) => index + 1,
+    },
     {
       title: "Nama",
       dataIndex: "name",
       key: "name",
     },
     {
-      title: "Telepon",
-      dataIndex: "phone_number",
-      key: "phone_number",
+      title: "Alamat",
+      dataIndex: "address",
+      width: 300,
+      key: "address",
     },
     {
       title: "Deskripsi",
       dataIndex: "description",
       key: "description",
-      render: (description: string, record: Cluster) => {
-        const isExpanded = expandedDescriptions.has(record.id);
-        const shouldTruncate = description && description.length > 100;
-
-        if (!description) return "-";
-
-        return (
-          <div>
-            <span>
-              {shouldTruncate && !isExpanded
-                ? `${description.substring(0, 100)}...`
-                : description}
-            </span>
-
-            {shouldTruncate && (
-              <Button
-                type="text"
-                size="small"
-                className="!p-0 !m-0 h-auto !text-gray-400"
-                onClick={() => {
-                  const newExpanded = new Set(expandedDescriptions);
-                  if (isExpanded) {
-                    newExpanded.delete(record.id);
-                  } else {
-                    newExpanded.add(record.id);
-                  }
-                  setExpandedDescriptions(newExpanded);
-                }}
-              >
-                {isExpanded ? "View Less" : "View More"}
-              </Button>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      title: "Fasilitas Bersama",
-      dataIndex: "facilities",
-      key: "facilities",
-      width: "400px",
-      render: (facilities: string) => (
-        <>
-          {facilities ? (
-            <div className="overflow-hidden">
-              <Row gutter={[0, 4]}>
-                {facilities.split(", ").map((item, index) => (
-                  <Col key={index}>
-                    <Tag>{item}</Tag>
-                  </Col>
-                ))}
-              </Row>
-            </div>
-          ) : (
-            "-"
-          )}
-        </>
+      render: (text: string) => (
+        <Typography.Paragraph
+          ellipsis={{
+            expandable: true,
+            rows: 2,
+            symbol: () => "Lihat Detail",
+          }}
+        >
+          {text}
+        </Typography.Paragraph>
       ),
     },
     {
@@ -119,21 +80,13 @@ export default function TableCluster({}) {
             <Button
               icon={<Edit className="w-4 h-4" />}
               onClick={() => {
-                setEditingRecord(record);
+                setEditingClusterId(record.id.toString());
                 setIsEditModalOpen(true);
               }}
             />
           </Tooltip>
 
-          <Tooltip title="Hapus Data">
-            <Button
-              icon={<Trash className="w-4 h-4 stroke-red-500" />}
-              onClick={() => {
-                setDeletingRecord(record);
-                setIsDeleteModalOpen(true);
-              }}
-            />
-          </Tooltip>
+          <DeleteClusterModal dataCluster={record} />
         </div>
       ),
     },
@@ -169,6 +122,7 @@ export default function TableCluster({}) {
         dataSource={filteredData}
         rowKey="id"
         pagination={{ pageSize: 10 }}
+        loading={isLoading}
       />
 
       <CreateClusterModal
@@ -178,34 +132,6 @@ export default function TableCluster({}) {
           console.log("New cluster:", values);
           setIsCreateModalOpen(false);
         }}
-      />
-
-      <EditClusterModal
-        open={isEditModalOpen}
-        onCancel={() => {
-          setIsEditModalOpen(false);
-          setEditingRecord(null);
-        }}
-        onSubmit={(values) => {
-          console.log("Updated cluster:", values);
-          setIsEditModalOpen(false);
-          setEditingRecord(null);
-        }}
-        editingRecord={editingRecord}
-      />
-
-      <DeleteClusterModal
-        open={isDeleteModalOpen}
-        onCancel={() => {
-          setIsDeleteModalOpen(false);
-          setDeletingRecord(null);
-        }}
-        onConfirm={() => {
-          console.log("Deleted cluster:", deletingRecord);
-          setIsDeleteModalOpen(false);
-          setDeletingRecord(null);
-        }}
-        clusterData={deletingRecord}
       />
     </>
   );

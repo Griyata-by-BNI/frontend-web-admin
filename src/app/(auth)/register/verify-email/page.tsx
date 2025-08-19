@@ -50,7 +50,7 @@ const VerifyEmailPage: React.FC = () => {
         onSuccess: async (data) => {
           message.success("Email berhasil diverifikasi!");
           setIsVerified(true);
-          await login(data.data.token);
+          login(data.data.token);
           router.push("/");
         },
         onError: (error: any) => {

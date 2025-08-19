@@ -31,6 +31,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUser({
             userId: decoded.userId,
             email: decoded.email,
+            fullname: decoded.fullname,
+            role: decoded.role,
           });
         } else {
           Cookies.remove("auth_token");
@@ -48,6 +50,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser({
       userId: decoded.userId,
       email: decoded.email,
+      fullname: decoded.fullname,
+      role: decoded.role,
     });
     setToken(token);
     Cookies.set("auth_token", token, {

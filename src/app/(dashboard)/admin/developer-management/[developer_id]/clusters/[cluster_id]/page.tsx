@@ -1,17 +1,17 @@
 "use client";
 
+import { useClusterById } from "@/services";
+import { Cluster, DetailCluster } from "@/types/cluster";
 import "@ant-design/v5-patch-for-react-19";
 import { Breadcrumb, Button, Col, Row, Tag } from "antd";
 import { Edit, Trash } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { mockClusterData, mockDeveloperData } from "../../../_constants";
-import EditClusterModal from "../../_components/EditClusterModal";
 import DeleteClusterModal from "../../_components/DeleteClusterModal";
-import ImageGallery from "./_components/ImageGallery";
+import EditClusterModal from "../../_components/EditClusterModal";
 import ClusterMap from "./_components/ClusterMap";
+import ImageGallery from "./_components/ImageGallery";
 import TableClusterType from "./_components/TableClusterType";
-import { Cluster } from "@/types/cluster";
 
 export default function ClusterDetailPage() {
   const params = useParams();
@@ -20,12 +20,10 @@ export default function ClusterDetailPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const developer = mockDeveloperData.find((dev) => dev.id === developerId);
-  const cluster = mockClusterData.find(
-    (cluster) => cluster.id === parseInt(clusterId)
-  );
+  const { data, isLoading } = useClusterById(clusterId as string);
+  const cluster = data?.data?.clusters?.[0];
 
-  const handleEditSubmit = (values: Cluster) => {
+  const handleEditSubmit = (values: DetailCluster) => {
     console.log("Updated values:", values);
     setIsEditModalOpen(false);
   };
@@ -35,7 +33,7 @@ export default function ClusterDetailPage() {
     setIsDeleteModalOpen(false);
   };
 
-  if (!cluster || !developer) {
+  if (!cluster) {
     return <div>Cluster tidak ditemukan</div>;
   }
 
@@ -52,7 +50,7 @@ export default function ClusterDetailPage() {
               href: "/admin/developer-management",
             },
             {
-              title: developer.name,
+              title: cluster.developerName,
               href: `/admin/developer-management/${developerId}`,
             },
             {
@@ -87,13 +85,7 @@ export default function ClusterDetailPage() {
                     Edit
                   </Button>
 
-                  <Button
-                    icon={<Trash className="w-4 h-4 stroke-red-500" />}
-                    className="w-max"
-                    onClick={() => setIsDeleteModalOpen(true)}
-                  >
-                    Hapus
-                  </Button>
+                  <DeleteClusterModal dataCluster={cluster} />
                 </div>
               </div>
 
@@ -102,44 +94,39 @@ export default function ClusterDetailPage() {
                   <p className="text-primary-black">{cluster.description}</p>
                 </div>
 
-                <Row gutter={16}>
-                  <Col span={12}>
-                    <div>
-                      <p className="text-lg font-bold text-primary-black">
-                        Range Harga
-                      </p>
+                {cluster.minPrice && cluster.maxPrice && (
+                  <Row gutter={16}>
+                    <Col span={12}>
+                      <div>
+                        <p className="text-lg font-bold text-primary-black">
+                          Range Harga
+                        </p>
 
-                      <p className="text-primary-black">
-                        Rp {parseInt(cluster.min_price).toLocaleString("id-ID")}{" "}
-                        - Rp{" "}
-                        {parseInt(cluster.max_price).toLocaleString("id-ID")}
-                      </p>
-                    </div>
-                  </Col>
-
-                  <Col span={12}>
-                    <div>
-                      <p className="text-lg font-bold text-primary-black">
-                        Informasi Kontak
-                      </p>
-
-                      <p className="text-primary-black">
-                        {cluster.phone_number}
-                      </p>
-                    </div>
-                  </Col>
-                </Row>
+                        <p className="text-primary-black">
+                          Rp{" "}
+                          {parseInt(cluster.minPrice).toLocaleString("id-ID")} -
+                          Rp{" "}
+                          {parseInt(cluster.maxPrice).toLocaleString("id-ID")}
+                        </p>
+                      </div>
+                    </Col>
+                  </Row>
+                )}
 
                 <div>
                   <p className="text-lg font-bold text-primary-black mb-2">
                     Fasilitas
                   </p>
 
-                  <div className="flex flex-wrap gap-1">
-                    {cluster.facilities.split(", ").map((facility, index) => (
-                      <Tag key={index}>{facility}</Tag>
-                    ))}
-                  </div>
+                  {cluster.facilities ? (
+                    <div className="flex flex-wrap gap-1">
+                      {cluster.facilities.split(", ").map((facility, index) => (
+                        <Tag key={index}>{facility}</Tag>
+                      ))}
+                    </div>
+                  ) : (
+                    "-"
+                  )}
                 </div>
               </div>
             </Col>
@@ -168,7 +155,7 @@ export default function ClusterDetailPage() {
                   Cluster Type
                 </p>
 
-                <Table borderedClusterType clusterId={cluster.id} />
+                <TableClusterType clusterId={cluster.id} />
               </div>
             </Col>
           </Row>
@@ -179,14 +166,7 @@ export default function ClusterDetailPage() {
         open={isEditModalOpen}
         onCancel={() => setIsEditModalOpen(false)}
         onSubmit={handleEditSubmit}
-        editingRecord={cluster}
-      />
-
-      <DeleteClusterModal
-        open={isDeleteModalOpen}
-        onCancel={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        clusterData={cluster}
+        clusterId={clusterId}
       />
     </>
   );
