@@ -6,7 +6,7 @@ import axios from 'axios';
 import FilterPopup, { FilterState } from './components/FilterPopup';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBed, faShower, faHouse, faChartArea } from "@fortawesome/free-solid-svg-icons";
-import axiosInstance from '@/lib/axios'; 
+import axiosInstance from '@/utils/axios'; 
 
 // --- DEFINISI TIPE ---
 interface Facility {

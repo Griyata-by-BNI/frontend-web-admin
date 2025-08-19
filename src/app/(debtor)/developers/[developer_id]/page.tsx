@@ -1,9 +1,8 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import axios from "axios";
 import { notFound } from "next/navigation";
-import axiosInstance from "@/lib/axios";
+import axiosInstance from "@/utils/axios";
 
 // =================================================================
 // 1. UPDATED TYPE DEFINITIONS

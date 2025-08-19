@@ -1,8 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import axios from "axios";
-import axiosInstance from "@/lib/axios";
+import axiosInstance from "@/utils/axios";
 
 // =================================================================
 // 1. TYPE DEFINITIONS

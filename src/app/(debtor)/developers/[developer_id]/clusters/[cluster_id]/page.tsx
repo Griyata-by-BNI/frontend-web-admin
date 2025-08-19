@@ -1,10 +1,9 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import axios from "axios";
 import { notFound } from "next/navigation";
 import MapLoader from "@/app/(debtor)/developers/components/Map";
-import axiosInstance from "@/lib/axios";
+import axiosInstance from "@/utils/axios";
 
 // =================================================================
 // 1. ICONS & HELPER FUNCTIONS
