@@ -3,9 +3,9 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { StatusTracker } from "../in-process/components/StatusTracker";
-import { PengajuanKPRView } from "../in-process/components/PengajuanKPRView";
-import { VerifikasiView } from "../in-process/components/VerifikasiView";
+import { StatusTracker } from "../in-process/[id]/components/StatusTracker";
+import { PengajuanKPRView } from "../in-process/[id]/components/PengajuanKPRView";
+import { VerifikasiView } from "../in-process/[id]/components/VerifikasiView";
 import { HasilPengajuanView } from "./components/HasilPengajuanView";
 
 function CompletedPageContent() {

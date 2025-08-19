@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { message } from "antd";
+import axios from "axios";
+import axiosInstance from "@/lib/axios";
 
 const UploadIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="24"
     height="24"
-    viewBox="0 0 24 24"
+    viewBox="0 0 24"
     fill="none"
     stroke="currentColor"
     strokeWidth="2"
@@ -29,16 +31,72 @@ interface UserProfile {
   profilePicture: string;
 }
 
+const DEFAULT_PROFILE_PICTURE =
+  "data:image/svg+xml,%3csvg width='200' height='200' viewBox='0 0 200 200' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='100' cy='100' r='100' fill='%23E5E7EB'/%3e%3ccircle cx='100' cy='80' r='30' fill='%239CA3AF'/%3e%3cpath d='M150 160H50C50 132.386 72.3858 110 100 110C127.614 110 150 132.386 150 160Z' fill='%239CA3AF'/%3e%3c/svg%3e";
+
 const EditProfilePage: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile>({
-    fullName: "Nafira Elba",
-    phoneNumber: "082156878987",
-    email: "nafiraelba@mail.com",
-    profilePicture: "https://placehold.co/200x200/34d399/ffffff?text=NE",
+    fullName: "",
+    phoneNumber: "",
+    email: "",
+    profilePicture: "",
   });
 
+  const [initialProfile, setInitialProfile] = useState<UserProfile | null>(
+    null
+  );
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const USER_ID = "24";
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await axiosInstance.get(
+          `/api/v1/profiles/${USER_ID}`,
+          {
+            headers: { "ngrok-skip-browser-warning": "true" },
+          }
+        );
+
+        if (response.data?.data?.profile) {
+          const profileData = response.data.data.profile;
+          const fetchedProfile = {
+            fullName: profileData.name || "",
+            phoneNumber: profileData.phone || "",
+            email: profileData.email || "",
+            profilePicture: profileData.photoUrl || DEFAULT_PROFILE_PICTURE,
+          };
+          setProfile(fetchedProfile);
+          setInitialProfile(fetchedProfile);
+        } else {
+          const defaultProfile = {
+            ...profile,
+            profilePicture: DEFAULT_PROFILE_PICTURE,
+          };
+          setProfile(defaultProfile);
+          setInitialProfile(defaultProfile);
+        }
+      } catch (error) {
+        console.error("Gagal mengambil data profil:", error);
+        message.error("Gagal memuat data profil.");
+        const defaultProfile = {
+          ...profile,
+          profilePicture: DEFAULT_PROFILE_PICTURE,
+        };
+        setProfile(defaultProfile);
+        setInitialProfile(defaultProfile);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -46,21 +104,25 @@ const EditProfilePage: React.FC = () => {
   };
 
   const handleFileSelect = (file: File | null) => {
-    if (file && file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfile((prevProfile) => ({
-          ...prevProfile,
-          profilePicture: reader.result as string,
-        }));
-        message.success(
-          'Foto profil berhasil diubah. Klik "Simpan" untuk menyimpan perubahan.'
-        );
-      };
-      reader.readAsDataURL(file);
-    } else {
-      message.error("File tidak valid. Harap pilih file gambar.");
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+    if (!allowedTypes.includes(file.type)) {
+      message.error(
+        "Format file tidak valid. Harap pilih file PNG, JPG, atau JPEG."
+      );
+      return;
     }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setProfile((prevProfile) => ({
+        ...prevProfile,
+        profilePicture: reader.result as string,
+      }));
+    };
+    reader.readAsDataURL(file);
+    setSelectedFile(file);
   };
 
   const onUbahFotoClick = () => fileInputRef.current?.click();
@@ -85,26 +147,92 @@ const EditProfilePage: React.FC = () => {
     if (files && files.length > 0) handleFileSelect(files[0]);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Menyimpan data profil:", profile);
+    if (isSaving) return;
+
+    const isProfileDataChanged =
+      initialProfile &&
+      (profile.fullName !== initialProfile.fullName ||
+        profile.phoneNumber !== initialProfile.phoneNumber ||
+        profile.email !== initialProfile.email);
+
+    const isPhotoChanged = selectedFile !== null;
+
+    if (!isProfileDataChanged && !isPhotoChanged) {
+      message.info("Tidak ada perubahan untuk disimpan.");
+      return;
+    }
+
+    setIsSaving(true);
     message.loading({ content: "Menyimpan...", key: "saving" });
-    setTimeout(() => {
-      message.success({
-        content: "Profil berhasil disimpan!",
-        key: "saving",
-        duration: 2,
-      });
-    }, 1500);
+
+    const formData = new FormData();
+    formData.append("name", profile.fullName);
+    formData.append("phoneNumber", profile.phoneNumber);
+    formData.append("email", profile.email);
+
+    if (isPhotoChanged && selectedFile) {
+      formData.append("profile_photo", selectedFile);
+    }
+
+    try {
+      const response = await axiosInstance.put(
+        `/api/v1/profiles/${USER_ID}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        message.success({
+          content: "Profil berhasil diperbarui!",
+          key: "saving",
+          duration: 2,
+        });
+        const updatedProfile = { ...profile };
+        if (response.data?.data?.profile?.photoUrl) {
+          updatedProfile.profilePicture = response.data.data.profile.photoUrl;
+        }
+        setInitialProfile(updatedProfile);
+        setSelectedFile(null);
+      } else {
+        throw new Error("Gagal memperbarui profil");
+      }
+    } catch (error) {
+      console.error("Gagal menyimpan profil:", error);
+      let errorMessage = "Terjadi kesalahan saat menyimpan profil.";
+      if (axios.isAxiosError(error) && error.response) {
+        if (error.response.status === 404) {
+          errorMessage = "Pengguna tidak ditemukan.";
+        } else if (error.response.status === 400) {
+          errorMessage = "Data yang dikirim tidak valid.";
+        }
+      }
+      message.error({ content: errorMessage, key: "saving", duration: 3 });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
+  if (loading) {
+    return (
+      <main className="bg-gray-50 w-full flex items-center justify-center p-4 min-h-screen">
+        <div className="text-gray-600">Memuat data profil...</div>
+      </main>
+    );
+  }
+
   return (
-    <main className="bg-gray-50 w-full flex items-center justify-center p-4 min-h-screen">
+    <main className="bg-gray-50 w-full flex items-center justify-center mt-[-48px] mb-[-48px] p-4 min-h-screen">
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg p-6">
         <h1 className="text-xl font-bold text-gray-800 text-center mb-5">
           Edit Profile
         </h1>
-
         <form onSubmit={handleSubmit}>
           <div
             className={`flex flex-col items-center mb-5 transition-all duration-300 ${
@@ -127,7 +255,6 @@ const EditProfilePage: React.FC = () => {
                   </p>
                 </div>
               )}
-
               <img
                 src={profile.profilePicture}
                 alt="Profile"
@@ -135,22 +262,19 @@ const EditProfilePage: React.FC = () => {
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.onerror = null;
-                  target.src =
-                    "https://placehold.co/200x200/cccccc/ffffff?text=Error";
+                  target.src = DEFAULT_PROFILE_PICTURE;
                 }}
               />
             </div>
-
             <input
               type="file"
               ref={fileInputRef}
               onChange={(e) =>
                 handleFileSelect(e.target.files ? e.target.files[0] : null)
               }
-              accept="image/*"
+              accept="image/png, image/jpeg, image/jpg"
               className="hidden"
             />
-
             <button
               type="button"
               onClick={onUbahFotoClick}
@@ -159,7 +283,6 @@ const EditProfilePage: React.FC = () => {
               Ubah Foto
             </button>
           </div>
-
           <div className="space-y-3">
             <div>
               <label
@@ -213,13 +336,13 @@ const EditProfilePage: React.FC = () => {
               />
             </div>
           </div>
-
           <div className="mt-6">
             <button
               type="submit"
-              className="w-full bg-teal-500 text-white font-bold py-2.5 px-4 rounded-lg hover:bg-teal-600 focus:outline-none focus:ring-4 focus:ring-teal-500 focus:ring-opacity-50 transition-all duration-300 transform hover:scale-105 text-sm"
+              disabled={isSaving}
+              className="w-full bg-teal-500 text-white font-bold py-2.5 px-4 rounded-lg hover:bg-teal-600 focus:outline-none focus:ring-4 focus:ring-teal-500 focus:ring-opacity-50 transition-all duration-300 transform hover:scale-105 text-sm disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none"
             >
-              Simpan
+              {isSaving ? "Menyimpan..." : "Simpan"}
             </button>
           </div>
         </form>
