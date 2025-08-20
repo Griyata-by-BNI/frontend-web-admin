@@ -35,8 +35,6 @@ const LoginPage: React.FC = () => {
       } else {
         window.localStorage.removeItem("credential");
       }
-
-      router.push("/");
     } catch (err: any) {
       messageApi.error("Login gagal. Mohon periksa email dan password anda!");
     }

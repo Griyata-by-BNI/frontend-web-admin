@@ -1,14 +1,12 @@
 "use client";
 
 import { useClusterById } from "@/services";
-import { Cluster, DetailCluster } from "@/types/cluster";
 import "@ant-design/v5-patch-for-react-19";
-import { Breadcrumb, Button, Col, Row, Tag } from "antd";
-import { Edit, Trash } from "lucide-react";
+import { Breadcrumb, Col, Row, Tag } from "antd";
 import { useParams } from "next/navigation";
-import { useState } from "react";
 import DeleteClusterModal from "../../_components/DeleteClusterModal";
 import EditClusterModal from "../../_components/EditClusterModal";
+import SkeletonDetailDeveloper from "../../_components/SkeletonDetailDeveloper";
 import ClusterMap from "./_components/ClusterMap";
 import ImageGallery from "./_components/ImageGallery";
 import TableClusterType from "./_components/TableClusterType";
@@ -17,21 +15,13 @@ export default function ClusterDetailPage() {
   const params = useParams();
   const developerId = params.developer_id as string;
   const clusterId = params.cluster_id as string;
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const { data, isLoading } = useClusterById(clusterId as string);
+  const { data, status } = useClusterById(clusterId as string);
   const cluster = data?.data?.clusters?.[0];
 
-  const handleEditSubmit = (values: DetailCluster) => {
-    console.log("Updated values:", values);
-    setIsEditModalOpen(false);
-  };
-
-  const handleDeleteConfirm = () => {
-    console.log("Deleting cluster:", cluster?.id);
-    setIsDeleteModalOpen(false);
-  };
+  if (status === "pending") {
+    return <SkeletonDetailDeveloper />;
+  }
 
   if (!cluster) {
     return <div>Cluster tidak ditemukan</div>;
@@ -77,13 +67,7 @@ export default function ClusterDetailPage() {
                 </p>
 
                 <div className="flex gap-2 pb-2">
-                  <Button
-                    icon={<Edit className="w-4 h-4" />}
-                    className="w-max"
-                    onClick={() => setIsEditModalOpen(true)}
-                  >
-                    Edit
-                  </Button>
+                  <EditClusterModal clusterId={String(cluster.id)} />
 
                   <DeleteClusterModal dataCluster={cluster} />
                 </div>
@@ -118,7 +102,7 @@ export default function ClusterDetailPage() {
                     Fasilitas
                   </p>
 
-                  {cluster.facilities ? (
+                  {cluster.facilities.split(", ") ? (
                     <div className="flex flex-wrap gap-1">
                       {cluster.facilities.split(", ").map((facility, index) => (
                         <Tag key={index}>{facility}</Tag>
@@ -161,13 +145,6 @@ export default function ClusterDetailPage() {
           </Row>
         </div>
       </div>
-
-      <EditClusterModal
-        open={isEditModalOpen}
-        onCancel={() => setIsEditModalOpen(false)}
-        onSubmit={handleEditSubmit}
-        clusterId={clusterId}
-      />
     </>
   );
 }

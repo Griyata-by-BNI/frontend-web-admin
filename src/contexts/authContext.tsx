@@ -11,6 +11,7 @@ import {
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 import { Spin } from "antd";
+import { useRouter } from "next/navigation";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -18,6 +19,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<DecodedUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const router = useRouter();
 
   useEffect(() => {
     const savedToken = Cookies.get("auth_token");
@@ -31,7 +34,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUser({
             userId: decoded.userId,
             email: decoded.email,
-            fullname: decoded.fullname,
+            fullName: decoded.fullName,
             role: decoded.role,
           });
         } else {
@@ -46,12 +49,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = (token: string) => {
-    const decoded = jwtDecode<JwtPayload>(token);
+    const { userId, email, fullName, role } = jwtDecode<JwtPayload>(token);
     setUser({
-      userId: decoded.userId,
-      email: decoded.email,
-      fullname: decoded.fullname,
-      role: decoded.role,
+      userId,
+      email,
+      fullName,
+      role,
     });
     setToken(token);
     Cookies.set("auth_token", token, {
@@ -59,12 +62,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
+
+    if (role === "user") {
+      router.push("/");
+    }
+
+    if (role === "admin") {
+      router.push("/admin/developer-management");
+    }
   };
 
   const logout = () => {
     setUser(null);
     setToken(null);
     Cookies.remove("auth_token");
+    router.push("/login");
   };
 
   if (loading) {

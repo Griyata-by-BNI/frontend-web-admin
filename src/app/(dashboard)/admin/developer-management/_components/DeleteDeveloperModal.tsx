@@ -22,14 +22,14 @@ export default function DeleteDeveloperModal({
   const [modalOpen, setModalOpen] = useState<boolean>(false);
 
   const queryClient = useQueryClient();
-  const deleteMutation = useUpdateDeveloper();
+  const { mutateAsync, status } = useUpdateDeveloper();
 
   const handleDeleteConfirm = async () => {
     try {
       const { createdAt, updatedAt, developerPhotoUrl, ...rest } =
         developerData;
 
-      await deleteMutation.mutateAsync({
+      await mutateAsync({
         ...rest,
         isDeleted: true,
       });
@@ -55,6 +55,7 @@ export default function DeleteDeveloperModal({
         onCancel={() => {
           setModalOpen(false);
         }}
+        okButtonProps={{ loading: status === "pending" }}
         onOk={handleDeleteConfirm}
         okText="Hapus"
         okType="danger"

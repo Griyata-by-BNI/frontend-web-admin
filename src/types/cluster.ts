@@ -63,3 +63,18 @@ export interface Place {
   name: string;
   distance: number;
 }
+
+export interface PayloadCluster {
+  name: string;
+  description: string;
+  developerId: number;
+  facilities: string;
+  createdBy: number;
+  updatedBy: number;
+  address: string;
+  phone_number: string;
+  longitude: number;
+  latitude: number;
+  photos: File[];
+  nearbyPlaces: NearbyPlace;
+}

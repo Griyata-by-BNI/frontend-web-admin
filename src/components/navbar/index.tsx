@@ -74,8 +74,6 @@ const LoginButton = ({ className = "" }: { className?: string }) => {
   }
 
   if (user) {
-
-
     return (
       <Dropdown menu={{ items: menuItems }} placement="bottomRight">
         <div
@@ -88,8 +86,9 @@ const LoginButton = ({ className = "" }: { className?: string }) => {
           />
 
           <Typography.Text className="font-medium text-primary-black">
-            {user.email}
+            {user.fullName}
           </Typography.Text>
+
           <DownOutlined />
         </div>
       </Dropdown>
@@ -99,7 +98,7 @@ const LoginButton = ({ className = "" }: { className?: string }) => {
   return (
     <Link href="/login">
       <button
-        className={`bg-primary-black text-white font-semibold py-1 px-6 rounded-full hover:bg-indigo-800 transition-all duration-300 ease-in-out ${className}`}
+        className={`bg-primary-black text-white font-semibold py-1 px-6 rounded-full hover:bg-primary-tosca cursor-pointer transition-all duration-300 ease-in-out ${className}`}
       >
         Login
       </button>

@@ -1,9 +1,9 @@
-import { Cluster, DetailCluster } from "@/types/cluster";
-import { Button, Col, Input, Row, Table, Tag, Tooltip, Typography } from "antd";
-import { Edit, Eye, Plus, Trash } from "lucide-react";
+import { useClustersByDeveloper } from "@/services/clusterServices";
+import { Cluster } from "@/types/cluster";
+import { Button, Col, Input, Row, Table, Tooltip, Typography } from "antd";
+import { Eye } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { useClustersByDeveloper } from "@/services/clusterServices";
 import CreateClusterModal from "./CreateClusterModal";
 import DeleteClusterModal from "./DeleteClusterModal";
 import EditClusterModal from "./EditClusterModal";
@@ -12,10 +12,6 @@ export default function TableCluster({}) {
   const router = useRouter();
   const { developer_id } = useParams();
   const [searchText, setSearchText] = useState("");
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [editingClusterId, setEditingClusterId] = useState<string | null>(null);
 
   const { data: clustersData, isLoading } = useClustersByDeveloper(
     developer_id as string
@@ -76,15 +72,7 @@ export default function TableCluster({}) {
             />
           </Tooltip>
 
-          <Tooltip title="Edit Data">
-            <Button
-              icon={<Edit className="w-4 h-4" />}
-              onClick={() => {
-                setEditingClusterId(record.id.toString());
-                setIsEditModalOpen(true);
-              }}
-            />
-          </Tooltip>
+          <EditClusterModal clusterId={String(record.id)} />
 
           <DeleteClusterModal dataCluster={record} />
         </div>
@@ -105,13 +93,7 @@ export default function TableCluster({}) {
 
         <Col flex={"auto"}>
           <div className="flex justify-end">
-            <Button
-              type="primary"
-              icon={<Plus className="w-4 h-4" />}
-              onClick={() => setIsCreateModalOpen(true)}
-            >
-              Buat Data
-            </Button>
+            <CreateClusterModal />
           </div>
         </Col>
       </Row>
@@ -123,15 +105,6 @@ export default function TableCluster({}) {
         rowKey="id"
         pagination={{ pageSize: 10 }}
         loading={isLoading}
-      />
-
-      <CreateClusterModal
-        open={isCreateModalOpen}
-        onCancel={() => setIsCreateModalOpen(false)}
-        onSubmit={(values) => {
-          console.log("New cluster:", values);
-          setIsCreateModalOpen(false);
-        }}
       />
     </>
   );

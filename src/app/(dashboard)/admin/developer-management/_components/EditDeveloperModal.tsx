@@ -30,7 +30,7 @@ export default function EditDeveloperModal({
   const pathname = usePathname();
   const { message } = App.useApp();
   const queryClient = useQueryClient();
-  const updateMutation = useUpdateDeveloper();
+  const { mutateAsync, status } = useUpdateDeveloper();
 
   const [previewImage, setPreviewImage] = useState<string>("");
   const [modalOpen, setModalOpen] = useState<boolean>(false);
@@ -69,7 +69,7 @@ export default function EditDeveloperModal({
           ? values.image?.[0]?.originFileObj
           : undefined,
       };
-      await updateMutation.mutateAsync(payload);
+      await mutateAsync(payload);
       message.success("Developer berhasil diperbarui");
 
       isDetailPage
@@ -101,9 +101,10 @@ export default function EditDeveloperModal({
         }
         maskClosable={false}
         open={modalOpen}
+        okButtonProps={{ loading: status === "pending" }}
         onCancel={handleCancel}
         onOk={() => form.submit()}
-        okText="Perbarui"
+        okText="Simpan Perubahan"
         classNames={{
           body: "!pt-2 max-h-[75vh] overflow-y-auto !px-6",
           content: "!p-0",
@@ -111,7 +112,12 @@ export default function EditDeveloperModal({
           footer: "!pb-5 !px-6",
         }}
       >
-        <Form form={form} layout="vertical" onFinish={handleSubmit}>
+        <Form
+          disabled={status === "pending"}
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+        >
           <Form.Item
             name="name"
             label="Nama"

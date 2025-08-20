@@ -9,7 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 export default function CreateDeveloperModal() {
   const [form] = Form.useForm();
-  const createMutation = useCreateDeveloper();
+  const { mutateAsync, status } = useCreateDeveloper();
 
   const queryClient = useQueryClient();
   const [modalOpen, setModalOpen] = useState(false);
@@ -26,7 +26,7 @@ export default function CreateDeveloperModal() {
           ? values.image?.[0]?.originFileObj
           : undefined,
       };
-      await createMutation.mutateAsync(payload);
+      await mutateAsync(payload);
       message.success("Developer berhasil dibuat");
 
       form.resetFields();
@@ -67,6 +67,7 @@ export default function CreateDeveloperModal() {
         open={modalOpen}
         onCancel={handleCancel}
         onOk={() => form.submit()}
+        okButtonProps={{ loading: status === "pending" }}
         okText="Buat"
         classNames={{
           body: "!pt-2 max-h-[75vh] overflow-y-auto !px-6",
@@ -75,7 +76,12 @@ export default function CreateDeveloperModal() {
           footer: "!pb-5 !px-6",
         }}
       >
-        <Form form={form} layout="vertical" onFinish={handleSubmit}>
+        <Form
+          form={form}
+          disabled={status === "pending"}
+          layout="vertical"
+          onFinish={handleSubmit}
+        >
           <Form.Item
             name="name"
             label="Nama"

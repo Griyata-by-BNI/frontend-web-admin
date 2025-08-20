@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "https://b66cd980be45.ngrok-free.app/api/:path*",
+        destination: "https://128bc6f7a82a.ngrok-free.app/api/:path*",
       },
     ];
   },
