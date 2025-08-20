@@ -1,25 +1,31 @@
-import { Status } from "../types";
+import { ApiStatus } from "@/types/riwayat";
 
 interface StatusBadgeProps {
-  status: Status;
+  status: ApiStatus;
 }
 
+const getStatusInfo = (status: ApiStatus) => {
+  switch (status) {
+    case "verified":
+    case "completed":
+      return { text: "Disetujui", style: "bg-green-500" };
+    case "rejected":
+      return { text: "Ditolak", style: "bg-red-500" };
+    case "submitted":
+    case "under_review":
+    default:
+      return { text: "Diproses", style: "bg-blue-500" };
+  }
+};
+
 export default function StatusBadge({ status }: StatusBadgeProps) {
-  const getStatusStyles = (status: Status) => {
-    switch (status) {
-      case "Disetujui":
-        return "bg-green-500";
-      case "Ditolak":
-        return "bg-red-500";
-      case "Diproses":
-      default:
-        return "bg-blue-500";
-    }
-  };
+  const { text, style } = getStatusInfo(status);
 
   return (
-    <div className={`px-3 py-1.5 rounded-full text-xs font-medium text-white whitespace-nowrap ${getStatusStyles(status)}`}>
-      {status}
+    <div
+      className={`px-3 py-1.5 rounded-full text-xs font-medium text-white whitespace-nowrap ${style}`}
+    >
+      {text}
     </div>
   );
 }

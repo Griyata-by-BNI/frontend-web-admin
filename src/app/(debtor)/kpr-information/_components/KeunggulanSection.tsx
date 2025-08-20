@@ -1,43 +1,30 @@
 import React from "react";
-import { FeatureIconWrapper } from "./FeatureIconWrapper";
-import { WalletIcon, TimeIcon, EasyProcessIcon } from "./Icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { BENEFITS } from "../_constants";
 
 export const KeunggulanSection = () => (
-  <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-    <h2 className="text-lg font-bold text-gray-900 mb-6 text-center">
-      Keunggulan
+  <div className="bg-white pt-10 pb-6 px-4">
+    <h2 className="text-xl font-bold text-gray-900 mb-6 text-center">
+      Keunggulan Griyata
     </h2>
-
-    <div className="grid grid-cols-3 gap-4 text-center">
-      <div className="flex flex-col items-center p-2">
-        <FeatureIconWrapper>
-          <WalletIcon />
-        </FeatureIconWrapper>
-
-        <p className="font-semibold text-gray-800 text-sm leading-tight">
-          Suku Bunga Ringan
-        </p>
-      </div>
-
-      <div className="flex flex-col items-center p-2">
-        <FeatureIconWrapper>
-          <TimeIcon />
-        </FeatureIconWrapper>
-
-        <p className="font-semibold text-gray-800 text-sm leading-tight">
-          Tenor Hingga 30 Tahun
-        </p>
-      </div>
-
-      <div className="flex flex-col items-center p-2">
-        <FeatureIconWrapper>
-          <EasyProcessIcon />
-        </FeatureIconWrapper>
-
-        <p className="font-semibold text-gray-800 text-sm leading-tight">
-          Proses Mudah & Cepat
-        </p>
-      </div>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+      {BENEFITS.map((benefit, index) => (
+        <div
+          key={index}
+          className="bg-gray-50 rounded-lg p-4 flex flex-col items-center text-center border border-gray-200"
+        >
+          <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mb-3 shadow-sm">
+            <FontAwesomeIcon
+              icon={benefit.icon}
+              className="text-teal-500 text-2xl"
+            />
+          </div>
+          <h3 className="font-semibold text-gray-800 text-sm mb-1">
+            {benefit.title}
+          </h3>
+          <p className="text-xs text-gray-600">{benefit.description}</p>
+        </div>
+      ))}
     </div>
   </div>
 );

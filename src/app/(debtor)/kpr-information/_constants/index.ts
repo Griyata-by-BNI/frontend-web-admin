@@ -1,8 +1,80 @@
 import { DocumentRequirement } from "../_types";
+import {
+  faPercent,
+  faPaperPlane,
+  faShieldAlt,
+  faClock,
+  faUsers,
+  faHome,
+} from "@fortawesome/free-solid-svg-icons";
+
+export const BENEFITS = [
+  {
+    icon: faPercent,
+    title: "Suku Bunga Kompetitif",
+    description: "Suku bunga KPR BNI yang terjangkau",
+  },
+  {
+    icon: faPaperPlane,
+    title: "Pengajuan Mudah",
+    description: "Proses persetujuan KPR yang cepat",
+  },
+  {
+    icon: faShieldAlt,
+    title: "Terpercaya",
+    description: "Memiliki pengalaman puluhan tahun",
+  },
+  {
+    icon: faClock,
+    title: "Tenor Panjang",
+    description: "Menyesuaikan kemampuan Anda",
+  },
+];
+
+export const FAQS = [
+  {
+    question: "Properti apa saja yang bisa dijadikan agunan?",
+    answer:
+      "Jenis properti yang dapat dijadikan jaminan meliputi rumah tapak sebagai hunian utama, rumah susun, atau apartemen.",
+  },
+  {
+    question: "Berapa maksimal plafon kredit yang bisa diajukan?",
+    answer:
+      "Plafon kredit BNI Griya dapat mencapai hingga Rp 20 miliar, disesuaikan dengan nilai properti dan kemampuan membayar kembali.",
+  },
+  {
+    question: "Siapa saja yang bisa mengajukan KPR di BNI?",
+    answer:
+      "Pengajuan KPR BNI dapat dilakukan oleh Warga Negara Indonesia berusia minimal 21 tahun. Saat kredit lunas, usia maksimal adalah 55 tahun atau sesuai usia pensiun untuk pegawai/karyawan, dan 65 tahun untuk wiraswasta atau profesional.",
+  },
+  {
+    question: "Berapa lama tenor pembiayaan KPR di BNI?",
+    answer:
+      "Tenor pembiayaan untuk pembelian rumah tinggal baik baru maupun seken dapat mencapai hingga 30 tahun.",
+  },
+];
+
+export const STATS = [
+  {
+    icon: faUsers,
+    number: "10K+",
+    label: "Nasabah Terlayani",
+  },
+  {
+    icon: faHome,
+    number: "500+",
+    label: "Properti Partner",
+  },
+  {
+    icon: faShieldAlt,
+    number: "99%",
+    label: "Tingkat Kepuasan",
+  },
+];
 
 export const DOCUMENT_REQUIREMENTS: DocumentRequirement[] = [
   {
-    name: "Fotokopi KTP (suami dan istri)",
+    name: "Fotokopi KTP (Suami dan Istri)",
     pegawai: true,
     profesional: true,
     pengusaha: true,
@@ -14,7 +86,7 @@ export const DOCUMENT_REQUIREMENTS: DocumentRequirement[] = [
     pengusaha: true,
   },
   {
-    name: "Fotokopi Surat Nikah (apabila sudah menikah)",
+    name: "Fotokopi Surat Nikah (Apabila sudah menikah)",
     pegawai: true,
     profesional: true,
     pengusaha: true,
@@ -32,52 +104,10 @@ export const DOCUMENT_REQUIREMENTS: DocumentRequirement[] = [
     pengusaha: false,
   },
   {
-    name: "Fotokopi Rekening Koran 6 Bulan Terakhir",
-    pegawai: false,
-    profesional: true,
-    pengusaha: true,
-  },
-  {
     name: "Asli Surat Keterangan Kerja dan Slip Gaji",
     pegawai: true,
     profesional: false,
     pengusaha: false,
-  },
-  {
-    name: "Fotokopi Ijin Praktik/Surat Kepengurusan perpanjangan izin praktik dari instansi terkait",
-    pegawai: false,
-    profesional: true,
-    pengusaha: false,
-  },
-  {
-    name: "Fotokopi SIUP/Surat Izin Usaha Lainnya/TDP/NIB (Nomor Induk Berusaha)/surat kepengurusan pembuatan/perpanjangan jika TDP/NIB sedang diproses",
-    pegawai: false,
-    profesional: false,
-    pengusaha: true,
-  },
-  {
-    name: "Fotokopi Akte Pendirian dan/atau akta perubahan terakhir (jika ada perubahan pengurus/pemilik saham)",
-    pegawai: false,
-    profesional: false,
-    pengusaha: true,
-  },
-  {
-    name: "Pas Foto Pemohon dan Suami/Istri Pemohon ukuran 3x4",
-    pegawai: true,
-    profesional: true,
-    pengusaha: true,
-  },
-  {
-    name: "Fotokopi Dokumen Jaminan*)",
-    pegawai: true,
-    profesional: true,
-    pengusaha: true,
-  },
-  {
-    name: "Fotokopi Laporan Keuangan 2 Tahun Terakhir",
-    pegawai: false,
-    profesional: false,
-    pengusaha: true,
   },
 ];
 

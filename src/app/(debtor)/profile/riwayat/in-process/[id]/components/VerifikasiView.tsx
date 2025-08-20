@@ -1,3 +1,5 @@
+import { SubmissionDetail } from "@/types/riwayat";
+
 const IllustrationPlaceholder = () => (
   <div className="mx-auto bg-blue-50 w-full max-w-sm h-64 rounded-lg flex items-center justify-center">
     <svg
@@ -22,14 +24,18 @@ const IllustrationPlaceholder = () => (
   </div>
 );
 
-export const VerifikasiView = () => {
+export const VerifikasiView = ({
+  submissionData,
+}: {
+  submissionData: SubmissionDetail;
+}) => {
   return (
     <div className="bg-white rounded-xl shadow-lg p-8 text-center">
       <IllustrationPlaceholder />
       <h3 className="text-xl font-semibold text-gray-800 mt-8">
         Pengajuan dengan Kode Aplikasi{" "}
-        <span className="text-teal-600">287472384</span> saat ini sedang dalam
-        proses verifikasi
+        <span className="text-teal-600">{submissionData.submission.id}</span>{" "}
+        saat ini sedang dalam proses verifikasi
       </h3>
       <p className="text-gray-500 mt-2 max-w-md mx-auto">
         Tim kami sedang memeriksa kelengkapan dan keabsahan data serta dokumen

@@ -1,62 +1,43 @@
 import Link from "next/link";
-import { Submission } from "../types";
+import { SubmissionSummary, ApiStatus } from "@/types/riwayat";
 import StatusBadge from "./StatusBadge";
 
-interface PengajuanCardProps extends Submission {}
+interface PengajuanCardProps {
+  submission: SubmissionSummary;
+}
 
-export default function PengajuanCard({
-  id,
-  imageUrl,
-  title,
-  group,
-  date,
-  status,
-}: PengajuanCardProps) {
-  const cardContent = (
-    <div className="flex items-center gap-4 bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200">
-      <img
-        src={imageUrl}
-        alt={title}
-        className="w-28 h-20 rounded-lg object-cover flex-shrink-0"
-      />
-      <div className="flex-grow">
-        <h3 className="text-base font-medium text-gray-900 mb-1">{title}</h3>
-        <p className="text-sm text-gray-600 mb-2">{group}</p>
-        <p className="text-sm text-gray-700">🗓️ {date}</p>
+const getLinkHref = (id: number, status: ApiStatus): string => {
+  if (status === "submitted" || status === "under_review") {
+    return `/profile/riwayat/in-process/${id}`;
+  }
+  return `/profile/riwayat/completed/${id}`;
+};
+
+export default function PengajuanCard({ submission }: PengajuanCardProps) {
+  const href = getLinkHref(submission.id, submission.status);
+
+  return (
+    <Link href={href} className="cursor-pointer">
+      <div className="flex items-center gap-4 bg-white rounded-xl p-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200">
+        <img
+          src={submission.image_url}
+          alt={submission.property_name}
+          className="w-28 h-20 rounded-lg object-cover flex-shrink-0"
+        />
+        <div className="flex-grow">
+          <h3 className="text-base font-medium text-gray-900 mb-1">
+            {submission.property_name}
+          </h3>
+          <p className="text-sm text-gray-600 mb-2">
+            {submission.developer_group}
+          </p>
+          <p className="text-sm text-gray-700">
+            🗓️{" "}
+            {new Date(submission.submitted_at).toLocaleDateString("id-ID")}
+          </p>
+        </div>
+        <StatusBadge status={submission.status} />
       </div>
-      <StatusBadge status={status} />
-    </div>
+    </Link>
   );
-
-  if (status === "Diproses") {
-    return (
-      <Link href="/profile/riwayat/in-process" className="cursor-pointer">
-        {cardContent}
-      </Link>
-    );
-  }
-
-  if (status === "Disetujui") {
-    return (
-      <Link
-        href="/profile/riwayat/completed?status=disetujui"
-        className="cursor-pointer"
-      >
-        {cardContent}
-      </Link>
-    );
-  }
-
-  if (status === "Ditolak") {
-    return (
-      <Link
-        href="/profile/riwayat/completed?status=ditolak"
-        className="cursor-pointer"
-      >
-        {cardContent}
-      </Link>
-    );
-  }
-
-  return cardContent;
 }

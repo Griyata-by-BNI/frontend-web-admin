@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import { useAuth } from "@/contexts/authContext";
 
+
 const LoginPage: React.FC = () => {
   const router = useRouter();
   const { login } = useAuth();
@@ -28,12 +29,12 @@ const LoginPage: React.FC = () => {
       login(response.data.token);
 
       if (rememberMe) {
-        window.localStorage.setItem(
+        localStorage.setItem(
           "credential",
           JSON.stringify({ email, password })
         );
       } else {
-        window.localStorage.removeItem("credential");
+        localStorage.removeItem("credential");
       }
     } catch (err: any) {
       messageApi.error("Login gagal. Mohon periksa email dan password anda!");

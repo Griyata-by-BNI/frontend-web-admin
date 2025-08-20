@@ -1,3 +1,9 @@
+interface HasilPengajuanViewProps {
+  status: "disetujui" | "ditolak";
+  submissionId: number;
+  verificationNotes?: string;
+}
+
 const Illustration = ({ status }: { status: "disetujui" | "ditolak" }) => {
   const isApproved = status === "disetujui";
   return (
@@ -46,9 +52,9 @@ const content = {
 
 export const HasilPengajuanView = ({
   status,
-}: {
-  status: "disetujui" | "ditolak";
-}) => {
+  submissionId,
+  verificationNotes,
+}: HasilPengajuanViewProps) => {
   const { title, message } = content[status];
 
   return (
@@ -59,11 +65,18 @@ export const HasilPengajuanView = ({
         <span
           className={status === "disetujui" ? "text-teal-600" : "text-red-600"}
         >
-          287472384
+          {submissionId}
         </span>{" "}
         {title}
       </h3>
       <p className="text-gray-500 mt-2 max-w-md mx-auto">{message}</p>
+      
+      {verificationNotes && (
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+          <h4 className="font-semibold text-gray-700 mb-2">Catatan Verifikasi:</h4>
+          <p className="text-gray-600 text-sm">{verificationNotes}</p>
+        </div>
+      )}
     </div>
   );
 };
