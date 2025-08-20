@@ -62,7 +62,7 @@ const createCluster = async (payload: PayloadCluster) => {
   formData.append("createdBy", payload.createdBy.toString());
   formData.append("updatedBy", payload.updatedBy.toString());
   formData.append("address", payload.address);
-  formData.append("phone_number", payload.phone_number);
+  formData.append("phoneNumber", payload.phoneNumber);
   formData.append("longitude", payload.longitude.toString());
   formData.append("latitude", payload.latitude.toString());
   formData.append("nearbyPlaces", JSON.stringify(payload.nearbyPlaces));
@@ -102,7 +102,7 @@ const updateCluster = async ({
   formData.append("createdBy", payload.createdBy.toString());
   formData.append("updatedBy", payload.updatedBy.toString());
   formData.append("address", payload.address);
-  formData.append("phone_number", payload.phone_number);
+  formData.append("phoneNumber", payload.phoneNumber);
   formData.append("longitude", payload.longitude.toString());
   formData.append("latitude", payload.latitude.toString());
   formData.append("nearbyPlaces", JSON.stringify(payload.nearbyPlaces));

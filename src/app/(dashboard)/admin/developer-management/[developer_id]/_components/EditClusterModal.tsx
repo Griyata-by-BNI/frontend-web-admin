@@ -121,7 +121,9 @@ export default function EditClusterModal({ clusterId }: { clusterId: string }) {
         {
           onSuccess: () => {
             handleCancel();
-            queryClient.invalidateQueries({ queryKey: ["clusters"] });
+            queryClient.invalidateQueries({
+              queryKey: [isDetailPage ? "cluster-detail" : "clusters"],
+            });
           },
           onError: () => {
             message.error("Gagal memperbarui cluster, silakan coba lagi.");
@@ -137,6 +139,7 @@ export default function EditClusterModal({ clusterId }: { clusterId: string }) {
   return (
     <>
       <Modal
+        zIndex={9999999}
         destroyOnHidden
         centered
         title={

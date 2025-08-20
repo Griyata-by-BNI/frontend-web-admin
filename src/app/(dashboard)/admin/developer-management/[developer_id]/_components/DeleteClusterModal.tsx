@@ -5,7 +5,7 @@ import { Cluster, DetailCluster } from "@/types/cluster";
 import { useQueryClient } from "@tanstack/react-query";
 import { App, Button, Modal, Tooltip, Typography } from "antd";
 import { Trash } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface DeleteClusterModalProps {
@@ -15,7 +15,9 @@ interface DeleteClusterModalProps {
 export default function DeleteClusterModal({
   dataCluster,
 }: DeleteClusterModalProps) {
+  const router = useRouter();
   const pathname = usePathname();
+  const { developer_id } = useParams();
   const { message } = App.useApp();
   const queryClient = useQueryClient();
   const isDetailPage = pathname.includes("/clusters");
@@ -32,7 +34,10 @@ export default function DeleteClusterModal({
         onSuccess: () => {
           setModalOpen(false);
           message.success("Cluster berhasil dihapus");
-          queryClient.invalidateQueries({ queryKey: ["clusters"] });
+
+          isDetailPage
+            ? router.push(`/admin/developer-management/${developer_id}`)
+            : queryClient.invalidateQueries({ queryKey: ["clusters"] });
         },
         onError: (err) => {
           console.log(err);
@@ -45,6 +50,7 @@ export default function DeleteClusterModal({
   return (
     <>
       <Modal
+        zIndex={9999999}
         title={
           <Typography.Title level={5} className="!text-red-500">
             Hapus Data Cluster

@@ -16,6 +16,7 @@ export default function ImageGallery({ images, name }: ImageGalleryProps) {
   return (
     <>
       <div className="w-full space-y-2">
+        {/* gambar utama */}
         <div
           className="w-full h-[200px] rounded-lg cursor-pointer"
           onClick={() => setIsGalleryModalOpen(true)}
@@ -29,26 +30,24 @@ export default function ImageGallery({ images, name }: ImageGalleryProps) {
           />
         </div>
 
+        {/* thumbnail */}
         <div className="grid grid-cols-3 gap-2">
-          {images.length > 1 && (
-            <>
-              {images.slice(1, 3).map((image, index) => (
-                <div
-                  key={index}
-                  className="h-[60px] rounded cursor-pointer"
-                  onClick={() => setSelectedImage(index)}
-                >
-                  <Image
-                    src={image}
-                    width={120}
-                    height={60}
-                    alt={`${name} ${index + 1}`}
-                    className="w-full h-[60px] object-cover rounded"
-                  />
-                </div>
-              ))}
-            </>
-          )}
+          {images.length > 1 &&
+            images.slice(1, Math.min(images.length, 3)).map((image, index) => (
+              <div
+                key={index + 1} // index +1 biar beda dengan main
+                className="h-[60px] rounded cursor-pointer"
+                onClick={() => setSelectedImage(index + 1)}
+              >
+                <Image
+                  src={image}
+                  width={120}
+                  height={60}
+                  alt={`${name} ${index + 2}`}
+                  className="w-full h-[60px] object-cover rounded"
+                />
+              </div>
+            ))}
 
           {images.length > 3 && (
             <div
@@ -56,7 +55,7 @@ export default function ImageGallery({ images, name }: ImageGalleryProps) {
               onClick={() => setIsGalleryModalOpen(true)}
             >
               <Image
-                src={images[2]}
+                src={images[3]} // gunakan index ke-3 (gambar ke-4), bukan 2
                 width={120}
                 height={60}
                 alt={name}
@@ -69,24 +68,10 @@ export default function ImageGallery({ images, name }: ImageGalleryProps) {
               </div>
             </div>
           )}
-
-          {images.length === 3 && (
-            <div
-              className="h-[60px] rounded cursor-pointer"
-              onClick={() => setSelectedImage(2)}
-            >
-              <Image
-                src={images[2]}
-                width={120}
-                height={60}
-                alt={`${name} 3`}
-                className="w-full h-[60px] object-cover rounded"
-              />
-            </div>
-          )}
         </div>
       </div>
 
+      {/* modal galeri */}
       <Modal
         title="Galeri Foto"
         open={isGalleryModalOpen}
@@ -94,6 +79,7 @@ export default function ImageGallery({ images, name }: ImageGalleryProps) {
         footer={null}
         width={800}
         centered
+        zIndex={9999999}
       >
         <div className="grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
           {images.map((image, index) => (
