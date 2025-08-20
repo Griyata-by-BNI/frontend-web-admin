@@ -139,7 +139,7 @@ export default function EditClusterModal({ clusterId }: { clusterId: string }) {
   return (
     <>
       <Modal
-        zIndex={9999999}
+        zIndex={999}
         destroyOnHidden
         centered
         title={

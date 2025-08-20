@@ -11,6 +11,7 @@ import { NearbyPlaceTypeLabel } from "../../constants";
 import ClusterMap from "./_components/ClusterMap";
 import ImageGallery from "./_components/ImageGallery";
 import TableClusterType from "./_components/TableClusterType";
+import CreateClusterTypeModal from "./_components/CreateClusterTypeModal";
 
 export default function ClusterDetailPage() {
   const params = useParams();
@@ -186,10 +187,20 @@ export default function ClusterDetailPage() {
             </Col>
 
             <Col span={24}>
-              <div>
-                <p className="text-lg font-bold text-primary-black mb-2">
-                  Cluster Type
-                </p>
+              <div className="flex flex-col gap-2">
+                <Row>
+                  <Col>
+                    <p className="text-lg font-bold text-primary-black mb-2">
+                      Cluster Type
+                    </p>
+                  </Col>
+
+                  <Col flex="auto">
+                    <div className="flex justify-end">
+                      <CreateClusterTypeModal />
+                    </div>
+                  </Col>
+                </Row>
 
                 <TableClusterType clusterId={cluster.id} />
               </div>

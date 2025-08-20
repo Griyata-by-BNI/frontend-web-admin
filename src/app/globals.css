@@ -20,6 +20,14 @@
   scrollbar-width: none;
 }
 
+.leaflet-control {
+  z-index: 2 !important;
+}
+
+.leaflet-control-attribution {
+  z-index: 2 !important;
+}
+
 /* .ant-table-tbody > tr:nth-child(even) > td {
   background-color: #f0f0f0;
 } */
