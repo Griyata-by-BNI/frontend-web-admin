@@ -4,7 +4,7 @@ import { DOCUMENT_REQUIREMENTS } from "../../_constants";
 export const RequirementsSection = () => {
   return (
     <section className="mb-12">
-      <h2 className="text-3xl font-bold text-center mb-9 text-gray-800">
+      <h2 className="text-3xl font-bold text-center mb-9 text-gray-800 mt-[-48px]">
         Syarat & Ketentuan Pengajuan
       </h2>
 

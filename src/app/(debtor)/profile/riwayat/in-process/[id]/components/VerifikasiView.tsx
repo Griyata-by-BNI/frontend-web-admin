@@ -1,6 +1,4 @@
-// File: profile/riwayat/in-process/[id]/components/VerifikasiView.tsx
-
-import { SubmissionDetail } from "../../../types";
+import { SubmissionDetail } from "@/types/riwayat";
 
 const IllustrationPlaceholder = () => (
   <div className="mx-auto bg-blue-50 w-full max-w-sm h-64 rounded-lg flex items-center justify-center">

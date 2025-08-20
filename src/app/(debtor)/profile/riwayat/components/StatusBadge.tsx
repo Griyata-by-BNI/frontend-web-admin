@@ -1,4 +1,4 @@
-import { ApiStatus } from "../types";
+import { ApiStatus } from "@/types/riwayat";
 
 interface StatusBadgeProps {
   status: ApiStatus;

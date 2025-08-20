@@ -1,50 +1,64 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { SubmissionSummary, ApiStatus } from "@/types/riwayat";
+import { getAllSubmissions } from "@/services/kprService";
 import TabButton from "./components/TabButton";
 import SubmissionList from "./components/SubmissionList";
-import { SubmissionDetail } from "./types";
-import { getAllSubmissions } from "./services/kprService";
+
+const isInProcess = (status: ApiStatus): boolean => {
+  return status === "submitted" || status === "under_review";
+};
+
+const isCompleted = (status: ApiStatus): boolean => {
+  return status === "verified" || status === "completed" || status === "rejected";
+};
 
 export default function RiwayatPengajuanPage() {
   const [activeTab, setActiveTab] = useState<"dalam-proses" | "selesai">(
     "dalam-proses"
   );
-  const [submissions, setSubmissions] = useState<SubmissionDetail[]>([]);
+  const [inProcessSubmissions, setInProcessSubmissions] = useState<
+    SubmissionSummary[]
+  >([]);
+  const [completedSubmissions, setCompletedSubmissions] = useState<
+    SubmissionSummary[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchSubmissions = async () => {
-      setIsLoading(true);
       try {
-        const statusesToFetch =
-          activeTab === "dalam-proses"
-            ? ["submitted", "under_review"]
-            : ["verified", "rejected", "completed"];
+        setIsLoading(true);
+        const allSubmissions = await getAllSubmissions();
 
-        const data = await getAllSubmissions(statusesToFetch);
-        data.sort(
-          (a, b) =>
-            new Date(b.submission.createdAt).getTime() -
-            new Date(a.submission.createdAt).getTime()
+        const inProcess = allSubmissions.filter((s) => 
+          isInProcess(s.status)
         );
-        setSubmissions(data);
+        const completed = allSubmissions.filter((s) => 
+          isCompleted(s.status)
+        );
+
+        setInProcessSubmissions(inProcess);
+        setCompletedSubmissions(completed);
       } catch (error) {
-        console.error("Failed to fetch submissions:", error);
+        console.error("Error fetching submissions:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchSubmissions();
-  }, [activeTab]);
+  }, []);
+
+  const submissionsToDisplay =
+    activeTab === "dalam-proses" ? inProcessSubmissions : completedSubmissions;
 
   return (
-    <div className="max-w-3xl mx-auto mt-[-16px] mb-[-16px] p-6 bg-gray-50 rounded-xl">
+    <div className="max-w-3xl mx-auto mt-8 p-6 bg-gray-50 rounded-xl">
       <h2 className="text-2xl font-semibold text-gray-900 mb-6">
         Riwayat Pengajuan
       </h2>
-
       <div className="flex bg-gray-200 rounded-xl p-1 mb-6">
         <TabButton
           isActive={activeTab === "dalam-proses"}
@@ -61,9 +75,9 @@ export default function RiwayatPengajuanPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-center text-gray-500 py-8">Memuat data...</p>
+        <p className="text-center py-8">Memuat data...</p>
       ) : (
-        <SubmissionList submissions={submissions} />
+        <SubmissionList submissions={submissionsToDisplay} />
       )}
     </div>
   );

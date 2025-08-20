@@ -1,15 +1,14 @@
-import { SubmissionDetail } from "../types";
+import { SubmissionSummary } from "@/types/riwayat";
 import PengajuanCard from "./PengajuanCard";
 
 interface SubmissionListProps {
-  submissions: SubmissionDetail[];
+  submissions: SubmissionSummary[];
 }
 
 export default function SubmissionList({ submissions }: SubmissionListProps) {
   if (submissions.length === 0) {
     return (
       <div className="text-center py-16 px-6 bg-white rounded-lg border border-dashed">
-        {/* Opsional: Tambahkan ikon untuk visual yang lebih baik */}
         <svg
           className="mx-auto h-12 w-12 text-gray-400"
           fill="none"
@@ -37,8 +36,8 @@ export default function SubmissionList({ submissions }: SubmissionListProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      {submissions.map((submission) => (
-        <PengajuanCard key={submission.submission.id} submission={submission} />
+      {submissions.map((s) => (
+        <PengajuanCard key={s.id} submission={s} />
       ))}
     </div>
   );
