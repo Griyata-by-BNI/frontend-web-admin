@@ -125,3 +125,22 @@ export const useUpdateCluster = () => {
     mutationFn: updateCluster,
   });
 };
+
+const deleteCluster = async ({ id }: { id: string }) => {
+  const formData = new FormData();
+  formData.append("isDeleted", "true");
+
+  const { data } = await axiosInstance.put(`/clusters/${id}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  return data;
+};
+
+export const useDeleteCluster = () => {
+  return useMutation({
+    mutationFn: deleteCluster,
+  });
+};

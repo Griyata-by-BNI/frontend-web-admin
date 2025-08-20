@@ -1,7 +1,9 @@
 "use client";
 
+import { useDeleteCluster } from "@/services";
 import { Cluster, DetailCluster } from "@/types/cluster";
-import { Button, Modal, Tooltip, Typography } from "antd";
+import { useQueryClient } from "@tanstack/react-query";
+import { App, Button, Modal, Tooltip, Typography } from "antd";
 import { Trash } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -14,8 +16,31 @@ export default function DeleteClusterModal({
   dataCluster,
 }: DeleteClusterModalProps) {
   const pathname = usePathname();
+  const { message } = App.useApp();
+  const queryClient = useQueryClient();
   const isDetailPage = pathname.includes("/clusters");
   const [modalOpen, setModalOpen] = useState<boolean>(false);
+
+  const { mutate, status } = useDeleteCluster();
+
+  const handleDeleteConfirm = async () => {
+    if (!dataCluster) return;
+
+    mutate(
+      { id: String(dataCluster.id) },
+      {
+        onSuccess: () => {
+          setModalOpen(false);
+          message.success("Cluster berhasil dihapus");
+          queryClient.invalidateQueries({ queryKey: ["clusters"] });
+        },
+        onError: (err) => {
+          console.log(err);
+          message.error("Gagal menghapus cluster");
+        },
+      }
+    );
+  };
 
   return (
     <>
@@ -26,8 +51,8 @@ export default function DeleteClusterModal({
           </Typography.Title>
         }
         open={modalOpen}
-        okButtonProps={{ type: "primary" }}
-        // onOk={onConfirm}
+        okButtonProps={{ type: "primary", loading: status === "pending" }}
+        onOk={handleDeleteConfirm}
         onCancel={() => {
           setModalOpen(false);
         }}
