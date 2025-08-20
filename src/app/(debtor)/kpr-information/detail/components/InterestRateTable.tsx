@@ -13,7 +13,7 @@ export const InterestRateTable = ({
 }: InterestRateTableProps) => {
   return (
     <div className="overflow-x-auto pb-2">
-      <Table bordered className="w-full border-collapse">
+      <table className="w-full border-collapse">
         <thead>
           <tr>
             <th className="bg-gray-50 font-semibold p-3 text-xs">Masa Fixed</th>

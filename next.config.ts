@@ -2,32 +2,15 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: [
+    unoptimized: true,
+  },
+  async rewrites() {
+    return [
       {
-        protocol: "https",
-        hostname: "placehold.co",
-        port: "",
-        pathname: "/**",
+        source: "/api/:path*",
+        destination: "https://128bc6f7a82a.ngrok-free.app/api/:path*",
       },
-      {
-        protocol: "https",
-        hostname: "suvarnasutera.com",
-      },
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "i.imgur.com",
-      },
-      {
-        protocol: "https",
-        hostname:"upload.wikimedia.org",
-      },
-    ],
+    ];
   },
 };
 

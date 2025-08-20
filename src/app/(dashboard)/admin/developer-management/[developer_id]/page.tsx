@@ -1,33 +1,28 @@
 "use client";
 
+import { useDetailDeveloper } from "@/services/developerServices";
 import "@ant-design/v5-patch-for-react-19";
-import { Breadcrumb, Button, Col, Row } from "antd";
-import { Edit, Trash } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Breadcrumb, Col, Row } from "antd";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import { useState } from "react";
-import EditDeveloperModal from "../_components/EditDeveloperModal";
 import DeleteDeveloperModal from "../_components/DeleteDeveloperModal";
-import { Developer } from "@/types/developer";
-import { useGetDevelopers } from "@/services/developerServices";
+import EditDeveloperModal from "../_components/EditDeveloperModal";
+import SkeletonDetailDeveloper from "./_components/SkeletonDetailDeveloper";
 import TableCluster from "./_components/TableCluster";
 
 export default function DeveloperDetailPage() {
   const params = useParams();
   const developerId = parseInt(params.developer_id as string);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const { data: developers = [] } = useGetDevelopers();
-  const developer = developers.find((dev) => dev.id === developerId);
+  const queryClient = useQueryClient();
 
-  const handleEditSubmit = () => {
-    setIsEditModalOpen(false);
-  };
+  const { data, status } = useDetailDeveloper(developerId);
+  const developer = data?.data?.developer;
 
-  const handleDeleteConfirm = () => {
-    setIsDeleteModalOpen(false);
-  };
+  if (status === "pending") {
+    return <SkeletonDetailDeveloper />;
+  }
 
   if (!developer) {
     return <div>Developer not found</div>;
@@ -58,36 +53,27 @@ export default function DeveloperDetailPage() {
         />
 
         <div className="mt-4 overflow-hidden">
-          <Row gutter={[48, 24]}>
+          <Row gutter={[24, 24]}>
             <Col xs={24} md={8}>
               <div className="w-full h-[200px] rounded-lg">
                 <Image
-                  src={developer.developerPhotoUrl}
-                  width={400}
+                  key={`${developer.developerPhotoUrl}-${developer.updatedAt}`}
+                  src={`${developer.developerPhotoUrl}?t=${new Date(
+                    developer.updatedAt
+                  ).getTime()}`}
+                  width={200}
                   height={200}
                   alt={developer.name}
-                  className="w-full h-[200px] object-contain"
+                  className="w-full h-full object-cover"
                 />
               </div>
             </Col>
 
             <Col xs={24} md={16}>
               <div className="flex gap-2 justify-end">
-                <Button
-                  icon={<Edit className="w-4 h-4" />}
-                  className="w-max"
-                  onClick={() => setIsEditModalOpen(true)}
-                >
-                  Edit
-                </Button>
+                <EditDeveloperModal developerData={developer} />
 
-                <Button
-                  icon={<Trash className="w-4 h-4 stroke-red-500" />}
-                  className="w-max"
-                  onClick={() => setIsDeleteModalOpen(true)}
-                >
-                  Hapus
-                </Button>
+                <DeleteDeveloperModal developerData={developer} />
               </div>
 
               <div className="flex flex-col gap-2">
@@ -106,25 +92,11 @@ export default function DeveloperDetailPage() {
                 Daftar Cluster
               </p>
 
-              <Table borderedCluster />
+              <TableCluster />
             </Col>
           </Row>
         </div>
       </div>
-
-      <EditDeveloperModal
-        open={isEditModalOpen}
-        onCancel={() => setIsEditModalOpen(false)}
-        onSubmit={handleEditSubmit}
-        editingRecord={developer}
-      />
-
-      <DeleteDeveloperModal
-        open={isDeleteModalOpen}
-        onCancel={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        developerData={developer}
-      />
     </>
   );
 }

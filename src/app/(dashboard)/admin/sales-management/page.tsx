@@ -90,7 +90,7 @@ export default function SalesManagementPage() {
     { title: "Email", dataIndex: "email", key: "email" },
     { title: "Telepon", dataIndex: "phone_number", key: "phone_number" },
     { title: "Jenis Kelamin", dataIndex: "gender", key: "gender" },
-    { title: "Alamat", dataIndex: "address", key: "address" },
+    { title: "Wilayah", dataIndex: "address", key: "address" },
     { title: "Target Skor", dataIndex: "target_score", key: "target_score" },
     {
       title: "Aksi",

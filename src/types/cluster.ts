@@ -5,14 +5,16 @@ export type Cluster = {
   latitude: string;
   longitude: string;
   facilities: string;
-  phone_number: string;
-  max_price: string;
-  min_price: string;
-  name: string;
+  phoneNumber: string;
   description: string;
+  maxPrice: string;
+  minPrice: string;
+  name: string;
+  address: string;
+  createdAt: string;
+  updatedAt: string;
   createdBy: number;
   updatedBy: number;
-  address: string;
   cluster_photo_urls: string[];
 };
 
@@ -37,3 +39,42 @@ export type GetClustersResponse = {
     sortDir: string;
   };
 };
+
+export interface GetDetailClusterResponse {
+  status: {
+    code: number;
+    message: string;
+  };
+  data: {
+    clusters: DetailCluster[];
+  };
+}
+
+export interface DetailCluster extends Cluster {
+  nearbyPlaces: NearbyPlace[];
+}
+
+export interface NearbyPlace {
+  type: string; // contoh: "hospital" | "school" | "mall" dll
+  places: Place[];
+}
+
+export interface Place {
+  name: string;
+  distance: number;
+}
+
+export interface PayloadCluster {
+  name: string;
+  description: string;
+  developerId: number;
+  facilities: string;
+  createdBy: number;
+  updatedBy: number;
+  address: string;
+  phone_number: string;
+  longitude: number;
+  latitude: number;
+  photos: File[];
+  nearbyPlaces: NearbyPlace;
+}

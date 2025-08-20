@@ -47,7 +47,7 @@ export interface ResponseGetDeveloperById {
     message: string;
   };
   data: {
-    developer: Developer[];
+    developer: Developer;
   };
 }
 
@@ -58,4 +58,10 @@ export interface PayloadDeveloper {
   createdBy: number;
   updatedBy: number;
   developerPhotoUrl: File;
+}
+
+export interface PayloadUpdateDeveloper
+  extends Omit<PayloadDeveloper, "developerPhotoUrl"> {
+  id: number;
+  developerPhotoUrl?: File;
 }

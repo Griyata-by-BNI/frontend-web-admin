@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  App,
   Button,
   Form,
   Input,
@@ -9,39 +10,26 @@ import {
   Spin,
   Typography,
   Upload,
+  UploadFile,
 } from "antd";
-import { Upload as UploadIcon, X, MapPin } from "lucide-react";
+import { Upload as UploadIcon, X, MapPin, Plus } from "lucide-react";
 import { useState } from "react";
 import { FacitiliesData } from "../../_constants";
 import dynamic from "next/dynamic";
-import type { Cluster } from "@/types/cluster";
 import { useNearbyPlaces } from "../_hooks/useNearbyPlaces";
+import { useCreateCluster } from "@/services";
+import { useParams } from "next/navigation";
+import { NearbyPlaceTypeLabel } from "../constants";
+import { useQueryClient } from "@tanstack/react-query";
 
 const MapSelector = dynamic(() => import("./MapSelector"), { ssr: false });
 
-interface CreateClusterModalProps {
-  open: boolean;
-  onCancel: () => void;
-  onSubmit: (values: Omit<Cluster, "id" | "created_at" | "updated_at">) => void;
-}
-
-const categories = [
-  { key: "hospitals", label: "Rumah Sakit" },
-  { key: "schools", label: "Sekolah" },
-  { key: "colleges", label: "Perguruan Tinggi" },
-  { key: "supermarkets", label: "Supermarket" },
-  { key: "publicPlaces", label: "Tempat Umum" },
-  { key: "trainStations", label: "Stasiun Kereta" },
-  { key: "busStops", label: "Halte Bus" },
-];
-
-export default function CreateClusterModal({
-  open,
-  onCancel,
-  onSubmit,
-}: CreateClusterModalProps) {
+export default function CreateClusterModal() {
   const [form] = Form.useForm();
+  const { message } = App.useApp();
+  const { developer_id } = useParams();
   const [previewImages, setPreviewImages] = useState<string[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
   const [coordinates, setCoordinates] = useState<{
     lat?: number;
     lng?: number;
@@ -54,18 +42,12 @@ export default function CreateClusterModal({
     resetPlaces,
   } = useNearbyPlaces();
 
-  const handleSubmit = (values: any) => {
-    onSubmit(values);
-    form.resetFields();
-    setPreviewImages([]);
-  };
-
   const handleCancel = () => {
     form.resetFields();
     setPreviewImages([]);
     setCoordinates({});
     resetPlaces();
-    onCancel();
+    setModalOpen(false);
   };
 
   const handleLocationSelect = (lat: number, lng: number) => {
@@ -74,193 +56,232 @@ export default function CreateClusterModal({
     fetchNearbyPlaces(lat, lng);
   };
 
+  const queryClient = useQueryClient();
+  const { mutate, status } = useCreateCluster();
+
+  const handleSubmit = (values: any) => {
+    try {
+      const files: UploadFile[] = values.images || [];
+      const images: File[] = files
+        .map((f) => f.originFileObj)
+        .filter(Boolean) as File[];
+
+      mutate(
+        {
+          ...values,
+          developerId: developer_id,
+          createdBy: 1,
+          updatedBy: 1,
+          longitude: Number(values.longitude),
+          latitude: Number(values.latitude),
+          photos: images,
+          nearbyPlaces,
+          facilities: values.facilities.join(", "),
+        },
+        {
+          onSuccess: () => {
+            handleCancel();
+            queryClient.invalidateQueries({ queryKey: ["clusters"] });
+          },
+          onError: () => {
+            message.error("Gagal menambahkan cluster, silakan coba lagi.");
+          },
+        }
+      );
+    } catch (err) {
+      message.error("Gagal membuat cluster, silakan coba lagi.");
+    }
+  };
+
   return (
-    <Modal
-      centered
-      title={
-        <Typography.Title level={5} className="!text-dark-tosca">
-          Buat Data Cluster
-        </Typography.Title>
-      }
-      maskClosable={false}
-      open={open}
-      onCancel={handleCancel}
-      onOk={() => form.submit()}
-      okText="Buat"
-      classNames={{
-        body: "!pt-2 max-h-[75vh] overflow-y-auto !px-6",
-        content: "!p-0",
-        header: "!pt-5 !px-6",
-        footer: "!pb-5 !px-6",
-      }}
-    >
-      <Form form={form} layout="vertical" onFinish={handleSubmit}>
-        <Form.Item
-          name="name"
-          label="Nama"
-          className="!mb-3"
-          rules={[{ required: true, message: "Mohon masukkan nama!" }]}
+    <>
+      <Modal
+        centered
+        title={
+          <Typography.Title level={5} className="!text-dark-tosca">
+            Buat Data Cluster
+          </Typography.Title>
+        }
+        maskClosable={false}
+        open={modalOpen}
+        okButtonProps={{ loading: status === "pending" || loadingPlaces }}
+        onCancel={handleCancel}
+        onOk={() => form.submit()}
+        okText="Buat"
+        classNames={{
+          body: "!pt-2 max-h-[75vh] overflow-y-auto !px-6",
+          content: "!p-0",
+          header: "!pt-5 !px-6",
+          footer: "!pb-5 !px-6",
+        }}
+      >
+        <Form
+          scrollToFirstError
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
         >
-          <Input placeholder="Masukkan nama cluster" />
-        </Form.Item>
-
-        <Form.Item
-          name="phone_number"
-          label="Nomor Telepon"
-          className="!mb-3"
-          rules={[
-            { required: true, message: "Mohon masukkan nomor telepon!" },
-            { min: 10, message: "Nomor telepon minimal 10 digit!" },
-          ]}
-        >
-          <Input placeholder="081234567890" />
-        </Form.Item>
-
-        <Form.Item
-          name="address"
-          label="Alamat"
-          className="!mb-3"
-          rules={[{ required: true, message: "Mohon masukkan alamat!" }]}
-        >
-          <Input.TextArea placeholder="Masukkan alamat lengkap" rows={2} />
-        </Form.Item>
-
-        <div className="grid grid-cols-2 gap-3">
           <Form.Item
-            name="latitude"
-            label="Latitude"
+            name="name"
+            label="Nama"
             className="!mb-3"
-            rules={[{ required: true, message: "Mohon masukkan latitude!" }]}
+            rules={[{ required: true, message: "Mohon masukkan nama!" }]}
           >
-            <Input placeholder="Masukkan latitude" type="number" step="any" />
+            <Input placeholder="Masukkan nama cluster" />
           </Form.Item>
 
           <Form.Item
-            name="longitude"
-            label="Longitude"
+            name="phoneNumber"
+            label="Nomor Telepon"
             className="!mb-3"
-            rules={[{ required: true, message: "Mohon masukkan longitude!" }]}
+            rules={[
+              { required: true, message: "Mohon masukkan nomor telepon!" },
+              { min: 10, message: "Nomor telepon minimal 10 digit!" },
+            ]}
           >
-            <Input placeholder="Masukkan longitude" type="number" step="any" />
+            <Input placeholder="081234567890" />
           </Form.Item>
-        </div>
 
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-2">
-            Pilih Lokasi di Peta
-          </label>
-          <MapSelector
-            latitude={coordinates.lat}
-            longitude={coordinates.lng}
-            onLocationSelect={handleLocationSelect}
-          />
-        </div>
+          <Form.Item
+            name="address"
+            label="Alamat"
+            className="!mb-3"
+            rules={[{ required: true, message: "Mohon masukkan alamat!" }]}
+          >
+            <Input.TextArea placeholder="Masukkan alamat lengkap" rows={2} />
+          </Form.Item>
 
-        <Spin
-          spinning={true}
-          tip="Memuat data tempat terdekat..."
-          wrapperClassName="min-h-[50px]"
-        >
-          {categories.some(
-            ({ key }) =>
-              (nearbyPlaces[key as keyof typeof nearbyPlaces] || []).length > 0
-          ) && (
-            <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <MapPin className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-medium">Tempat Terdekat</span>
-              </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Form.Item
+              name="latitude"
+              label="Latitude"
+              className="!mb-3"
+              rules={[{ required: true, message: "Mohon masukkan latitude!" }]}
+            >
+              <Input placeholder="Masukkan latitude" type="number" step="any" />
+            </Form.Item>
 
-              {categories.map(({ key, label }) => {
-                const places =
-                  nearbyPlaces[key as keyof typeof nearbyPlaces] || [];
-                if (places.length === 0) return null;
+            <Form.Item
+              name="longitude"
+              label="Longitude"
+              className="!mb-3"
+              rules={[{ required: true, message: "Mohon masukkan longitude!" }]}
+            >
+              <Input
+                placeholder="Masukkan longitude"
+                type="number"
+                step="any"
+              />
+            </Form.Item>
+          </div>
 
-                return (
-                  <div key={key} className="mb-2">
-                    <p className="text-xs font-medium text-gray-700 mb-1">
-                      {label}:
-                    </p>
-                    {places.map((place, idx) => (
-                      <p key={idx} className="text-xs text-gray-600">
-                        • {place.name} ({place.distance}m)
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2">
+              Pilih Lokasi di Peta
+            </label>
+            <MapSelector
+              latitude={coordinates.lat}
+              longitude={coordinates.lng}
+              onLocationSelect={handleLocationSelect}
+            />
+          </div>
+
+          <Spin
+            spinning={loadingPlaces}
+            tip="Memuat data tempat terdekat..."
+            wrapperClassName="min-h-[50px]"
+          >
+            {nearbyPlaces.length > 0 && (
+              <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <MapPin className="w-4 h-4 text-blue-600" />
+                  <span className="text-sm font-medium">Tempat Terdekat</span>
+                </div>
+
+                {nearbyPlaces.map((category, idx) => {
+                  if (category.places.length === 0) return null;
+
+                  return (
+                    <div key={idx} className="mb-2">
+                      <p className="text-xs font-medium text-gray-700 mb-1">
+                        {NearbyPlaceTypeLabel[category.type] ?? category.type}:
                       </p>
-                    ))}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </Spin>
 
-        <Form.Item
-          name="description"
-          label="Deskripsi"
-          className="!mb-3"
-          rules={[{ required: true, message: "Mohon masukkan deskripsi!" }]}
-        >
-          <Input.TextArea placeholder="Masukkan deskripsi" rows={3} />
-        </Form.Item>
+                      {category.places.map((place, idx2) => (
+                        <p key={idx2} className="text-xs text-gray-600">
+                          • {place.name} ({place.distance}m)
+                        </p>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </Spin>
 
-        <Form.Item
-          name="facilities"
-          label="Fasilitas"
-          className="!mb-3"
-          rules={[{ required: true, message: "Mohon pilih fasilitas!" }]}
-        >
-          <Select
-            mode="multiple"
-            placeholder="Pilih fasilitas"
-            options={FacitiliesData.map((facility) => ({
-              label: facility,
-              value: facility,
-            }))}
-          />
-        </Form.Item>
-
-        <Form.Item
-          name="images"
-          label="Gambar"
-          className="!mb-3"
-          rules={[
-            { required: true, message: "Mohon upload minimal satu gambar!" },
-          ]}
-          valuePropName="fileList"
-        >
-          <Upload
-            multiple
-            beforeUpload={() => false}
-            showUploadList={false}
-            onChange={(info) => {
-              if (info.fileList.length > 0) {
-                const images: string[] = [];
-                let processedCount = 0;
-
-                info.fileList.forEach((file) => {
-                  if (file.originFileObj) {
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                      images.push(reader.result as string);
-                      processedCount++;
-
-                      if (processedCount === info.fileList.length) {
-                        form.setFieldValue("images", images);
-                        setPreviewImages(images);
-                      }
-                    };
-                    reader.readAsDataURL(file.originFileObj);
-                  }
-                });
-              } else {
-                form.setFieldValue("images", []);
-                setPreviewImages([]);
-              }
-            }}
+          <Form.Item
+            name="description"
+            label="Deskripsi"
+            className="!mb-3"
+            rules={[{ required: true, message: "Mohon masukkan deskripsi!" }]}
           >
-            <Button icon={<UploadIcon className="w-4 h-4" />}>
-              Upload Gambar
-            </Button>
-          </Upload>
+            <Input.TextArea placeholder="Masukkan deskripsi" rows={3} />
+          </Form.Item>
+
+          <Form.Item
+            name="facilities"
+            label="Fasilitas"
+            className="!mb-3"
+            rules={[{ required: true, message: "Mohon pilih fasilitas!" }]}
+          >
+            <Select
+              mode="multiple"
+              placeholder="Pilih fasilitas"
+              options={FacitiliesData.map((facility) => ({
+                label: facility,
+                value: facility,
+              }))}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="images"
+            label="Gambar"
+            className="!mb-3"
+            rules={[
+              { required: true, message: "Mohon upload minimal satu gambar!" },
+            ]}
+            valuePropName="fileList"
+            getValueFromEvent={(e) => e?.fileList} // penting!
+          >
+            <Upload
+              multiple
+              beforeUpload={() => false}
+              onChange={(info) => {
+                const files = info.fileList;
+
+                // preview
+                const readers: Promise<string>[] = files.map(
+                  (file) =>
+                    new Promise((resolve) => {
+                      if (file.originFileObj) {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result as string);
+                        reader.readAsDataURL(file.originFileObj);
+                      } else {
+                        resolve("");
+                      }
+                    })
+                );
+
+                Promise.all(readers).then(setPreviewImages);
+              }}
+            >
+              <Button icon={<UploadIcon className="w-4 h-4" />}>
+                Upload Gambar
+              </Button>
+            </Upload>
+          </Form.Item>
 
           {previewImages.length > 0 && (
             <div className="grid grid-cols-2 gap-3 mt-3">
@@ -292,8 +313,15 @@ export default function CreateClusterModal({
               ))}
             </div>
           )}
-        </Form.Item>
-      </Form>
-    </Modal>
+        </Form>
+      </Modal>
+      <Button
+        type="primary"
+        icon={<Plus className="w-4 h-4" />}
+        onClick={() => setModalOpen(true)}
+      >
+        Buat Data
+      </Button>{" "}
+    </>
   );
 }

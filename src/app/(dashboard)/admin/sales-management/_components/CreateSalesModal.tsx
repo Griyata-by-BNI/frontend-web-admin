@@ -96,7 +96,7 @@ export default function CreateSalesModal({
 
         <Form.Item
           name="address"
-          label="Alamat"
+          label="Wilayah"
           className="!mb-3"
           rules={[
             { required: true, message: "Mohon masukkan alamat!" },

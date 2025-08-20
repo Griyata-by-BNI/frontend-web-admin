@@ -1,8 +1,8 @@
 "use client";
 
 import "@ant-design/v5-patch-for-react-19";
+
 import {
-  Avatar,
   Breadcrumb,
   Button,
   Col,
@@ -10,73 +10,35 @@ import {
   Row,
   Table,
   Tooltip,
-  message,
+  Typography,
 } from "antd";
-import { Edit, Eye, Plus, Trash } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useState } from "react";
+import { Eye } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Developer } from "@/types/developer";
+import { useDebounce } from "@/utils/useDebounce";
+import { useGetDevelopers } from "@/services/developerServices";
+import EditDeveloperModal from "./_components/EditDeveloperModal";
 import CreateDeveloperModal from "./_components/CreateDeveloperModal";
 import DeleteDeveloperModal from "./_components/DeleteDeveloperModal";
-import EditDeveloperModal from "./_components/EditDeveloperModal";
-import { Developer } from "@/types/developer";
-import {
-  useGetDevelopers,
-  useDeleteDeveloper,
-} from "@/services/developerServices";
 
 export default function DeveloperManagementPage() {
   const [searchText, setSearchText] = useState("");
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingRecord, setEditingRecord] = useState<Developer | null>(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deletingRecord, setDeletingRecord] = useState<Developer | null>(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const debouncedSearch = useDebounce(searchText, 500);
   const router = useRouter();
-  const { data: developers = [], isLoading, refetch } = useGetDevelopers();
-  const deleteMutation = useDeleteDeveloper();
 
-  const handleEdit = (record: Developer) => {
-    setEditingRecord(record);
-    setIsEditModalOpen(true);
-  };
-
-  const handleEditSubmit = () => {
-    setIsEditModalOpen(false);
-    refetch();
-  };
-
-  const handleDelete = (record: Developer) => {
-    setDeletingRecord(record);
-    setIsDeleteModalOpen(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (deletingRecord) {
-      try {
-        await deleteMutation.mutateAsync({
-          id: deletingRecord.id,
-          updatedBy: 1,
-        });
-        message.success("Developer berhasil dihapus");
-        refetch();
-      } catch (error) {
-        message.error("Gagal menghapus developer");
-      }
-    }
-    setIsDeleteModalOpen(false);
-    setDeletingRecord(null);
-  };
-
-  const handleCreateSubmit = () => {
-    setIsCreateModalOpen(false);
-    refetch();
-  };
-
-  const filteredData = developers?.filter((item) =>
-    item.name.toLowerCase().includes(searchText.toLowerCase())
+  const { data, isLoading } = useGetDevelopers(
+    pageSize,
+    currentPage,
+    debouncedSearch
   );
+
+  const developers = data?.data.developers || [];
+  const totalItems = data?.pagination.totalItems || 0;
 
   const columns = [
     {
@@ -85,12 +47,47 @@ export default function DeveloperManagementPage() {
       key: "name",
       render: (text: string, record: Developer) => (
         <div className="flex items-center gap-3">
-          <Avatar src={record.developerPhotoUrl} size={48} />
+          <div className="h-12 w-12 flex-shrink-0 rounded-full overflow-hidden">
+            <Image
+              key={`${record.developerPhotoUrl}-${record.updatedAt}`}
+              src={`${record.developerPhotoUrl}?t=${new Date(
+                record.updatedAt
+              ).getTime()}`}
+              width={48}
+              height={48}
+              alt={record.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+
           <span>{text}</span>
         </div>
       ),
     },
-    { title: "Deskripsi", dataIndex: "description", key: "description" },
+    {
+      title: "Deskripsi",
+      dataIndex: "description",
+      key: "description",
+      render: (text: string) => (
+        <Typography.Paragraph
+          ellipsis={{
+            expandable: true,
+            rows: 2,
+            symbol: (expanded) => {
+              return "Lihat Detail";
+            },
+          }}
+        >
+          {text}
+        </Typography.Paragraph>
+      ),
+    },
+    {
+      title: "Terakhir Diperbarui",
+      dataIndex: "updatedAt",
+      key: "updatedAt",
+      render: (date: string) => new Date(date).toLocaleDateString("id-ID"),
+    },
     {
       title: "Aksi",
       dataIndex: "action",
@@ -108,19 +105,9 @@ export default function DeveloperManagementPage() {
             </Link>
           </Tooltip>
 
-          <Tooltip title="Edit Data">
-            <Button
-              icon={<Edit className="w-4 h-4" />}
-              onClick={() => handleEdit(record)}
-            />
-          </Tooltip>
+          <EditDeveloperModal developerData={record} />
 
-          <Tooltip title="Hapus Data">
-            <Button
-              icon={<Trash className="w-4 h-4 stroke-red-500" />}
-              onClick={() => handleDelete(record)}
-            />
-          </Tooltip>
+          <DeleteDeveloperModal developerData={record} />
         </div>
       ),
     },
@@ -159,13 +146,7 @@ export default function DeveloperManagementPage() {
 
         <Col flex={"auto"}>
           <div className="flex justify-end">
-            <Button
-              type="primary"
-              icon={<Plus className="w-4 h-4" />}
-              onClick={() => setIsCreateModalOpen(true)}
-            >
-              Buat Data
-            </Button>
+            <CreateDeveloperModal />
           </div>
         </Col>
       </Row>
@@ -173,30 +154,21 @@ export default function DeveloperManagementPage() {
       <Table
         bordered
         columns={columns}
-        dataSource={filteredData}
+        dataSource={developers}
         rowKey="id"
         loading={isLoading}
-        pagination={{ pageSize: 10 }}
-      />
-
-      <EditDeveloperModal
-        open={isEditModalOpen}
-        onCancel={() => setIsEditModalOpen(false)}
-        onSubmit={handleEditSubmit}
-        editingRecord={editingRecord}
-      />
-
-      <DeleteDeveloperModal
-        open={isDeleteModalOpen}
-        onCancel={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
-        developerData={deletingRecord}
-      />
-
-      <CreateDeveloperModal
-        open={isCreateModalOpen}
-        onCancel={() => setIsCreateModalOpen(false)}
-        onSubmit={handleCreateSubmit}
+        pagination={{
+          current: currentPage,
+          pageSize: pageSize,
+          total: totalItems,
+          showSizeChanger: true,
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} of ${total} items`,
+          onChange: (page, size) => {
+            setCurrentPage(page);
+            setPageSize(size || 10);
+          },
+        }}
       />
     </>
   );

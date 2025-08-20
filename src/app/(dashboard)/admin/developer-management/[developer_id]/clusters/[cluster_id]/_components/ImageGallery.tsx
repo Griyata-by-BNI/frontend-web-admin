@@ -30,21 +30,25 @@ export default function ImageGallery({ images, name }: ImageGalleryProps) {
         </div>
 
         <div className="grid grid-cols-3 gap-2">
-          {images.slice(0, 2).map((image, index) => (
-            <div
-              key={index}
-              className="h-[60px] rounded cursor-pointer"
-              onClick={() => setSelectedImage(index)}
-            >
-              <Image
-                src={image}
-                width={120}
-                height={60}
-                alt={`${name} ${index + 1}`}
-                className="w-full h-[60px] object-cover rounded"
-              />
-            </div>
-          ))}
+          {images.length > 1 && (
+            <>
+              {images.slice(1, 3).map((image, index) => (
+                <div
+                  key={index}
+                  className="h-[60px] rounded cursor-pointer"
+                  onClick={() => setSelectedImage(index)}
+                >
+                  <Image
+                    src={image}
+                    width={120}
+                    height={60}
+                    alt={`${name} ${index + 1}`}
+                    className="w-full h-[60px] object-cover rounded"
+                  />
+                </div>
+              ))}
+            </>
+          )}
 
           {images.length > 3 && (
             <div
