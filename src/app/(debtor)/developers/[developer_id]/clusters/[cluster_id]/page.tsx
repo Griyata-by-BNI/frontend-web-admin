@@ -2,10 +2,38 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import MapLoader from "@/app/(debtor)/developers/components/Map";
+import MapLoader, {
+  MapWithNearbyPlaces,
+} from "@/app/(debtor)/developers/components/Map";
 import { axiosServer } from "@/utils/axios";
 import PropertyCard from "@/app/(debtor)/developers/components/PropertyCard";
 import ImageSlider from "@/app/(debtor)/developers/components/ImageSlider";
+import StickyCard from "@/app/(debtor)/developers/components/StickyCard";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faLocationDot,
+  faBus,
+  faSchool,
+  faHospital,
+  faPlane,
+  faTrain,
+  faShoppingBag,
+  faDumbbell,
+  faMosque,
+  faCheckCircle,
+  faStore,
+  faShieldAlt,
+  faSwimmingPool,
+  faChild,
+  faBuilding,
+  faRunning,
+  faUtensils,
+  faChurch,
+  faCoffee,
+  faUsers,
+  faTree,
+  faShoppingCart
+} from '@fortawesome/free-solid-svg-icons';
 
 // =================================================================
 // INTERFACES
@@ -28,6 +56,7 @@ export interface Property {
   facilities: Facility[];
   updatedAt: string;
   photoUrl: string | null;
+  clusterTypeName?: string;
 }
 
 // =================================================================
@@ -168,12 +197,55 @@ const formatPrice = (priceString: string | null): string => {
   return price.toLocaleString("id-ID");
 };
 
-// =================================================================
-// API TYPE DEFINITIONS
-// =================================================================
+const calculateInstallment = (
+  price?: string | null,
+  tenor: number = 180,
+  dpPercent: number = 10,
+  annualInterest: number = 3.25
+) => {
+  if (!price) return "N/A";
+  const priceNum = parseFloat(price);
+  if (isNaN(priceNum) || priceNum === 0) return "-";
+
+  const dp = priceNum * (dpPercent / 100);
+  const loanPrincipal = priceNum - dp;
+  const monthlyInterest = annualInterest / 12 / 100;
+
+  const n = tenor;
+  const r = monthlyInterest;
+
+  const installment = loanPrincipal * (r / (1 - Math.pow(1 + r, -n)));
+
+  if (installment >= 1_000_000) {
+    const million = installment / 1_000_000;
+    return (
+      "Rp " +
+      (million % 1 === 0 ? `${million}` : `${million.toFixed(1)}`) +
+      " JT"
+    );
+  } else if (installment >= 1_000) {
+    const thousand = installment / 1_000;
+    return (
+      "Rp " +
+      (thousand % 1 === 0 ? `${thousand}` : `${thousand.toFixed(1)}`) +
+      " RB"
+    );
+  }
+  return "Rp " + Math.round(installment).toLocaleString("id-ID");
+};
 
 interface ApiDeveloper {
   developerPhotoUrl: string;
+}
+
+interface NearbyPlace {
+  name: string;
+  distance: number;
+}
+
+interface NearbyPlaceGroup {
+  type: string;
+  places: NearbyPlace[];
 }
 
 interface ApiClusterDetail {
@@ -189,6 +261,7 @@ interface ApiClusterDetail {
   maxPrice: string | null;
   facilities: string | null;
   cluster_photo_urls: string[];
+  nearbyPlaces: NearbyPlaceGroup[];
 }
 
 // ✅ INTERFACE DIPERBARUI
@@ -314,16 +387,28 @@ export default async function HousingDetailPage({
 
   const { cluster, propertyTypes, developer } = data;
 
-  const facilityIconMap: { [key: string]: React.ComponentType } = {
-    masjid: MasjidIcon,
-    security: SecurityIcon,
-    "club house": CommunityIcon,
-    "swimming pool": PoolIcon,
-    "jogging track": CommunityIcon,
-    "outdoor playground": CommunityIcon,
-    "grocery store": CommunityIcon,
-    school: SchoolIcon,
-    hospital: HospitalIcon,
+  const facilityIcons: { [key: string]: any } = {
+    'masjid': faMosque,
+    'gereja': faChurch,
+    'cafe': faCoffee,
+    'ruang komunitas': faUsers,
+    'school': faSchool,
+    'hospital': faHospital,
+    'grocery store': faShoppingBag,
+    'minimarket': faStore,
+    'halte bus': faBus,
+    'gym': faDumbbell,
+    'stasiun': faTrain,
+    'bandara': faPlane,
+    'security': faShieldAlt,
+    'swimming pool': faSwimmingPool,
+    'kolam renang': faSwimmingPool,
+    'outdoor playground': faChild,
+    'club house': faBuilding,
+    'jogging track': faRunning,
+    'restoran': faUtensils,
+    'mall': faShoppingCart,
+    'taman': faTree,
   };
 
   const facilities = (cluster.facilities || "")
@@ -331,7 +416,7 @@ export default async function HousingDetailPage({
     .map((f) => f.trim().toLowerCase())
     .map((name) => ({
       name: name.charAt(0).toUpperCase() + name.slice(1),
-      icon: facilityIconMap[name],
+      icon: facilityIcons[name],
     }))
     .filter((f) => f.icon && f.name);
 
@@ -342,7 +427,7 @@ export default async function HousingDetailPage({
     !isNaN(Number(cluster.longitude));
 
   return (
-    <div className="bg-gray-50 min-h-screen py-8">
+    <div className="bg-gradient-to-t from-white to-light-tosca min-h-screen py-8">
       <main className="container mx-auto px-4">
         <div className="lg:grid lg:grid-cols-3 lg:gap-8">
           {/* Kolom Kiri */}
@@ -367,19 +452,16 @@ export default async function HousingDetailPage({
               Tipe Properti
             </h2>
             <div className="space-y-12 mb-8">
-              {(propertyTypes || []).map((type) => (
-                <div key={type.id}>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">
-                    {type.name}
-                  </h3>
+              {(propertyTypes || [])
+                .filter((type) => type.properties && type.properties.length > 0)
+                .map((type) => (
+                  <div key={type.id}>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                      {type.name}
+                    </h3>
 
-                  {!type.properties || type.properties.length === 0 ? (
-                    <p className="text-gray-500">
-                      Tidak ada properti yang tersedia untuk tipe ini.
-                    </p>
-                  ) : (
                     <div className="flex gap-4 max-w-full overflow-x-auto overflow-y-hidden pb-4">
-                      {type.properties.map((prop) => {
+                      {type.properties!.map((prop) => {
                         const rawFacilities: Facility[] = [
                           {
                             name: "KT",
@@ -404,6 +486,7 @@ export default async function HousingDetailPage({
                           facilities: rawFacilities.filter((f) => f.value > 0),
                           updatedAt: prop.updated_at,
                           photoUrl: prop.property_photo_urls?.[0] || null,
+                          clusterTypeName: type.name,
                         };
                         return (
                           <PropertyCard
@@ -413,13 +496,12 @@ export default async function HousingDetailPage({
                         );
                       })}
                     </div>
-                  )}
-                </div>
-              ))}
+                  </div>
+                ))}
             </div>
 
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              Fasilitas Bersama
+              Fasilitas Umum
             </h2>
             <div className="flex flex-wrap gap-4 mb-8">
               {facilities.length > 0 ? (
@@ -428,7 +510,7 @@ export default async function HousingDetailPage({
                     key={facility.name}
                     className="flex items-center bg-white px-4 py-2 rounded-full shadow-sm"
                   >
-                    <facility.icon />
+                    <FontAwesomeIcon icon={facility.icon} className="w-4 h-4 text-gray-600" />
                     <span className="ml-2 font-medium text-gray-700">
                       {facility.name}
                     </span>
@@ -439,62 +521,33 @@ export default async function HousingDetailPage({
               )}
             </div>
 
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Lokasi</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+              Lokasi & Tempat Terdekat
+            </h2>
             {areCoordinatesValid ? (
-              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                <div className="w-full h-96">
-                  <MapLoader
-                    center={[
-                      Number(cluster.latitude),
-                      Number(cluster.longitude),
-                    ]}
-                    popupText={`Lokasi ${cluster.name}`}
-                  />
-                </div>
-              </div>
+              <MapWithNearbyPlaces
+                center={[Number(cluster.latitude), Number(cluster.longitude)]}
+                popupText={`Lokasi ${cluster.name}`}
+                nearbyPlaces={cluster.nearbyPlaces || []}
+              />
             ) : (
               <p className="text-gray-500">Peta lokasi tidak tersedia.</p>
             )}
           </div>
 
           {/* Kolom Kanan (Sticky) */}
-          <div className="lg:col-span-1 mt-8 lg:mt-0">
-            <div className="sticky top-20">
-              <div className="relative bg-white rounded-xl shadow-lg overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-teal-400 to-cyan-500"></div>
-                <div className="p-6">
-                  <p className="text-sm text-teal-700">Harga mulai dari</p>
-                  <p className="text-3xl font-bold text-gray-800 mt-1">
-                    {`${formatPrice(cluster.minPrice)} - ${formatPrice(
-                      cluster.maxPrice
-                    )}`}
-                  </p>
-                  <div className="my-5 border-t"></div>
-                  <p className="text-lg font-bold text-gray-900">
-                    {cluster.developerName}
-                  </p>
-                  <p className="text-gray-500 text-sm mt-1">
-                    {cluster.address || "Alamat tidak tersedia"}
-                  </p>
-                  <div className="my-5 border-t"></div>
-                  <p className="text-sm text-gray-500 mb-2">Developer:</p>
-                  <div className="relative h-16">
-                    <Image
-                      src={
-                        developer.developerPhotoUrl ||
-                        "https://via.placeholder.com/150x50.png?text=Logo"
-                      }
-                      alt="Developer Logo"
-                      layout="fill"
-                      objectFit="contain"
-                      objectPosition="left"
-                    />
-                  </div>
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-teal-400 to-cyan-500"></div>
-              </div>
-            </div>
-          </div>
+          <StickyCard
+            priceLabel="Harga mulai dari"
+            price={`${formatPrice(cluster.minPrice)} - ${formatPrice(
+              cluster.maxPrice
+            )}`}
+            installmentText={`Angsuran mulai dari ${calculateInstallment(
+              cluster.minPrice
+            )}/bulan`}
+            developerName={cluster.developerName}
+            location={cluster.address || "Alamat tidak tersedia"}
+            developerPhotoUrl={developer.developerPhotoUrl}
+          />
         </div>
       </main>
     </div>

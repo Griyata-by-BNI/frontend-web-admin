@@ -92,7 +92,7 @@ export default async function HomePage() {
       {/* Main Content Section */}
       <div className="relative">
         <Image
-          src="/home.png"
+          src="/images/home.png"
           alt="Content background shape"
           width={1920}
           height={150}

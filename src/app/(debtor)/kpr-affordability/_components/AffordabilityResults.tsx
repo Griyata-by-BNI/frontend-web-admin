@@ -2,6 +2,7 @@ import { Alert, Button, Col, Divider, Row, theme } from "antd";
 import interestRateData from "@/data/interest-rate.json";
 import { AffordabilityParams } from "../_types";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const { useToken } = theme;
 
@@ -17,6 +18,7 @@ export const AffordabilityResults = ({
   isAffordable,
 }: AffordabilityResultsProps) => {
   const { token } = useToken();
+  const router = useRouter();
 
   const netIncome = params.monthlyIncome - params.monthlyExpenses;
 
@@ -78,7 +80,11 @@ export const AffordabilityResults = ({
             <Col span={24}>
               <Divider className="!mt-2" />
 
-              <Button type="primary" className="w-full">
+              <Button 
+                type="primary" 
+                className="w-full"
+                onClick={() => router.push(`/explore?maxPrice=${affordablePrice}`)}
+              >
                 Cari Properti
               </Button>
 
