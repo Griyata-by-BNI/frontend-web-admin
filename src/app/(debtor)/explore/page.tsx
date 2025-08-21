@@ -6,8 +6,8 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import FilterPopup, { FilterState } from "./components/FilterPopup";
-import axiosInstance from "@/utils/axios";
-import PropertyCard from "@/app/(debtor)/developers/components/PropertyCard"; // ✨ 2. Impor komponen PropertyCard yang baru
+import PropertyCard from "@/app/(debtor)/developers/components/PropertyCard";
+import { axiosServer } from "@/utils/axios";
 
 export interface Facility {
   name: "KT" | "KM" | "LB" | "LT";
@@ -266,7 +266,7 @@ export default function ExplorePage() {
           if (currentFilters.buildingArea.max < 500)
             params.luasBangunanMax = currentFilters.buildingArea.max;
         }
-        const response = await axiosInstance.get(`/api/v1/properties/explore`, {
+        const response = await axiosServer.get(`/properties/explore`, {
           params,
           headers: { "ngrok-skip-browser-warning": "true" },
         });

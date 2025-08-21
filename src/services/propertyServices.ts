@@ -5,7 +5,7 @@ import {
   PropertyResponse,
 } from "@/types/property";
 import appendIfDefined from "@/utils/appendIfDefined";
-import axiosInstance from "@/utils/axios";
+import { axiosInstance } from "@/utils/axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 

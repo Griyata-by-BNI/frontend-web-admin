@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import axiosInstance from "@/utils/axios";
+import { axiosInstance } from "@/utils/axios";
 import {
   GetClustersResponse,
   GetDetailClusterResponse,

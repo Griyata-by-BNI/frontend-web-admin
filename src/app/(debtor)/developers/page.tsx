@@ -1,8 +1,7 @@
-import React from "react";
-import Link from "next/link";
-import Image from "next/image";
-import axiosInstance from "@/utils/axios";
 import ClusterCard from "@/app/(debtor)/developers/components/ClusterCard";
+import { axiosServer } from "@/utils/axios";
+import Image from "next/image";
+import Link from "next/link";
 // =================================================================
 // 1. TYPE DEFINITIONS (DISESUAIKAN DENGAN PAYLOAD)
 // =================================================================
@@ -60,18 +59,18 @@ const getDevelopersWithClusters = async (): Promise<
   DeveloperWithClusters[]
 > => {
   try {
-    const developerResponse = await axiosInstance.get<{
+    const developerResponse = await axiosServer.get<{
       data: { developers: ApiDeveloper[] };
-    }>(`/api/v1/developers`);
+    }>(`/developers`);
     const developers = developerResponse.data.data.developers;
 
     if (!developers || developers.length === 0) return [];
 
     const detailedDataPromises = developers.map(async (developer) => {
       try {
-        const summaryClustersRes = await axiosInstance.get<{
+        const summaryClustersRes = await axiosServer.get<{
           data: { clusters: ApiCluster[] };
-        }>(`/api/v1/clusters/developer/${developer.id}`);
+        }>(`/clusters/developer/${developer.id}`);
 
         const summaryClusters = summaryClustersRes.data.data.clusters;
 

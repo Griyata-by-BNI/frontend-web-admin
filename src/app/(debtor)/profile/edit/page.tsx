@@ -5,7 +5,7 @@ import { message } from "antd";
 import axios from "axios";
 import { useAuth } from "@/contexts/authContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
-import axiosInstance from "@/utils/axios";
+import { axiosInstance } from "@/utils/axios";
 
 const UploadIcon = () => (
   <svg
@@ -56,7 +56,7 @@ const DEFAULT_PROFILE_PICTURE =
 
 const EditProfilePage: React.FC = () => {
   const { user, token } = useAuth();
-  
+
   const [profile, setProfile] = useState<UserProfile>({
     fullName: "",
     phoneNumber: "",
@@ -64,7 +64,9 @@ const EditProfilePage: React.FC = () => {
     profilePicture: "",
   });
 
-  const [initialProfile, setInitialProfile] = useState<UserProfile | null>(null);
+  const [initialProfile, setInitialProfile] = useState<UserProfile | null>(
+    null
+  );
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -74,12 +76,12 @@ const EditProfilePage: React.FC = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user || !token) return;
-      
+
       try {
         const response = await axiosInstance.get(`/profiles/${user.userId}`, {
-          headers: { 
+          headers: {
             "ngrok-skip-browser-warning": "true",
-            "Authorization": `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -208,7 +210,7 @@ const EditProfilePage: React.FC = () => {
           headers: {
             "Content-Type": "multipart/form-data",
             "ngrok-skip-browser-warning": "true",
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
