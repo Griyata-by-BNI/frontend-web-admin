@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { axiosInstance } from "@/utils/axios";
+import { axiosInstance, axiosServer } from "@/utils/axios";
 
 // ✨ 1. Mengimpor komponen ClusterCard yang benar dari file terpisah
 import ClusterCard from "@/app/(debtor)/developers/components/ClusterCard";
@@ -44,8 +44,8 @@ const SearchIcon = () => (
     strokeLinecap="round"
     strokeLinejoin="round"
   >
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.3-4.3" />   {" "}
+    <circle cx="11" cy="11" r="8" />
+    <path d="m21 21-4.3-4.3" />
   </svg>
 );
 
@@ -58,11 +58,11 @@ const getDeveloperDetails = async (
   id: string
 ): Promise<DeveloperWithClusters | null> => {
   try {
-    const developerRes = await axiosInstance.get<{
+    const developerRes = await axiosServer.get<{
       data: { developer: ApiDeveloper };
     }>(`/developers/${id}`);
     const developer = developerRes.data.data.developer;
-    const summaryClustersRes = await axiosInstance.get<{
+    const summaryClustersRes = await axiosServer.get<{
       data: { clusters: ApiCluster[] };
     }>(`/clusters/developer/${id}`);
     const summaryClusters = summaryClustersRes.data.data.clusters;
@@ -113,19 +113,13 @@ export default async function DeveloperDetailPage({
 
   return (
     <div className="bg-gradient-to-t from-white to-light-tosca min-h-screen">
-           {" "}
       <main className="container mx-auto px-4">
-               {" "}
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
           {developer.name}
         </h1>
-               {" "}
         <section className="mt-8 bg-white p-6 md:p-8 rounded-2xl shadow-sm">
-                   {" "}
           <div className="flex flex-col md:flex-row gap-8">
-                       {" "}
             <div className="md:w-1/3 flex justify-center items-center">
-                           {" "}
               <Image
                 src={logoUrl}
                 alt={`${developer.name} logo`}
@@ -133,25 +127,20 @@ export default async function DeveloperDetailPage({
                 height={125}
                 className="object-contain"
               />
-                         {" "}
             </div>
-                       {" "}
+
             <div className="md:w-2/3">
-                           {" "}
               <h2 className="text-2xl font-bold text-gray-800 mb-4">
                 Tentang {developer.name}
               </h2>
-                           {" "}
+
               <p className="text-gray-600 leading-relaxed">
                 {developer.description}
               </p>
-                         {" "}
             </div>
-                     {" "}
           </div>
-                 {" "}
         </section>
-               {" "}
+
         {developer && (
           <section className="mt-12">
             <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
@@ -191,9 +180,7 @@ export default async function DeveloperDetailPage({
             )}
           </section>
         )}
-             {" "}
       </main>
-         {" "}
     </div>
   );
 }

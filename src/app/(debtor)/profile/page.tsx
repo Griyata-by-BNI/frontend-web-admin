@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React, { useCallback, useEffect, useState } from 'react';
-import { Clock, Star, Shield, LogOut, Edit } from 'lucide-react';
-import { useRouter, redirect } from 'next/navigation';
-import { useAuth } from '@/contexts/authContext';
-import axiosInstance from '@/utils/axios';
+import React, { useCallback, useEffect, useState } from "react";
+import { Clock, Star, Shield, LogOut, Edit } from "lucide-react";
+import { useRouter, redirect } from "next/navigation";
+import { useAuth } from "@/contexts/authContext";
+import { axiosInstance } from "@/utils/axios";
 
 // Types
 interface UserData {
@@ -42,21 +42,21 @@ const ProfileSkeleton: React.FC = () => (
 // Avatar Component
 const Avatar: React.FC<{ user?: UserData }> = ({ user }) => {
   const getInitials = (name?: string): string => {
-    if (!name) return 'U';
+    if (!name) return "U";
     return name
-      .split(' ')
-      .map(word => word.charAt(0))
+      .split(" ")
+      .map((word) => word.charAt(0))
       .slice(0, 2)
-      .join('')
+      .join("")
       .toUpperCase();
   };
 
   return (
     <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center flex-shrink-0">
       {user?.avatar ? (
-        <img 
-          src={user.avatar} 
-          alt={`${user.name || 'User'} avatar`}
+        <img
+          src={user.avatar}
+          alt={`${user.name || "User"} avatar`}
           className="w-full h-full object-cover"
           loading="lazy"
         />
@@ -81,11 +81,9 @@ const ProfileCard: React.FC<{
           <Avatar user={user} />
           <div className="flex-1 min-w-0">
             <h2 className="text-xl font-bold text-gray-900 truncate">
-              {user?.name || '-'}
+              {user?.name || "-"}
             </h2>
-            <p className="text-teal-600 truncate">
-              {user?.email || '-'}
-            </p>
+            <p className="text-teal-600 truncate">{user?.email || "-"}</p>
           </div>
         </div>
         <button
@@ -116,7 +114,9 @@ const LogoutButton: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
 // Footer Component
 const Footer: React.FC = () => (
   <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white text-center py-6 flex-shrink-0">
-    <p className="text-sm font-medium opacity-90 mb-1">Butuh Informasi Lebih Lanjut?</p>
+    <p className="text-sm font-medium opacity-90 mb-1">
+      Butuh Informasi Lebih Lanjut?
+    </p>
     <p className="text-xl font-bold">BNI Call - 1500046</p>
   </div>
 );
@@ -124,9 +124,7 @@ const Footer: React.FC = () => (
 // Version Info Component
 const VersionInfo: React.FC = () => (
   <div className="text-center py-4">
-    <p className="text-sm text-gray-400">
-      Griyata by BNI - version 1.0.0
-    </p>
+    <p className="text-sm text-gray-400">Griyata by BNI - version 1.0.0</p>
   </div>
 );
 
@@ -152,9 +150,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
       }
 
       try {
-        const res = await axiosInstance.get(`/profiles/${savedData.userId}`, {headers: {
-          Authorization: `Bearer ${token}`,
-        }});
+        const res = await axiosInstance.get(`/profiles/${savedData.userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const data = res.data?.data?.profile;
 
         if (data) {
@@ -169,7 +169,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
           setProfile(undefined);
         }
       } catch (err) {
-        console.error('Failed to fetch profile:', err);
+        console.error("Failed to fetch profile:", err);
         setProfile(undefined);
       } finally {
         setLoading(false);
@@ -180,7 +180,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   }, [savedData]);
 
   if (!savedData) {
-    redirect('/');
+    redirect("/");
   }
 
   // Handlers
@@ -188,7 +188,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     if (onEditProfile) {
       onEditProfile();
     } else {
-      router.push('/profile/edit');
+      router.push("/profile/edit");
     }
   }, [onEditProfile, router]);
 
@@ -196,7 +196,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     if (onNavigateToHistory) {
       onNavigateToHistory();
     } else {
-      router.push('/profile/history');
+      router.push("/profile/history");
     }
   }, [onNavigateToHistory, router]);
 
@@ -204,24 +204,26 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     if (onNavigateToPolicy) {
       onNavigateToPolicy();
     } else {
-      router.push('/profile/policy');
+      router.push("/profile/policy");
     }
   }, [onNavigateToPolicy, router]);
 
-    const handleFavoriteClick = useCallback(() => {
+  const handleFavoriteClick = useCallback(() => {
     if (onNavigateToPolicy) {
       onNavigateToPolicy();
     } else {
-      router.push('/favorite');
+      router.push("/favorite");
     }
   }, [onNavigateToPolicy, router]);
 
   const handleLogout = useCallback(() => {
-    const confirmed = window.confirm('Apakah Anda yakin ingin keluar dari akun?');
+    const confirmed = window.confirm(
+      "Apakah Anda yakin ingin keluar dari akun?"
+    );
     if (confirmed && onLogout) {
       onLogout();
     } else if (confirmed) {
-      console.log('Logging out...');
+      console.log("Logging out...");
     }
   }, [onLogout]);
 
@@ -237,7 +239,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
           <div className="mb-6">
             {loading ? (
               <ProfileSkeleton />
-            ) : (   
+            ) : (
               <ProfileCard user={profile} onEditProfile={handleEditProfile} />
             )}
           </div>
@@ -290,7 +292,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                   </h3>
                 </div>
               </button>
-              
             </div>
           </div>
 

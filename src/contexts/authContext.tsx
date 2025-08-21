@@ -22,6 +22,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const router = useRouter();
 
+  const logout = () => {
+    setUser(null);
+    setToken(null);
+    Cookies.remove("auth_token");
+    router.push("/login");
+    localStorage.removeItem("kpr-apply-form");
+  };
+
   useEffect(() => {
     const savedToken = Cookies.get("auth_token");
 
@@ -38,10 +46,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             role: decoded.role,
           });
         } else {
-          Cookies.remove("auth_token");
+          logout();
         }
       } catch {
-        Cookies.remove("auth_token");
+        logout();
       }
     }
 
@@ -70,13 +78,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (role === "admin") {
       router.push("/admin/developer-management");
     }
-  };
-
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    Cookies.remove("auth_token");
-    router.push("/login");
   };
 
   if (loading) {
