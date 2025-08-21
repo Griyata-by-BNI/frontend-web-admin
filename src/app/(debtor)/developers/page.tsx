@@ -2,180 +2,185 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import axiosInstance from "@/utils/axios";
-
+import ClusterCard from "@/app/(debtor)/developers/components/ClusterCard";
 // =================================================================
-// 1. TYPE DEFINITIONS
+// 1. TYPE DEFINITIONS (DISESUAIKAN DENGAN PAYLOAD)
 // =================================================================
 
+// ✨ Interface ini sekarang cocok dengan struktur data dari API Anda
 interface ApiDeveloper {
   id: number;
   name: string;
   description: string;
+  isDeleted: boolean;
   developerPhotoUrl: string;
+  createdBy: number;
+  updatedBy: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
-// Assuming the structure of a cluster from your API
 interface ApiCluster {
   id: number;
-  developerId: number; // The crucial link to the developer
+  developerId: number;
   name: string;
-  location: string;
-  imageUrl: string; // Assuming the API provides an image URL
-  price: string;    // Assuming price and installment are strings like "2.1 M"
-  installment: string;
+  address: string | null;
+  minPrice: string | null;
+  cluster_photo_urls: string[];
 }
 
-// A new combined type for our page's data
 interface DeveloperWithClusters extends ApiDeveloper {
   clusters: ApiCluster[];
 }
 
 // =================================================================
-// 2. HELPER/CHILD COMPONENTS
+// 2. HELPER COMPONENTS & FUNCTIONS (Tidak ada perubahan)
 // =================================================================
-
 const SearchIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" >
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <circle cx="11" cy="11" r="8" />
     <path d="m21 21-4.3-4.3" />
   </svg>
 );
 
-interface ClusterCardProps {
-  cluster: ApiCluster;
-  developerId: number;
-}
-
-const ClusterCard: React.FC<ClusterCardProps> = ({ cluster, developerId }) => {
-  // Link to a specific property page, assuming cluster ID is used in the URL
-  const href = `/developers/${developerId}/clusters/${cluster.id}`;
-
-  return (
-    <Link href={href} className="flex">
-      <div className="bg-white rounded-2xl shadow-md overflow-hidden transition-transform duration-300 hover:scale-105 hover:shadow-xl flex flex-col w-full">
-        <div className="relative w-full h-48">
-          <Image
-            src={cluster.imageUrl || "/placeholder.jpg"} // Fallback image
-            alt={cluster.name}
-            layout="fill"
-            objectFit="cover"
-            className="w-full h-full"
-          />
-        </div>
-        <div className="p-5 flex-grow flex flex-col">
-          <h3 className="text-xl font-bold text-teal-700">{cluster.name}</h3>
-          <p className="text-base text-teal-600/90 mt-1 mb-5">
-            {cluster.location}
-          </p>
-
-          <div className="mt-auto grid grid-cols-2 items-center gap-4 border-t pt-4">
-            <div>
-              <p className="text-xs text-gray-500">Harga mulai dari</p>
-              <p className="text-lg font-bold text-gray-800">
-                <span className="font-normal text-sm">Rp</span> {cluster.price}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500">Angsuran mulai dari</p>
-              <p className="text-lg font-bold text-gray-800">
-                <span className="font-normal text-sm">Rp</span> {cluster.installment}
-                <span className="text-xs text-gray-500 font-normal"> /bulan</span>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-};
-
 // =================================================================
-// 3. API FETCHING & DATA MERGING
+// 3. API FETCHING LOGIC (Tidak ada perubahan)
 // =================================================================
-
-const getDevelopersWithClusters = async (): Promise<DeveloperWithClusters[]> => {
-  
+const getDevelopersWithClusters = async (): Promise<
+  DeveloperWithClusters[]
+> => {
   try {
-    // Step 1: Fetch developers and clusters concurrently
-    const [developerResponse, clusterResponse] = await Promise.all([
-      axiosInstance.get<{ data: { developers: ApiDeveloper[] } }>(`/api/v1/developers`),
-      axiosInstance.get<{ data: { clusters: ApiCluster[] } }>(`/api/v1/clusters`) // Assuming this structure
-    ]);
-
+    const developerResponse = await axiosInstance.get<{
+      data: { developers: ApiDeveloper[] };
+    }>(`/api/v1/developers`);
     const developers = developerResponse.data.data.developers;
-    const allClusters = clusterResponse.data.data.clusters;
 
-    // Step 2: Merge the data
-    const developersWithClusters = developers.map(developer => {
-      // For each developer, find their clusters
-      const matchingClusters = allClusters.filter(cluster => cluster.developerId === developer.id);
-      return {
-        ...developer,
-        clusters: matchingClusters,
-      };
+    if (!developers || developers.length === 0) return [];
+
+    const detailedDataPromises = developers.map(async (developer) => {
+      try {
+        const summaryClustersRes = await axiosInstance.get<{
+          data: { clusters: ApiCluster[] };
+        }>(`/api/v1/clusters/developer/${developer.id}`);
+
+        const summaryClusters = summaryClustersRes.data.data.clusters;
+
+        if (!summaryClusters || summaryClusters.length === 0) {
+          return { ...developer, clusters: [] };
+        }
+
+        return { ...developer, clusters: summaryClusters };
+      } catch (error) {
+        console.error(
+          `Failed to fetch clusters for developer ${developer.id}:`,
+          error
+        );
+        return { ...developer, clusters: [] }; // Return the developer with no clusters
+      }
     });
 
-    return developersWithClusters;
-
+    return await Promise.all(detailedDataPromises);
   } catch (error) {
-    console.error("Failed to fetch data:", error);
-    return []; // Return empty array on error
+    console.error("Failed to fetch initial list of developers:", error);
+    return [];
   }
 };
-
 // =================================================================
-// 4. MAIN PAGE COMPONENT
+// 4. MAIN PAGE COMPONENT (Tidak ada perubahan)
 // =================================================================
-
-const PartnerDeveloperPage = async () => {
+export default async function PartnerDeveloperPage() {
   const developers = await getDevelopersWithClusters();
 
   return (
     <main className="container p-4 md:p-8">
-      {/* Header and Search Bar */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Partner Developer</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Partner Developer
+          </h1>
         </div>
         <div className="relative w-full md:w-auto">
-          <input type="text" placeholder="Cari Developer" className="pl-10 pr-4 py-2 border border-gray-300 rounded-full w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-teal-500" />
+          <input
+            type="text"
+            placeholder="Cari Developer"
+            className="pl-10 pr-4 py-2 border border-gray-300 rounded-full w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-teal-500"
+          />
           <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
             <SearchIcon />
           </div>
         </div>
       </div>
 
-      {/* Developers List */}
       <div className="space-y-12">
         {developers.length > 0 ? (
-          developers.map((dev) => (
-            <section key={dev.id}>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">{dev.name}</h2>
-                <Link href={`/developers/${dev.id}`} className="text-teal-600 font-semibold hover:underline flex-shrink-0">
-                  Lihat lebih lengkap
-                </Link>
-              </div>
-              <p className="text-gray-600 mb-6 max-w-4xl">{dev.description}</p>
-              
-              {/* Grid of Clusters */}
-              {dev.clusters.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {dev.clusters.slice(0, 3).map((cluster) => ( // Show first 3 clusters
-                    <ClusterCard key={cluster.id} cluster={cluster} developerId={dev.id} />
-                  ))}
+          developers.map((dev) => {
+            const logoUrl =
+              dev.developerPhotoUrl ||
+              `https://via.placeholder.com/120x60.png?text=${dev.name.replace(
+                /\s/g,
+                "+"
+              )}`;
+
+            return (
+              <section key={dev.id}>
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex items-center gap-4">
+                    <Image
+                      src={logoUrl}
+                      alt={`${dev.name} logo`}
+                      width={100}
+                      height={50}
+                      className="object-contain rounded-md bg-white p-1 shadow-sm"
+                    />
+                    <h2 className="text-2xl font-bold text-gray-800">
+                      {dev.name}
+                    </h2>
+                  </div>
+
+                  <Link
+                    href={`/developers/${dev.id}`}
+                    className="text-teal-600 font-semibold hover:underline flex-shrink-0"
+                  >
+                    Lihat lebih lengkap
+                  </Link>
                 </div>
-              )}
-            </section>
-          ))
+
+                <p className="text-gray-600 mb-6 max-w-4xl">
+                  {dev.description}
+                </p>
+
+                {dev.clusters && dev.clusters.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {dev.clusters.slice(0, 3).map((cluster) => (
+                      <ClusterCard
+                        key={cluster.id}
+                        cluster={cluster}
+                        developerId={dev.id}
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
+            );
+          })
         ) : (
           <div className="text-center py-10">
-            <p className="text-gray-500">Could not load developers or none are available.</p>
+            <p className="text-gray-500">
+              Could not load developers or none are available.
+            </p>
           </div>
         )}
       </div>
     </main>
   );
-};
-export default PartnerDeveloperPage;
-
+}

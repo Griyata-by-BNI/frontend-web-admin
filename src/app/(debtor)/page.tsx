@@ -1,44 +1,73 @@
-"use client";
+import React from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { KPRSimulator } from "@/app/(debtor)/kpr-simulator/_components/KPRSimulator";
+import { CTASection } from "@/app/(debtor)/kpr-information/detail/components/CTASection";
+import axiosInstance from "@/utils/axios";
+import HeroSearch from "@/app/(debtor)/developers/components/HeroSearch"; 
 
-import React, { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-
-import PropertyCard from '@/app/(debtor)/developers/components/PropertyCard';
-import { KPRSimulator } from '@/app/(debtor)/kpr-simulator/_components/KPRSimulator';
-import { CTASection } from '@/app/(debtor)/kpr-information/detail/components/CTASection';
-import Navbar from '@/components/navbar';
-
-// --- Ikon SVG ---
-const SearchIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
-
-// --- Definisi Tipe Data ---
+// --- TYPE DEFINITION ---
 interface Property {
-  id: string;
-  developerId: string;
-  name: string;
+  id: number;
+  developerId: number;
+  clusterId: number;
+  propertyName: string;
   location: string;
-  imageUrl: string;
   price: string;
-  installment: string;
+  photoUrl: string | null;
 }
 
-// --- Data Dummy ---
-const MOCK_PROPERTIES: Property[] = [
-  { id: 'p1', developerId: 'summarecon', name: 'Suvarna Sutera', location: 'Tangerang, Banten', imageUrl: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=600', price: '2.1 M', installment: '8.1jt' },
-  { id: 'p2', developerId: 'summarecon', name: 'Suvarna Sutera', location: 'Tangerang, Banten', imageUrl: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600', price: '2.1 M', installment: '8.1jt' },
-  { id: 'p3', developerId: 'sinarmas-land', name: 'BSD City', location: 'Tangerang, Banten', imageUrl: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=600', price: '2.1 M', installment: '8.1jt' },
-  { id: 'p4', developerId: 'sinarmas-land', name: 'Grand Wisata', location: 'Tangerang, Banten', imageUrl: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600', price: '2.1 M', installment: '8.1jt' },
-];
+// --- API FETCHING ---
+async function getLatestProperties(): Promise<Property[]> {
+  try {
+    const response = await axiosInstance.get('/api/v1/properties/explore', {
+      params: {
+        sortBy: 'updatedAt',
+        sortDir: 'DESC',
+        pageSize: 4,
+      }
+    });
+    return response.data?.data?.properties || [];
+  } catch (error) {
+    console.error("Failed to fetch latest properties:", error);
+    return [];
+  }
+}
 
+// --- CHILD COMPONENT ---
+const PropertyCard: React.FC<{ property: Property }> = ({ property }) => (
+  <Link 
+    href={`/developers/${property.developerId}/clusters/${property.clusterId}/properties/${property.id}`}
+    className="block bg-white rounded-2xl shadow-md overflow-hidden transition-transform duration-300 hover:scale-105 hover:shadow-lg h-full"
+  >
+    <div className="relative w-full h-48 bg-gray-200">
+      <Image
+        src={property.photoUrl || "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800"}
+        alt={property.propertyName}
+        layout="fill"
+        objectFit="cover"
+      />
+    </div>
+    <div className="p-4">
+      <h4 className="font-bold text-gray-800 truncate">{property.propertyName}</h4>
+      <p className="text-sm text-gray-500 mt-1">{property.location}</p>
+      <p className="text-lg font-bold text-teal-600 mt-3">
+        Rp {Number(property.price).toLocaleString('id-ID')}
+      </p>
+    </div>
+  </Link>
+);
 
-// --- Komponen Utama Halaman ---
-export default function HomePage() {
+// --- MAIN PAGE COMPONENT ---
+export default async function HomePage() {
+  const latestProperties = await getLatestProperties();
+
   return (
     <div className="bg-gray-50 font-sans">
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-teal-100 to-white pt-20 pb-10 text-center relative overflow-hidden">
-        <div className="container mx-auto px-4">
+        {/* ✨ FIX: Added `relative z-10` to ensure this content is on top */}
+        <div className="container mx-auto px-4 relative z-10">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-800 leading-tight">
             Gunakan Cara Baru,
           </h1>
@@ -49,50 +78,41 @@ export default function HomePage() {
             Bersama BNI, wujudkan KPR dengan sentuhan jari.
           </p>
           <div className="text-center mb-12">
-                <div className="relative mt-6 max-w-lg mx-auto">
-                  <input type="text" placeholder="Cari lokasi properti / developer" className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white" />
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"><SearchIcon /></div>
-                </div>
-              </div>
-          
+            <HeroSearch />
+          </div>
         </div>
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-32 opacity-20">
-
         </div>
       </section>
 
       {/* Main Content Section */}
-       <div className="relative">
+      <div className="relative">
         <Image
-          src="/home.png" // Pastikan nama file ini benar dan ada di folder /public
+          src="/home.png"
           alt="Content background shape"
-          width={1920} // Fixed width
-          height={150} // Fixed height for the shape
-          className="w-full -mt-5" // Ensure it spans full width
+          width={1920}
+          height={150}
+          className="w-full -mt-5"
         />
-            <div className="container mx-auto px-4">
-
-
-              {/* Cluster Terbaru */}
-              <div className="mb-16">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-2xl font-bold text-gray-800">Cluster Terbaru</h3>
-                  <Link href="/explore" className="text-cyan-600 font-semibold hover:underline">Lihat Semua</Link>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {MOCK_PROPERTIES.map(prop => (
-                    <PropertyCard 
-                      key={prop.id} 
-                      property={prop} 
-                      developerId={prop.developerId}
-                    />
-                  ))}
-                </div>
-              </div>
+        <div className="container mx-auto px-4">
+          <div className="mb-16">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-800">Cluster Terbaru</h3>
+              <Link href="/explore" className="text-cyan-600 font-semibold hover:underline">Lihat Semua</Link>
             </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {latestProperties.map(prop => (
+                <PropertyCard 
+                  key={prop.id} 
+                  property={prop} 
+                />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Simulasi KPR Section */}
+      {/* Other Sections */}
       <section className="bg-slate-100 py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -105,7 +125,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Mulai Perencanaan Section */}
       <section className="bg-white py-16">
         <div className="mt-8 max-w-7xl mx-auto">
           <div className="text-center">

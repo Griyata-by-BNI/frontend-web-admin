@@ -1,84 +1,156 @@
-"use client";
-
-import { KPRSimulator } from "@/app/(debtor)/kpr-simulator";
-import dynamic from "next/dynamic";
+import React from "react";
 import Image from "next/image";
-import React, { useMemo } from "react";
+import { notFound } from "next/navigation";
+import axiosInstance from "@/utils/axios";
+import { KPRSimulator } from "@/app/(debtor)/kpr-simulator";
+import MapLoader from "@/app/(debtor)/developers/components/Map";
 
 // 1. Import Font Awesome components and icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+// ✨ Import the IconDefinition type
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   faBed,
   faShower,
   faHouse,
   faChartArea,
-  faLocationDot, // Added for the location pin
+  faRulerCombined,
+  faLocationDot,
 } from "@fortawesome/free-solid-svg-icons";
 
-// --- Ikon SVG components have been removed ---
+// =================================================================
+// 2. API & LOCAL TYPE DEFINITIONS
+// =================================================================
 
-// --- Definisi Tipe Data (Updated for Font Awesome) ---
-interface PropertyDetails {
+interface ApiPropertyDetail {
+  id: number;
+  developerId: number;
+  developerName: string;
   name: string;
-  mainImageUrl: string;
-  price: number;
-  stock: number;
-  installment: number;
-  developer: string;
-  subLocation: string;
-  developerLogoUrl: string;
   description: string;
-  // The 'icon' type is now any, as it holds an IconDefinition object from Font Awesome
-  specifications: { text: string; icon: any }[];
-  mapCoordinates: [number, number];
-  nearbyLocations: { name: string }[]; // Icon is no longer needed here
+  price: string;
+  location: string;
+  latitude: string;
+  longitude: string;
+  stock: number;
+  spesifications: string;
+  landArea: string;
+  buildingArea: string;
+  property_photo_urls: string[];
 }
 
-// --- Data Dummy (Updated with Font Awesome icons) ---
-const MOCK_PROPERTY_DETAILS: PropertyDetails = {
-  name: "Suvarna Sutera - Tipe A",
-  mainImageUrl:
-    "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800",
-  price: 819000000,
-  stock: 10,
-  installment: 8100000,
-  developer: "Summarecon Tangerang",
-  subLocation: "Curug, Tangerang",
-  developerLogoUrl:
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Summarecon_Agung.svg/1200px-Summarecon_Agung.svg.png",
-  description:
-    "Tipe Asteria di Suvarna Sutera adalah hunian modern dua lantai yang dirancang untuk memaksimalkan kenyamanan dan fungsi...",
-  // 2. Use the imported Font Awesome icon objects
-  specifications: [
-    { text: "4 Kamar Tidur", icon: faBed },
-    { text: "3 Kamar Mandi", icon: faShower },
-    { text: "Luas Tanah 135 m²", icon: faChartArea },
-    { text: "Luas Bangunan 142 m²", icon: faHouse },
-  ],
-  mapCoordinates: [-6.2024, 106.6527],
-  nearbyLocations: [
-    { name: "SMA N 1 Jakarta" },
-    { name: "SPM N 1 Jakarta" },
-    { name: "Central Park Mall" },
-    { name: "Central Park Mall" },
-  ],
+interface ApiDeveloper {
+  developerPhotoUrl: string;
+}
+
+// ✨ Define the type for a single specification item
+interface Specification {
+  text: string;
+  icon: IconDefinition;
+}
+
+// =================================================================
+// 3. HELPER FUNCTIONS for Data Processing
+// =================================================================
+
+// ✨ This function now has an explicit return type
+const parseSpecifications = (
+  specString: string,
+  landArea: string,
+  buildingArea: string
+): Specification[] => {
+  // ✨ Explicitly type the 'specs' array
+  const specs: Specification[] = [];
+  if (!specString) return specs;
+
+  const kamarTidurMatch = specString.match(/(\d+)\s*kamar tidur/i);
+  if (kamarTidurMatch) {
+    specs.push({ text: `${kamarTidurMatch[1]} Kamar Tidur`, icon: faBed });
+  }
+
+  const kamarMandiMatch = specString.match(/(\d+)\s*kamar mandi/i);
+  if (kamarMandiMatch) {
+    specs.push({ text: `${kamarMandiMatch[1]} Kamar Mandi`, icon: faShower });
+  }
+
+  if (landArea) {
+    specs.push({ text: `Luas Tanah ${Number(landArea)} m²`, icon: faChartArea });
+  }
+
+  if (buildingArea) {
+    specs.push({
+      text: `Luas Bangunan ${Number(buildingArea)} m²`,
+      icon: faHouse,
+    });
+  }
+
+  return specs;
 };
 
-// --- Komponen Utama Aplikasi ---
-export default function PropertyDetailPage() {
-  const details = MOCK_PROPERTY_DETAILS;
-  const Map = useMemo(
-    () =>
-      dynamic(() => import("@/app/(debtor)/developers/components/Map"), {
-        ssr: false,
-        loading: () => (
-          <div className="flex items-center justify-center h-full bg-gray-200">
-            <p>Loading map...</p>
-          </div>
-        ),
-      }),
-    []
-  );
+// This function calculates a sample installment
+const calculateInstallment = (price: number): number => {
+  // Simple estimation: 1% of the price
+  return Math.round(price * 0.01);
+};
+
+// =================================================================
+// 4. API FETCHING LOGIC
+// =================================================================
+
+async function getPropertyPageData(propertyId: string, developerId: string) {
+  try {
+    const [propertyRes, developerRes] = await Promise.all([
+      axiosInstance.get<{ data: ApiPropertyDetail }>(
+        `/api/v1/properties/${propertyId}`
+      ),
+      axiosInstance.get<{ data: { developer: ApiDeveloper } }>(
+        `/api/v1/developers/${developerId}`
+      ),
+    ]);
+
+    const property = propertyRes.data.data;
+    const developer = developerRes.data.data.developer;
+
+    if (!property || !developer) return null;
+
+    // Process the raw API data to fit the UI
+    const specifications = parseSpecifications(
+      property.spesifications,
+      property.landArea,
+      property.buildingArea
+    );
+    const installment = calculateInstallment(Number(property.price));
+
+    return {
+      property,
+      developer,
+      processed: {
+        specifications,
+        installment,
+      },
+    };
+  } catch (error) {
+    console.error("Failed to fetch property page data:", error);
+    return null;
+  }
+}
+
+// =================================================================
+// 5. MAIN PAGE COMPONENT
+// =================================================================
+
+export default async function PropertyDetailPage({
+  params,
+}: {
+  params: { property_id: string; developer_id: string };
+}) {
+  const data = await getPropertyPageData(params.property_id, params.developer_id);
+
+  if (!data) {
+    notFound();
+  }
+
+  const { property, developer, processed } = data;
 
   return (
     <div className="bg-light-tosca min-h-screen font-sans">
@@ -87,19 +159,22 @@ export default function PropertyDetailPage() {
           {/* Kolom Kiri */}
           <div className="lg:col-span-2">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              {details.name}
+              {property.name}
             </h1>
             <div className="relative w-full h-80 rounded-2xl overflow-hidden shadow-lg mb-6">
               <Image
-                src={details.mainImageUrl}
-                alt={details.name}
+                src={
+                  property.property_photo_urls?.[0] ||
+                  "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800"
+                }
+                alt={property.name}
                 layout="fill"
                 objectFit="cover"
               />
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-3">Deskripsi</h2>
             <p className="text-gray-600 leading-relaxed mb-8">
-              {details.description}
+              {property.description}
             </p>
 
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
@@ -107,9 +182,8 @@ export default function PropertyDetailPage() {
             </h2>
             <div className="bg-white/70 border-2 border-teal-200 rounded-2xl p-6 mb-8 shadow-sm backdrop-blur-sm">
               <div className="grid grid-cols-2 gap-x-8 gap-y-5">
-                {details.specifications.map((spec, index) => (
+                {processed.specifications.map((spec, index) => (
                   <div key={index} className="flex items-center">
-                    {/* 3. Render using the FontAwesomeIcon component */}
                     <FontAwesomeIcon
                       icon={spec.icon}
                       className="text-teal-600 w-6 h-6"
@@ -126,30 +200,19 @@ export default function PropertyDetailPage() {
               Simulasi KPR
             </h2>
             <div className="mb-8">
-              <KPRSimulator initialPropertyPrice={details.price} />
+              <KPRSimulator initialPropertyPrice={Number(property.price)} />
             </div>
 
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              Lokasi dan Tempat Sekitar
-            </h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Lokasi</h2>
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
               <div className="w-full h-96">
-                <Map
-                  center={details.mapCoordinates}
-                  popupText={`Lokasi ${details.name}`}
+                <MapLoader
+                  center={[
+                    Number(property.latitude),
+                    Number(property.longitude),
+                  ]}
+                  popupText={`Lokasi ${property.name}`}
                 />
-              </div>
-              <div className="p-6 grid grid-cols-2 gap-4">
-                {details.nearbyLocations.map((loc, index) => (
-                  <div key={index} className="flex items-center">
-                    {/* 4. Use FontAwesomeIcon for the location pin */}
-                    <FontAwesomeIcon
-                      icon={faLocationDot}
-                      className="text-teal-600"
-                    />
-                    <span className="ml-3 text-gray-700">{loc.name}</span>
-                  </div>
-                ))}
               </div>
             </div>
           </div>
@@ -160,25 +223,32 @@ export default function PropertyDetailPage() {
               <div className="relative bg-white rounded-xl shadow-lg overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-teal-400 to-cyan-500"></div>
                 <div className="p-6">
-                  <p className="text-sm text-teal-700">Harga mulai dari</p>
+                  <p className="text-sm text-teal-700">Harga</p>
                   <p className="text-4xl font-bold text-gray-800 mt-1">
                     <span className="text-2xl align-top">Rp </span>
-                    {new Intl.NumberFormat("id-ID").format(details.price)}
+                    {new Intl.NumberFormat("id-ID").format(
+                      Number(property.price)
+                    )}
                   </p>
                   <p className="text-teal-600 font-semibold mt-2">
-                    Angsuran mulai dari Rp{" "}
-                    {new Intl.NumberFormat("id-ID").format(details.installment)}
+                    Angsuran Rp{" "}
+                    {new Intl.NumberFormat("id-ID").format(
+                      processed.installment
+                    )}
                     /bulan
                   </p>
                   <div className="my-5 border-t"></div>
                   <p className="text-xl font-bold text-gray-900">
-                    {details.developer}
+                    {property.developerName}
                   </p>
-                  <p className="text-gray-500">{details.subLocation}</p>
+                  <p className="text-gray-500">{property.location}</p>
                   <div className="my-5 border-t"></div>
                   <p className="text-sm text-gray-500 mb-2">Developer:</p>
                   <Image
-                    src={details.developerLogoUrl}
+                    src={
+                      developer.developerPhotoUrl ||
+                      "https://via.placeholder.com/150x50.png?text=Logo"
+                    }
                     alt="Developer Logo"
                     width={150}
                     height={50}
