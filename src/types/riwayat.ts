@@ -1,9 +1,23 @@
-export type ApiStatus =
-  | "submitted"
-  | "under_review"
-  | "verified"
-  | "rejected"
-  | "completed";
+export type ApiStatus = "submitted" | "under_review" | "done";
+
+export interface SubmissionSummary {
+  submission: {
+    id: number;
+    status: ApiStatus;
+    verified_at: string;
+    verified_by: string;
+    verification_notes: string;
+    submitted_at: string;
+  };
+  property_information: {
+    propertyId: number;
+    propertyName: string;
+    clusterName: string;
+    clusterTypeName: string;
+    developerName: string;
+    propertyPhotoUrl: string[];
+  };
+}
 
 export interface DebtorInformation {
   full_name: string;
@@ -14,6 +28,7 @@ export interface DebtorInformation {
   marital_status: string;
   residence_status: string;
   nik: string;
+  education: string;
   tax_id_number: string;
   email: string;
   phone_number: string;
@@ -37,10 +52,6 @@ export interface SpouseInformation {
 export interface EmergencyContact {
   fullName: string;
   address: string;
-  rt: number;
-  rw: number;
-  city: string;
-  postalCode: number;
   homePhoneNumber: number;
   mobilePhoneNumber: number;
   relationship: string;
@@ -50,14 +61,11 @@ export interface EmploymentHistory {
   employment_type: string;
   company_name: string;
   address: string;
-  postal_code: string;
-  city: string;
   phone_number: string;
   job_title: string;
   position: string;
   industry_type: string;
   length_of_work_years: number;
-  length_of_work_months: number;
   other_income: number;
   total_income: number;
   total_expenses: number;
@@ -68,14 +76,11 @@ export interface EmployeeInformation {
   employment_type: string;
   company_name: string;
   address: string;
-  postal_code: string;
-  city: string;
   phone_number: string;
   job_title: string;
   position: string;
   industry_type: string;
   length_of_work_years: number;
-  length_of_work_months: number;
   other_income: number;
   total_income: number;
   total_expenses: number;
@@ -83,45 +88,57 @@ export interface EmployeeInformation {
   employmentHistory: EmploymentHistory;
 }
 
-export interface PropertyInformation {
-  property_name: string;
-  developer_group: string;
-  image_url: string;
-}
-
-export interface SubmissionSummary {
-  id: number;
-  property_name: string;
-  developer_group: string;
-  submitted_at: string;
-  status: ApiStatus;
-  image_url: string;
+export interface LoanInformation {
+  property_id: number;
+  loan_value: string;
+  monthly_period: number;
 }
 
 export interface SubmissionDetail {
   submission: {
     id: number;
     status: ApiStatus;
-    submitted_at: string;
     verified_at: string;
-    verified_by?: number;
-    verification_notes?: string;
+    verified_by: string;
+    verification_notes: string;
+    submitted_at: string;
   };
-  property_information: PropertyInformation;
   debtor_information: DebtorInformation;
-  spouse_information: SpouseInformation | null;
+  spouse_information: SpouseInformation;
   emergency_contact: EmergencyContact;
   employee_information: EmployeeInformation;
+  loan_information: LoanInformation;
 }
 
-export interface TrackingData {
-  debtor_information: DebtorInformation;
-  spouse_information: SpouseInformation | null;
-  emergency_contact: EmergencyContact;
-  employee_information: EmployeeInformation;
-}
-
-export interface UpdateStatusRequest {
-  status: ApiStatus;
-  verification_notes?: string;
+export interface PropertyDetail {
+  id: number;
+  developerId: number;
+  developerName: string;
+  clusterId: number;
+  clusterName: string;
+  clusterTypeId: number;
+  clusterTypeName: string;
+  name: string;
+  description: string;
+  price: string;
+  location: string;
+  latitude: string;
+  longitude: string;
+  facilities: Array<{
+    name: string;
+    value: number | boolean;
+  }>;
+  spesifications: string;
+  landArea: number;
+  buildingArea: number;
+  jumlahLantai: number;
+  jumlahKamarTidur: number;
+  jumlahKamarMandi: number;
+  garasi: boolean;
+  kolamRenang: boolean;
+  collateralAddress: string;
+  createdAt: string;
+  updatedAt: string;
+  stock: number;
+  property_photo_urls: string[];
 }

@@ -1,14 +1,14 @@
 import { InfoCard } from "./InfoCard";
-import { SubmissionDetail } from "@/types/riwayat";
-import { FileText, User, Users, Briefcase, Phone } from "lucide-react";
+import { SubmissionDetail, PropertyDetail } from "@/types/riwayat";
+import { FileText, User, Users, Briefcase, Phone, Home } from "lucide-react";
 
 interface PengajuanKPRViewProps {
   submissionData: SubmissionDetail;
+  propertyData: PropertyDetail | null;
 }
 
-export const PengajuanKPRView = ({ submissionData }: PengajuanKPRViewProps) => {
-  const { debtor_information, spouse_information, employee_information, emergency_contact } =
-    submissionData;
+export const PengajuanKPRView = ({ submissionData, propertyData }: PengajuanKPRViewProps) => {
+  const { debtor_information, spouse_information, employee_information, emergency_contact, loan_information } = submissionData;
 
   const dataNasabah = [
     { label: "Nama Lengkap", value: debtor_information.full_name },
@@ -17,10 +17,14 @@ export const PengajuanKPRView = ({ submissionData }: PengajuanKPRViewProps) => {
     { label: "Tanggal Lahir", value: new Date(debtor_information.birth_date).toLocaleDateString("id-ID") },
     { label: "Tempat Lahir", value: debtor_information.place_of_birth },
     { label: "Status Pernikahan", value: debtor_information.marital_status },
+    { label: "Status Tempat Tinggal", value: debtor_information.residence_status },
     { label: "NIK", value: debtor_information.nik },
+    { label: "Pendidikan", value: debtor_information.education },
     { label: "NPWP", value: debtor_information.tax_id_number },
     { label: "Email", value: debtor_information.email },
     { label: "Nomor Handphone", value: debtor_information.phone_number },
+    { label: "Alamat KTP", value: debtor_information.id_card_address },
+    { label: "Alamat Domisili", value: debtor_information.domicile_address },
   ];
 
   const dataPasangan = spouse_information ? [
@@ -33,14 +37,12 @@ export const PengajuanKPRView = ({ submissionData }: PengajuanKPRViewProps) => {
     { label: "NPWP", value: spouse_information.tax_id_number },
     { label: "Nomor Handphone", value: spouse_information.phone_number },
     { label: "Email", value: spouse_information.email },
+    { label: "Alamat KTP", value: spouse_information.id_card_address },
   ] : [];
 
   const dataKontak = [
     { label: "Nama Lengkap", value: emergency_contact.fullName },
     { label: "Alamat", value: emergency_contact.address },
-    { label: "RT/RW", value: `${emergency_contact.rt.toString().padStart(3, '0')}/${emergency_contact.rw.toString().padStart(3, '0')}` },
-    { label: "Kota", value: emergency_contact.city },
-    { label: "Kode Pos", value: emergency_contact.postalCode.toString() },
     { label: "Telepon Rumah", value: emergency_contact.homePhoneNumber.toString() },
     { label: "Nomor HP", value: emergency_contact.mobilePhoneNumber.toString() },
     { label: "Hubungan", value: emergency_contact.relationship },
@@ -50,17 +52,36 @@ export const PengajuanKPRView = ({ submissionData }: PengajuanKPRViewProps) => {
     { label: "Jenis Pekerjaan", value: employee_information.employment_type },
     { label: "Nama Perusahaan", value: employee_information.company_name },
     { label: "Alamat Perusahaan", value: employee_information.address },
-    { label: "Kota", value: employee_information.city },
-    { label: "Kode Pos", value: employee_information.postal_code },
     { label: "Telepon Perusahaan", value: employee_information.phone_number },
     { label: "Jabatan", value: employee_information.job_title },
     { label: "Posisi", value: employee_information.position },
     { label: "Jenis Industri", value: employee_information.industry_type },
-    { label: "Lama Bekerja", value: `${employee_information.length_of_work_years} Tahun ${employee_information.length_of_work_months} Bulan` },
+    { label: "Lama Bekerja", value: `${employee_information.length_of_work_years} Tahun` },
     { label: "Gaji Pokok", value: `Rp ${employee_information.basic_salary.toLocaleString("id-ID")}` },
     { label: "Pendapatan Lain", value: `Rp ${employee_information.other_income.toLocaleString("id-ID")}` },
     { label: "Total Pendapatan", value: `Rp ${employee_information.total_income.toLocaleString("id-ID")}` },
     { label: "Total Pengeluaran", value: `Rp ${employee_information.total_expenses.toLocaleString("id-ID")}` },
+  ];
+
+  const dataProperti = propertyData ? [
+    { label: "Nama Properti", value: propertyData.name },
+    { label: "Developer", value: propertyData.developerName },
+    { label: "Cluster", value: propertyData.clusterName },
+    { label: "Tipe", value: propertyData.clusterTypeName },
+    { label: "Harga", value: `Rp ${parseInt(propertyData.price).toLocaleString("id-ID")}` },
+    { label: "Lokasi", value: propertyData.location },
+    { label: "Kamar Tidur", value: propertyData.jumlahKamarTidur.toString() },
+    { label: "Kamar Mandi", value: propertyData.jumlahKamarMandi.toString() },
+    { label: "Luas Bangunan", value: `${propertyData.buildingArea} m²` },
+    { label: "Luas Tanah", value: `${propertyData.landArea} m²` },
+    { label: "Jumlah Lantai", value: propertyData.jumlahLantai.toString() },
+    { label: "Garasi", value: propertyData.garasi ? "Ya" : "Tidak" },
+    { label: "Kolam Renang", value: propertyData.kolamRenang ? "Ya" : "Tidak" },
+  ] : [];
+
+  const dataPinjaman = [
+    { label: "Nilai Pinjaman", value: `Rp ${parseInt(loan_information.loan_value).toLocaleString("id-ID")}` },
+    { label: "Jangka Waktu", value: `${loan_information.monthly_period} bulan` },
   ];
 
   const dataDokumen = ["KTP", "NPWP", "Kartu Keluarga", "Buku Nikah", "Slip Gaji", "Rekening Koran"];
@@ -91,6 +112,20 @@ export const PengajuanKPRView = ({ submissionData }: PengajuanKPRViewProps) => {
         title="Informasi Pekerjaan"
         details={dataPekerjaan}
         icon={<Briefcase className="w-6 h-6 text-gray-500" />}
+      />
+
+      {propertyData && (
+        <InfoCard
+          title="Informasi Properti"
+          details={dataProperti}
+          icon={<Home className="w-6 h-6 text-gray-500" />}
+        />
+      )}
+
+      <InfoCard
+        title="Informasi Pinjaman"
+        details={dataPinjaman}
+        icon={<FileText className="w-6 h-6 text-gray-500" />}
       />
       
       <div className="bg-white p-6 rounded-xl shadow-lg">

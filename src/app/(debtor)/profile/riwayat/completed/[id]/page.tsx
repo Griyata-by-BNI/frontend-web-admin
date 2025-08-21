@@ -6,14 +6,16 @@ import { StatusTracker } from "../../in-process/[id]/components/StatusTracker";
 import { PengajuanKPRView } from "../../in-process/[id]/components/PengajuanKPRView";
 import { VerifikasiView } from "../../in-process/[id]/components/VerifikasiView";
 import { HasilPengajuanView } from "./components/HasilPengajuanView";
-import { getSubmissionById } from "@/services/kprService";
-import { SubmissionDetail } from "@/types/riwayat";
+import { getSubmissionById, getPropertyById } from "@/services/kprService";
+import { SubmissionDetail, PropertyDetail } from "@/types/riwayat";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 function CompletedPageContent() {
   const params = useParams();
   const id = Number(params.id);
 
   const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
+  const [property, setProperty] = useState<PropertyDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -21,8 +23,13 @@ function CompletedPageContent() {
       if (id) {
         setIsLoading(true);
         try {
-          const data = await getSubmissionById(id);
-          setSubmission(data);
+          const submissionData = await getSubmissionById(id);
+          setSubmission(submissionData);
+          
+          if (submissionData?.loan_information?.property_id) {
+            const propertyData = await getPropertyById(submissionData.loan_information.property_id);
+            setProperty(propertyData);
+          }
         } catch (error) {
           console.error("Failed to fetch submission detail:", error);
         } finally {
@@ -36,7 +43,7 @@ function CompletedPageContent() {
   if (isLoading) return <div className="text-center p-10">Memuat...</div>;
   if (!submission) return <div className="text-center p-10">Data tidak ditemukan</div>;
 
-  const status = submission.submission.status === "verified" || submission.submission.status === "completed" ? "disetujui" : "ditolak";
+  const status = submission.submission.status === "done" ? "selesai" : "dalam_proses";
   const currentProgress = 3;
   const [viewedStep, setViewedStep] = useState(currentProgress);
 
@@ -73,12 +80,12 @@ function CompletedPageContent() {
             </h2>
             <span
               className={`text-sm font-semibold px-4 py-1.5 rounded-full ${
-                status === "disetujui"
-                  ? "bg-teal-100 text-teal-800"
-                  : "bg-red-100 text-red-800"
+                status === "selesai"
+                  ? "bg-green-100 text-green-800"
+                  : "bg-blue-100 text-blue-800"
               }`}
             >
-              {status === "disetujui" ? "Disetujui" : "Ditolak"}
+              {status === "selesai" ? "Selesai" : "Dalam Proses"}
             </span>
           </div>
 
@@ -91,7 +98,7 @@ function CompletedPageContent() {
         </div>
 
         <main className="mt-8">
-          {viewedStep === 1 && <PengajuanKPRView submissionData={submission} />}
+          {viewedStep === 1 && <PengajuanKPRView submissionData={submission} propertyData={property} />}
           {viewedStep === 2 && <VerifikasiView submissionData={submission} />}
           {viewedStep === 3 && (
             <HasilPengajuanView 
@@ -108,8 +115,10 @@ function CompletedPageContent() {
 
 export default function CompletedPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <CompletedPageContent />
-    </Suspense>
+    <ProtectedRoute>
+      <Suspense fallback={<div>Loading...</div>}>
+        <CompletedPageContent />
+      </Suspense>
+    </ProtectedRoute>
   );
 }
