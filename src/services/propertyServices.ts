@@ -1,4 +1,9 @@
-import { CreatePropertyPayload, PropertyResponse } from "@/types/property";
+import {
+  CreatePropertyPayload,
+  Property,
+  PropertyDetailResponse,
+  PropertyResponse,
+} from "@/types/property";
 import appendIfDefined from "@/utils/appendIfDefined";
 import axiosInstance from "@/utils/axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -13,12 +18,11 @@ export const fetchPropertiesByClusterType = async (
   return data;
 };
 
-// custom hook pakai useQuery
 export const usePropertiesByClusterType = (clusterTypeId: number) => {
   return useQuery<PropertyResponse>({
     queryKey: ["properties", clusterTypeId],
     queryFn: () => fetchPropertiesByClusterType(clusterTypeId),
-    enabled: !!clusterTypeId, // hanya jalan kalau ada id
+    enabled: !!clusterTypeId,
   });
 };
 
@@ -36,7 +40,6 @@ export const buildCreatePropertyFormData = (payload: CreatePropertyPayload) => {
   appendIfDefined(fd, "regionId", payload.regionId);
   appendIfDefined(fd, "stock", payload.stock);
 
-  // opsional/nullable
   appendIfDefined(fd, "luasTanah", payload.luasTanah);
   appendIfDefined(fd, "luasBangunan", payload.luasBangunan);
   appendIfDefined(fd, "jumlahLantai", payload.jumlahLantai);
@@ -46,7 +49,6 @@ export const buildCreatePropertyFormData = (payload: CreatePropertyPayload) => {
   appendIfDefined(fd, "garasi", payload.garasi);
   appendIfDefined(fd, "kolamRenang", payload.kolamRenang);
 
-  // multiple files (key sama: "photos")
   payload.photos.forEach((file) => {
     if (file) fd.append("photos", file);
   });
@@ -55,32 +57,138 @@ export const buildCreatePropertyFormData = (payload: CreatePropertyPayload) => {
 };
 
 export const createProperty = async (payload: CreatePropertyPayload) => {
-  const formData = buildCreatePropertyFormData(payload); // gunakan helper sebelumnya
+  const formData = buildCreatePropertyFormData(payload);
   const { data } = await axiosInstance.post("/properties", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return data;
 };
 
-// hook useMutation
 export const useCreateProperty = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (payload: CreatePropertyPayload) => createProperty(payload),
 
-    // invalidate list berdasarkan clusterTypeId dari payload
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["properties", variables.clusterTypeId],
       });
     },
 
-    // opsional: logging / penanganan error terketik
     onError: (err: AxiosError) => {
-      // misalnya tampilkan notifikasi / console.error
       console.error(
         "Create property failed:",
+        err.response?.data ?? err.message
+      );
+    },
+  });
+};
+
+// ---------- UPDATE ----------
+export type UpdatePropertyVariables = {
+  id: number;
+  payload: CreatePropertyPayload;
+  /**
+   * Jika true (default): selalu override foto (hanya jika payload.photos.length > 0).
+   * Jika false: abaikan field photos (berguna kalau tidak ingin mengubah foto).
+   */
+  includePhotos?: boolean;
+};
+
+export const updateProperty = async ({
+  id,
+  payload,
+  includePhotos = true,
+}: UpdatePropertyVariables) => {
+  const payloadForForm = includePhotos ? payload : { ...payload, photos: [] };
+
+  const formData = buildCreatePropertyFormData(payloadForForm);
+
+  const { data } = await axiosInstance.put(`/properties/${id}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
+  return data;
+};
+
+export const useUpdateProperty = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (vars: UpdatePropertyVariables) => updateProperty(vars),
+
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["properties", variables.payload.clusterTypeId],
+      });
+      queryClient.invalidateQueries({ queryKey: ["property", variables.id] });
+    },
+
+    onError: (err: AxiosError) => {
+      console.error(
+        "Update property failed:",
+        err.response?.data ?? err.message
+      );
+    },
+  });
+};
+
+export const fetchPropertyById = async (
+  id: number
+): Promise<PropertyDetailResponse> => {
+  const { data } = await axiosInstance.get<PropertyDetailResponse>(
+    `/properties/${id}`
+  );
+  return data;
+};
+
+export const useFetchPropertyById = () => {
+  return useMutation({
+    mutationFn: (id: number) => fetchPropertyById(id),
+  });
+};
+
+export const deleteProperty = async ({
+  propertyData,
+}: {
+  propertyData: Property;
+}) => {
+  const formData = new FormData();
+  formData.append("isDeleted", "true");
+  formData.append("name", propertyData.name);
+  formData.append("price", propertyData.price);
+  formData.append("stock", String(propertyData.stock));
+  formData.append("regionId", String(propertyData.region_id));
+  formData.append("clusterTypeId", String(propertyData.cluster_type_id));
+
+  const { data } = await axiosInstance.put(
+    `/properties/${propertyData.propertyId}`,
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+    }
+  );
+
+  return data;
+};
+
+export const useDeleteProperty = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ propertyData }: { propertyData: Property }) =>
+      deleteProperty({ propertyData }),
+
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["properties", variables.propertyData.cluster_type_id],
+      });
+    },
+
+    onError: (err: AxiosError) => {
+      console.error(
+        "Update property failed:",
         err.response?.data ?? err.message
       );
     },

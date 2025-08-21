@@ -47,6 +47,7 @@ export default function ClusterMap({
   return (
     <div className="w-full h-[200px] rounded-lg overflow-hidden">
       <MapContainer
+        className="[&_.leaflet-top]:!z-[998] [&_.leaflet-bottom]:!z-[998]"
         center={[latitude, longitude]}
         zoom={15}
         style={{ height: "100%", width: "100%" }}

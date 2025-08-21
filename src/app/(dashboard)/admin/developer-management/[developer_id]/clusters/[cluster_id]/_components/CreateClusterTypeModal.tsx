@@ -47,7 +47,7 @@ export default function CreateClusterTypeModal() {
         icon={<Plus className="w-4 h-4" />}
         onClick={() => setModalOpen(true)}
       >
-        Buat Data
+        Tambah Cluster Type
       </Button>
 
       <Modal

@@ -10,63 +10,61 @@ import {
   Select,
   Typography,
   Upload,
-  type UploadFile,
 } from "antd";
-import { Minus, Plus, Upload as UploadIcon, X } from "lucide-react";
+import { Plus, Upload as UploadIcon, X } from "lucide-react";
 import { useState } from "react";
 import { useCreateProperty } from "@/services/propertyServices";
 import type { CreatePropertyPayload } from "@/types/property";
+import { bniRegions, initialSpecOptions } from "../../../constants";
+import { useImageStore } from "@/stores";
 
 interface CreatePropertyModalProps {
   clusterTypeId: number;
 }
-
-const bniRegions = [
-  { value: 1, label: "Wilayah I - Sumatera" },
-  { value: 2, label: "Wilayah II - Jakarta" },
-  { value: 3, label: "Wilayah III - Jawa Barat" },
-  { value: 4, label: "Wilayah IV - Jawa Tengah & DIY" },
-  { value: 5, label: "Wilayah V - Jawa Timur" },
-  { value: 6, label: "Wilayah VI - Kalimantan" },
-  { value: 7, label: "Wilayah VII - Sulawesi" },
-  { value: 8, label: "Wilayah VIII - Bali & Nusa Tenggara" },
-  { value: 9, label: "Wilayah IX - Maluku & Papua" },
-];
-
-const initialSpecOptions = [
-  { label: "Kolam Renang", value: "Kolam Renang" },
-  { label: "Gym", value: "Gym" },
-  { label: "Garasi", value: "Garasi" },
-  { label: "Taman", value: "Taman" },
-];
-
-// helper konversi UploadFile[] -> File[]
-const toFiles = (fileList: UploadFile[]): File[] =>
-  fileList.map((f) => f.originFileObj).filter(Boolean) as File[];
 
 export default function CreatePropertyModal({
   clusterTypeId,
 }: CreatePropertyModalProps) {
   const [form] = Form.useForm();
   const { message } = App.useApp();
+
   const [modalOpen, setModalOpen] = useState(false);
-  const [previewImages, setPreviewImages] = useState<string[]>([]);
   const [specOptions, setSpecOptions] = useState(initialSpecOptions);
+
+  const {
+    fileList,
+    setFileList,
+    ensurePreviews,
+    removeByUid,
+    reset: resetImages,
+  } = useImageStore();
 
   const createMutation = useCreateProperty();
 
   const resetAll = () => {
     form.resetFields();
-    setPreviewImages([]);
+    resetImages();
+  };
+
+  const handleCancel = () => {
+    setModalOpen(false);
+    resetAll();
   };
 
   const handleSubmit = async (values: any) => {
+    if (fileList.length === 0) {
+      message.error("Mohon upload minimal satu gambar!");
+      return;
+    }
+
     const specsString = (values.specifications || [])
       .map((s: string) => s.trim())
       .filter(Boolean)
       .join(", ");
 
-    const files = toFiles(values.photos || []);
+    const newFiles: File[] = fileList
+      .map((f) => f.originFileObj)
+      .filter(Boolean) as File[];
 
     const payload: CreatePropertyPayload = {
       clusterTypeId,
@@ -81,8 +79,6 @@ export default function CreatePropertyModal({
       stock: Number(values.stock ?? 0),
       luasTanah: values.landArea ? Number(values.landArea) : null,
       luasBangunan: values.buildingArea ? Number(values.buildingArea) : null,
-
-      // ⬇️ tambahkan ini (pakai key backend persis):
       jumlahLantai:
         values.jumlahLantai != null ? Number(values.jumlahLantai) : null,
       jumlahKamarTidur:
@@ -93,10 +89,9 @@ export default function CreatePropertyModal({
         values.jumlahKamarMandi != null
           ? Number(values.jumlahKamarMandi)
           : null,
-
       garasi: Boolean(values.garasi ?? false),
       kolamRenang: Boolean(values.kolamRenang ?? false),
-      photos: files,
+      photos: newFiles,
     };
 
     try {
@@ -104,14 +99,9 @@ export default function CreatePropertyModal({
       message.success("Properti berhasil dibuat");
       setModalOpen(false);
       resetAll();
-    } catch (e) {
+    } catch {
       message.error("Gagal membuat properti");
     }
-  };
-
-  const handleCancel = () => {
-    setModalOpen(false);
-    resetAll();
   };
 
   return (
@@ -126,6 +116,7 @@ export default function CreatePropertyModal({
 
       <Modal
         centered
+        destroyOnHidden
         title={
           <Typography.Title level={5} className="!text-dark-tosca">
             Buat Data Properti
@@ -174,8 +165,10 @@ export default function CreatePropertyModal({
             <InputNumber
               placeholder="Masukkan harga"
               className="!w-full"
-              formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-              parser={(v) => v!.replace(/(,|\s)/g, "")}
+              formatter={(v) =>
+                `${v ?? ""}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+              }
+              parser={(v) => (v ? v.replace(/[.\s]/g, "") : "")}
             />
           </Form.Item>
 
@@ -186,6 +179,7 @@ export default function CreatePropertyModal({
             rules={[{ required: true, message: "Mohon masukkan luas tanah!" }]}
           >
             <InputNumber
+              min={10}
               placeholder="Masukkan luas tanah"
               className="!w-full"
             />
@@ -200,6 +194,7 @@ export default function CreatePropertyModal({
             ]}
           >
             <InputNumber
+              min={10}
               placeholder="Masukkan luas bangunan"
               className="!w-full"
             />
@@ -213,7 +208,7 @@ export default function CreatePropertyModal({
               { required: true, message: "Mohon masukkan jumlah lantai!" },
             ]}
           >
-            <InputNumber min={0} className="!w-full" placeholder="Contoh: 2" />
+            <InputNumber min={1} className="!w-full" placeholder="Contoh: 2" />
           </Form.Item>
 
           <Form.Item
@@ -224,7 +219,7 @@ export default function CreatePropertyModal({
               { required: true, message: "Mohon masukkan jumlah kamar tidur!" },
             ]}
           >
-            <InputNumber min={0} className="!w-full" placeholder="Contoh: 4" />
+            <InputNumber min={1} className="!w-full" placeholder="Contoh: 4" />
           </Form.Item>
 
           <Form.Item
@@ -235,43 +230,44 @@ export default function CreatePropertyModal({
               { required: true, message: "Mohon masukkan jumlah kamar mandi!" },
             ]}
           >
+            <InputNumber min={0} className="!w-full" placeholder="Contoh: 2" />
+          </Form.Item>
+
+          <Form.Item
+            name="stock"
+            label="Stok"
+            className="!mb-3"
+            rules={[{ required: true, message: "Mohon masukkan stok rumah!" }]}
+          >
             <InputNumber min={0} className="!w-full" placeholder="Contoh: 4" />
           </Form.Item>
 
           {/* Spesifikasi */}
-          <div className="!mb-3">
-            <label className="block text-sm font-medium mb-2">
-              Spesifikasi
-            </label>
-
-            <Form.Item
-              name="specifications"
-              label="Spesifikasi"
-              className="!mb-3"
-              rules={[
-                {
-                  required: true,
-                  message: "Mohon pilih/setidaknya satu spesifikasi!",
-                },
-              ]}
-            >
-              <Select
-                mode="tags" // bisa pilih multiple & tambah item baru
-                allowClear
-                placeholder="Pilih atau ketik spesifikasi (mis. Kolam Renang, Gym)"
-                options={specOptions}
-                onChange={(values: string[]) => {
-                  // tambahkan item baru ke dropdown options agar muncul di daftar
-                  const current = new Set(specOptions.map((o) => o.value));
-                  const toAdd = values
-                    .filter((v) => !current.has(v))
-                    .map((v) => ({ label: v, value: v }));
-                  if (toAdd.length)
-                    setSpecOptions((prev) => [...prev, ...toAdd]);
-                }}
-              />
-            </Form.Item>
-          </div>
+          <Form.Item
+            name="specifications"
+            label="Spesifikasi"
+            className="!mb-3"
+            rules={[
+              {
+                required: true,
+                message: "Mohon pilih/setidaknya satu spesifikasi!",
+              },
+            ]}
+          >
+            <Select
+              mode="tags"
+              allowClear
+              placeholder="Pilih atau ketik spesifikasi (mis. Kolam Renang, Gym)"
+              options={specOptions}
+              onChange={(values: string[]) => {
+                const current = new Set(specOptions.map((o) => o.value));
+                const toAdd = values
+                  .filter((v) => !current.has(v))
+                  .map((v) => ({ label: v, value: v }));
+                if (toAdd.length) setSpecOptions((prev) => [...prev, ...toAdd]);
+              }}
+            />
+          </Form.Item>
 
           <Form.Item
             name="regionId"
@@ -283,87 +279,75 @@ export default function CreatePropertyModal({
           </Form.Item>
 
           <Form.Item
-            name="photos"
-            label="Gambar"
+            name="location"
+            label="Kota / Provinsi"
             className="!mb-3"
-            valuePropName="fileList"
+            rules={[{ required: true, message: "Mohon isi kota / provinsi!" }]}
+          >
+            <Input placeholder="Masukkan kota / provinsi" />
+          </Form.Item>
+
+          <Form.Item
+            name="collateralAddress"
+            label="Alamat Lengkap Rumah"
+            className="!mb-3"
             rules={[
-              {
-                validator: async (_, value: UploadFile[]) => {
-                  if (!value || value.length === 0) {
-                    return Promise.reject(
-                      new Error("Mohon upload minimal satu gambar!")
-                    );
-                  }
-                  return Promise.resolve();
-                },
-              },
+              { required: true, message: "Mohon isi alamat lengkap rumah!" },
             ]}
           >
+            <Input.TextArea
+              placeholder="Masukkan alamat lengkap rumah"
+              rows={3}
+            />
+          </Form.Item>
+
+          {/* 🔹 Upload dikontrol oleh store (bukan Form) */}
+          <Form.Item label="Gambar" className="!mb-3">
             <Upload
               multiple
-              listType="picture"
-              beforeUpload={() => false} // manual upload
-              showUploadList={false} // kita handle preview sendiri
-              onChange={async (info) => {
-                const list = info.fileList;
-                form.setFieldValue("photos", list);
-                // buat preview
-                if (list.length > 0) {
-                  const previews = await Promise.all(
-                    list.map(
-                      (f) =>
-                        new Promise<string>((res) => {
-                          if (!f.originFileObj) return res("");
-                          const reader = new FileReader();
-                          reader.onload = () => res(reader.result as string);
-                          reader.readAsDataURL(f.originFileObj);
-                        })
-                    )
-                  );
-                  setPreviewImages(previews.filter(Boolean));
-                } else {
-                  setPreviewImages([]);
-                }
+              showUploadList={false}
+              beforeUpload={() => false}
+              fileList={fileList}
+              onChange={async ({ fileList: fl }) => {
+                setFileList(fl);
+                await ensurePreviews(); // isi thumbUrl untuk file baru
               }}
             >
               <Button icon={<UploadIcon className="w-4 h-4" />}>
                 Upload Gambar
               </Button>
             </Upload>
+          </Form.Item>
 
-            {previewImages.length > 0 && (
-              <div className="grid grid-cols-2 gap-3 mt-3">
-                {previewImages.map((image, index) => (
+          {/* Preview gabungan (url lama — untuk create tidak ada — & thumbUrl baru) */}
+          {fileList.length > 0 && (
+            <div className="grid grid-cols-2 gap-3 mt-3">
+              {fileList.map((file, index) => {
+                const src = file.url ?? file.thumbUrl;
+                if (!src) return null;
+                return (
                   <div
-                    key={index}
+                    key={file.uid}
                     className="relative border border-gray-200 rounded-lg overflow-hidden"
                   >
                     <img
-                      src={image}
-                      alt={`Preview ${index + 1}`}
+                      src={src}
+                      alt={file.name || `Preview ${index + 1}`}
                       className="h-24 w-full object-cover"
                     />
                     <Button
                       shape="circle"
                       size="small"
-                      icon={<X className="w-4 h-4" />}
-                      className="!absolute top-1 right-1 !z-[9999999]"
-                      onClick={() => {
-                        const list: UploadFile[] = (
-                          form.getFieldValue("photos") || []
-                        ).filter((_: UploadFile, i: number) => i !== index);
-                        form.setFieldValue("photos", list);
-                        setPreviewImages((prev) =>
-                          prev.filter((_, i) => i !== index)
-                        );
-                      }}
-                    />
+                      className="!absolute top-1 right-1 !z-[9999999] flex items-center justify-center"
+                      onClick={() => removeByUid(file.uid)}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
                   </div>
-                ))}
-              </div>
-            )}
-          </Form.Item>
+                );
+              })}
+            </div>
+          )}
         </Form>
       </Modal>
     </>

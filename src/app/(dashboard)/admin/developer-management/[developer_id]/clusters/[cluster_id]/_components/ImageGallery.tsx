@@ -2,7 +2,8 @@
 
 import { Modal } from "antd";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Eye } from "lucide-react";
 
 interface ImageGalleryProps {
   images: string[];
@@ -13,60 +14,94 @@ export default function ImageGallery({ images, name }: ImageGalleryProps) {
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
 
+  const imgs = useMemo(
+    () => (Array.isArray(images) ? images.filter(Boolean) : []),
+    [images]
+  );
+
+  useEffect(() => {
+    if (selectedImage >= imgs.length) setSelectedImage(0);
+  }, [imgs.length, selectedImage]);
+
+  if (imgs.length === 0) return null;
+
+  const thumbs = imgs
+    .map((src, i) => ({ src, i }))
+    .filter((t) => t.i !== selectedImage);
+
+  const visibleThumbs = thumbs.slice(0, 2);
+  const remainingThumbs = thumbs.length - visibleThumbs.length;
+
   return (
     <>
       <div className="w-full space-y-2">
-        {/* gambar utama */}
-        <div
-          className="w-full h-[200px] rounded-lg cursor-pointer"
+        {/* gambar utama + overlay "See detail" saat hover */}
+        <button
+          type="button"
+          aria-label="Open gallery"
+          className="group relative w-full h-[200px] rounded-lg overflow-hidden cursor-pointer"
           onClick={() => setIsGalleryModalOpen(true)}
         >
           <Image
-            src={images[selectedImage]}
+            src={imgs[selectedImage]}
             width={400}
             height={200}
-            alt={name}
+            alt={`${name} - gambar utama`}
             className="w-full h-[200px] object-cover rounded-lg"
           />
-        </div>
+
+          {/* overlay */}
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-200">
+            {/* lapisan gelap */}
+            <div className="absolute inset-0 bg-black/40" />
+            {/* konten overlay */}
+            <div className="relative z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur text-sm font-medium">
+              <Eye size={16} />
+              <span>See detail</span>
+            </div>
+          </div>
+        </button>
 
         {/* thumbnail */}
         <div className="grid grid-cols-3 gap-2">
-          {images.length > 1 &&
-            images.slice(1, Math.min(images.length, 3)).map((image, index) => (
-              <div
-                key={index + 1} // index +1 biar beda dengan main
-                className="h-[60px] rounded cursor-pointer"
-                onClick={() => setSelectedImage(index + 1)}
-              >
-                <Image
-                  src={image}
-                  width={120}
-                  height={60}
-                  alt={`${name} ${index + 2}`}
-                  className="w-full h-[60px] object-cover rounded"
-                />
-              </div>
-            ))}
+          {visibleThumbs.map((t) => (
+            <button
+              type="button"
+              key={t.i}
+              className="h-[60px] rounded overflow-hidden cursor-pointer"
+              onClick={() => setSelectedImage(t.i)}
+            >
+              <Image
+                src={t.src}
+                width={120}
+                height={60}
+                alt={`${name} - thumbnail ${t.i + 1}`}
+                className="w-full h-[60px] object-cover"
+              />
+            </button>
+          ))}
 
-          {images.length > 3 && (
-            <div
+          {remainingThumbs > 0 && (
+            <button
+              type="button"
               className="h-[60px] rounded cursor-pointer bg-gray-100 flex items-center justify-center relative overflow-hidden"
               onClick={() => setIsGalleryModalOpen(true)}
             >
-              <Image
-                src={images[3]} // gunakan index ke-3 (gambar ke-4), bukan 2
-                width={120}
-                height={60}
-                alt={name}
-                className="w-full h-[60px] object-cover rounded absolute inset-0"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+              {thumbs[2]?.src && (
+                <Image
+                  src={thumbs[2].src}
+                  width={120}
+                  height={60}
+                  alt={`${name} lainnya`}
+                  className="w-full h-[60px] object-cover absolute inset-0"
+                />
+              )}
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                 <span className="text-white font-semibold">
-                  +{images.length - 3} more
+                  +{remainingThumbs} more
                 </span>
               </div>
-            </div>
+            </button>
           )}
         </div>
       </div>
@@ -82,16 +117,24 @@ export default function ImageGallery({ images, name }: ImageGalleryProps) {
         zIndex={9999999}
       >
         <div className="grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
-          {images.map((image, index) => (
-            <div key={index} className="aspect-video">
+          {imgs.map((image, index) => (
+            <button
+              type="button"
+              key={index}
+              className="aspect-video rounded overflow-hidden"
+              onClick={() => {
+                setSelectedImage(index);
+                setIsGalleryModalOpen(false);
+              }}
+            >
               <Image
                 src={image}
                 alt={`${name} ${index + 1}`}
                 width={100}
                 height={100}
-                className="w-full h-full object-cover rounded"
+                className="w-full h-full object-cover"
               />
-            </div>
+            </button>
           ))}
         </div>
       </Modal>
