@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { SubmissionDetail } from "@/types/riwayat";
-import { getSubmissionById } from "@/services/kprService";
+import { SubmissionDetail, PropertyDetail } from "@/types/riwayat";
+import { getSubmissionById, getPropertyById } from "@/services/kprService";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { StatusTracker } from "./components/StatusTracker";
 import { PengajuanKPRView } from "./components/PengajuanKPRView";
 import { VerifikasiView } from "./components/VerifikasiView";
@@ -13,6 +14,7 @@ export default function InProcessDetailPage() {
   const id = Number(params.id);
 
   const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
+  const [property, setProperty] = useState<PropertyDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const currentProgress = submission?.submission.status === "under_review" ? 2 : 1;
@@ -23,10 +25,16 @@ export default function InProcessDetailPage() {
       if (id) {
         setIsLoading(true);
         try {
-          const data = await getSubmissionById(id);
-          setSubmission(data);
-          if (data) {
-            const progress = data.submission.status === "under_review" ? 2 : 1;
+          const submissionData = await getSubmissionById(id);
+          setSubmission(submissionData);
+          
+          if (submissionData?.loan_information?.property_id) {
+            const propertyData = await getPropertyById(submissionData.loan_information.property_id);
+            setProperty(propertyData);
+          }
+          
+          if (submissionData) {
+            const progress = submissionData.submission.status === "under_review" ? 2 : 1;
             setViewedStep(progress);
           }
         } catch (error) {
@@ -40,12 +48,18 @@ export default function InProcessDetailPage() {
   }, [id]);
 
   if (isLoading) {
-    return <div className="text-center p-10">Memuat detail pengajuan...</div>;
+    return (
+      <ProtectedRoute>
+        <div className="text-center p-10">Memuat detail pengajuan...</div>
+      </ProtectedRoute>
+    );
   }
 
   if (!submission) {
     return (
-      <div className="text-center p-10">Data pengajuan tidak ditemukan.</div>
+      <ProtectedRoute>
+        <div className="text-center p-10">Data pengajuan tidak ditemukan.</div>
+      </ProtectedRoute>
     );
   }
 
@@ -64,26 +78,28 @@ export default function InProcessDetailPage() {
   ];
 
   return (
-    <div className="bg-gray-100 min-h-screen p-4 sm:p-6 lg:p-8">
-      <div className="max-w-4xl mx-auto">
-        <header className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Detail Pengajuan</h1>
-        </header>
+    <ProtectedRoute>
+      <div className="bg-gray-100 min-h-screen p-4 sm:p-6 lg:p-8">
+        <div className="max-w-4xl mx-auto">
+          <header className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-800">Detail Pengajuan</h1>
+          </header>
 
-        <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
-          <StatusTracker
-            steps={stepsData}
-            currentProgress={currentProgress}
-            viewedStep={viewedStep}
-            onStepClick={setViewedStep}
-          />
+          <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+            <StatusTracker
+              steps={stepsData}
+              currentProgress={currentProgress}
+              viewedStep={viewedStep}
+              onStepClick={setViewedStep}
+            />
+          </div>
+
+          <main className="mt-8">
+            {viewedStep === 1 && <PengajuanKPRView submissionData={submission} propertyData={property} />}
+            {viewedStep === 2 && <VerifikasiView submissionData={submission} />}
+          </main>
         </div>
-
-        <main className="mt-8">
-          {viewedStep === 1 && <PengajuanKPRView submissionData={submission} />}
-          {viewedStep === 2 && <VerifikasiView submissionData={submission} />}
-        </main>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 }

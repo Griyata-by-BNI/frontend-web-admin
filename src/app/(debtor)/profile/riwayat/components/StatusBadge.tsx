@@ -6,15 +6,14 @@ interface StatusBadgeProps {
 
 const getStatusInfo = (status: ApiStatus) => {
   switch (status) {
-    case "verified":
-    case "completed":
-      return { text: "Disetujui", style: "bg-green-500" };
-    case "rejected":
-      return { text: "Ditolak", style: "bg-red-500" };
+    case "done":
+      return { text: "Selesai", style: "bg-green-500" };
     case "submitted":
+      return { text: "Diajukan", style: "bg-blue-500" };
     case "under_review":
+      return { text: "Direview", style: "bg-yellow-500" };
     default:
-      return { text: "Diproses", style: "bg-blue-500" };
+      return { text: "Diproses", style: "bg-gray-500" };
   }
 };
 

@@ -1,25 +1,27 @@
 interface HasilPengajuanViewProps {
-  status: "disetujui" | "ditolak";
+  status: "selesai" | "dalam_proses";
   submissionId: number;
   verificationNotes?: string;
 }
 
-const Illustration = ({ status }: { status: "disetujui" | "ditolak" }) => {
-  const isApproved = status === "disetujui";
+const Illustration = ({ status }: { status: "selesai" | "dalam_proses" }) => {
+  const isCompleted = status === "selesai";
   return (
     <div
       className={`mx-auto w-full max-w-sm h-64 rounded-lg flex items-center justify-center ${
-        isApproved ? "bg-teal-50" : "bg-red-50"
+        isCompleted ? "bg-green-50" : "bg-blue-50"
       }`}
     >
       <svg
-        className={`w-24 h-24 ${isApproved ? "text-teal-400" : "text-red-400"}`}
+        className={`w-24 h-24 ${
+          isCompleted ? "text-green-400" : "text-blue-400"
+        }`}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
         strokeWidth="1.5"
       >
-        {isApproved ? (
+        {isCompleted ? (
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -29,7 +31,7 @@ const Illustration = ({ status }: { status: "disetujui" | "ditolak" }) => {
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+            d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
           />
         )}
       </svg>
@@ -38,15 +40,15 @@ const Illustration = ({ status }: { status: "disetujui" | "ditolak" }) => {
 };
 
 const content = {
-  disetujui: {
-    title: "telah disetujui",
+  selesai: {
+    title: "telah selesai diproses",
     message:
-      "Mohon menunggu, tim kami akan segera menghubungi Anda untuk proses selanjutnya.",
+      "Pengajuan KPR Anda telah selesai diproses. Mohon menunggu customer service untuk menghubungi Anda.",
   },
-  ditolak: {
-    title: "telah ditolak",
+  dalam_proses: {
+    title: "sedang dalam proses",
     message:
-      "Mohon maaf, pengajuan Anda belum dapat kami setujui saat ini. Silakan hubungi customer service untuk informasi lebih lanjut.",
+      "Pengajuan KPR Anda masih dalam tahap pemrosesan. Mohon tunggu untuk informasi selanjutnya.",
   },
 };
 
@@ -57,23 +59,33 @@ export const HasilPengajuanView = ({
 }: HasilPengajuanViewProps) => {
   const { title, message } = content[status];
 
+  const generateApplicationCode = (submissionId: number): string => {
+    const today = new Date();
+    const dateStr = today.toISOString().slice(0, 10).replace(/-/g, "");
+    return `${dateStr}${submissionId.toString().padStart(3, "0")}`;
+  };
+
+  const applicationCode = generateApplicationCode(submissionId);
+
   return (
     <div className="bg-white rounded-xl shadow-lg p-8 text-center">
       <Illustration status={status} />
       <h3 className="text-xl font-semibold text-gray-800 mt-8">
         Pengajuan dengan Kode Aplikasi{" "}
         <span
-          className={status === "disetujui" ? "text-teal-600" : "text-red-600"}
+          className={status === "selesai" ? "text-green-600" : "text-blue-600"}
         >
-          {submissionId}
+          {applicationCode}
         </span>{" "}
         {title}
       </h3>
       <p className="text-gray-500 mt-2 max-w-md mx-auto">{message}</p>
-      
+
       {verificationNotes && (
         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <h4 className="font-semibold text-gray-700 mb-2">Catatan Verifikasi:</h4>
+          <h4 className="font-semibold text-gray-700 mb-2">
+            Catatan Verifikasi:
+          </h4>
           <p className="text-gray-600 text-sm">{verificationNotes}</p>
         </div>
       )}
