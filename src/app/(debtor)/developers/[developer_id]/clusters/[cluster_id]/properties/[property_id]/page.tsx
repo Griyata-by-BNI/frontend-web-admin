@@ -17,6 +17,7 @@ import {
   faRulerCombined,
   faLocationDot,
 } from "@fortawesome/free-solid-svg-icons";
+import Link from "next/link";
 
 // =================================================================
 // 2. API & LOCAL TYPE DEFINITIONS
@@ -262,9 +263,11 @@ export default async function PropertyDetailPage({
                 <div className="absolute bottom-0 left-0 right-0 h-3 bg-gradient-to-r from-teal-400 to-cyan-500"></div>
               </div>
               <div className="px-6 py-4">
-                <button className="w-full bg-teal-500 text-white font-bold py-3 rounded-full mt-2 hover:bg-teal-600 transition-colors text-lg shadow-md">
-                  Ajukan KPR
-                </button>
+                <Link href={`/kpr-apply?property_id=${property.id}`}>
+                  <button className="w-full bg-teal-500 text-white font-bold py-3 rounded-full mt-2 hover:bg-teal-600 transition-colors text-lg shadow-md">
+                    Ajukan KPR
+                  </button>
+                </Link>
               </div>
             </div>
           </div>

@@ -12,20 +12,20 @@ import {
   Checkbox,
 } from "antd";
 import { useState, useEffect } from "react";
+import { useKprApplyStore } from "@/stores/useKprApplyStore";
+import { useShallow } from "zustand/react/shallow";
 
-interface SpouseInformationFormProps {
-  onNext?: (data: any) => void;
-  onPrev?: () => void;
-  initialValues?: any;
-}
-
-export default function SpouseInformationForm({
-  onNext,
-  onPrev,
-  initialValues,
-}: SpouseInformationFormProps) {
+export default function SpouseInformationForm() {
   const [form] = Form.useForm();
   const [isFormValid, setIsFormValid] = useState(false);
+
+  const { formData, next, prev } = useKprApplyStore(
+    useShallow((s) => ({
+      formData: s.formData,
+      next: s.next,
+      prev: s.prev,
+    }))
+  );
 
   const educationOptions = [
     { value: "SD", label: "SD" },
@@ -45,12 +45,10 @@ export default function SpouseInformationForm({
   const checkFormValidity = () => {
     const values = form.getFieldsValue();
     const isMarried = values.is_married;
-
     if (!isMarried) {
       setIsFormValid(true);
       return;
     }
-
     const hasErrors = form
       .getFieldsError()
       .some(({ errors }) => errors.length > 0);
@@ -72,20 +70,21 @@ export default function SpouseInformationForm({
   };
 
   useEffect(() => {
-    if (initialValues) {
-      form.setFieldValue("is_married", initialValues.is_married || false);
-      if (initialValues.spouse_information) {
-        form.setFieldsValue(initialValues.spouse_information);
-      }
+    const init = formData ?? {};
+    form.setFieldValue("is_married", init.is_married ?? false);
+    if (init.spouse_information) {
+      form.setFieldsValue(init.spouse_information);
     }
     checkFormValidity();
-  }, [initialValues]);
+  }, [formData]);
 
-  const handleNext = () => {
-    const values = form.getFieldsValue();
-    const { is_married, ...spouseData } = values;
-    const spouseInfo = is_married ? spouseData : null;
-    onNext?.({ is_married, spouse_information: spouseInfo });
+  const handleNext = async () => {
+    try {
+      const values = await form.validateFields();
+      const { is_married, ...spouseData } = values;
+      const spouseInfo = is_married ? spouseData : null;
+      next({ is_married, spouse_information: spouseInfo });
+    } catch {}
   };
 
   return (
@@ -108,9 +107,7 @@ export default function SpouseInformationForm({
         >
           {({ getFieldValue }) => {
             const isMarried = getFieldValue("is_married");
-
             if (!isMarried) return null;
-
             return (
               <Card
                 title={<p className="text-sm">Informasi Pasangan</p>}
@@ -309,16 +306,15 @@ export default function SpouseInformationForm({
         </Form.Item>
 
         <div className="flex justify-between mt-6">
-          <Button size="large" className="px-8" onClick={onPrev}>
+          <Button size="large" className="px-8" onClick={prev}>
             Kembali
           </Button>
-
           <Button
             type="primary"
             size="large"
             className="px-8"
             onClick={handleNext}
-            // disabled={!isFormValid}
+            disabled={!isFormValid}
           >
             Lanjutkan
           </Button>

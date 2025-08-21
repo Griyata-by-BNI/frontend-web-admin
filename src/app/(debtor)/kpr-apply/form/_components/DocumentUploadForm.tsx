@@ -2,23 +2,23 @@
 import "@ant-design/v5-patch-for-react-19";
 import { Card, Form, Upload, Button, Row, Col, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { UploadProps } from "antd";
+import { useKprApplyStore } from "@/stores/useKprApplyStore";
+import { useShallow } from "zustand/react/shallow";
 
-interface DocumentUploadFormProps {
-  onNext?: (data: any) => void;
-  onPrev?: () => void;
-  initialValues?: any;
-}
-
-export default function DocumentUploadForm({
-  onNext,
-  onPrev,
-  initialValues,
-}: DocumentUploadFormProps) {
+export default function DocumentUploadForm() {
   const [form] = Form.useForm();
   const [isFormValid, setIsFormValid] = useState(false);
   const [isMarried, setIsMarried] = useState(false);
+
+  const { formData, next, prev } = useKprApplyStore(
+    useShallow((s) => ({
+      formData: s.formData,
+      next: s.next,
+      prev: s.prev,
+    }))
+  );
 
   const normalizeFileList = (e: any) => {
     if (Array.isArray(e)) return e;
@@ -41,7 +41,7 @@ export default function DocumentUploadForm({
           message.error("Ukuran file maksimal 5MB!");
           return false;
         }
-        return false; // prevent auto upload
+        return false;
       },
       maxCount: 1,
       className: "[&_.ant-upload]:!w-full",
@@ -51,35 +51,31 @@ export default function DocumentUploadForm({
 
   const checkFormValidity = () => {
     const values = form.getFieldsValue();
-    const requiredFields = [
+    const required = [
       "id_card",
       "tax_id",
       "employment_certificate",
       "salary_slip",
     ];
-
-    if (isMarried) {
-      requiredFields.push("spouse_id_card", "marriage_certificate");
-    }
-
-    const allRequiredFieldsFilled = requiredFields.every(
-      (field) => Array.isArray(values[field]) && values[field].length > 0
+    if (isMarried) required.push("spouse_id_card", "marriage_certificate");
+    const ok = required.every(
+      (f) => Array.isArray(values[f]) && values[f].length > 0
     );
-
-    setIsFormValid(allRequiredFieldsFilled);
+    setIsFormValid(ok);
   };
 
   useEffect(() => {
-    if (initialValues) {
-      form.setFieldsValue(initialValues);
-      setIsMarried(initialValues.is_married || false);
+    if (formData) {
+      form.setFieldsValue(formData);
+      setIsMarried(Boolean(formData.is_married));
       checkFormValidity();
     }
-  }, [initialValues]);
+  }, [formData]);
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    await form.validateFields();
     const values = form.getFieldsValue();
-    onNext?.(values);
+    next(values);
   };
 
   return (
@@ -211,10 +207,9 @@ export default function DocumentUploadForm({
         </Row>
 
         <div className="flex justify-between mt-6">
-          <Button size="large" className="px-8" onClick={onPrev}>
+          <Button size="large" className="px-8" onClick={prev}>
             Kembali
           </Button>
-
           <Button
             type="primary"
             size="large"

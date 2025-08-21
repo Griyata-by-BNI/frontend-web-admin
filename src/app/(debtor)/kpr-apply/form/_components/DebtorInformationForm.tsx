@@ -1,4 +1,5 @@
 "use client";
+import { useKprApplyStore } from "@/stores/useKprApplyStore";
 import "@ant-design/v5-patch-for-react-19";
 import {
   Card,
@@ -12,47 +13,49 @@ import {
   Checkbox,
 } from "antd";
 import { useState, useEffect } from "react";
+import dayjs from "dayjs";
+import { useShallow } from "zustand/react/shallow";
 
-interface DebtorInformationFormProps {
-  onNext?: (data: any) => void;
-  onPrev?: () => void;
-  initialValues?: any;
-}
+const educationOptions = [
+  { value: "SD", label: "SD" },
+  { value: "SMP", label: "SMP" },
+  { value: "SMA", label: "SMA/SMK" },
+  { value: "D3", label: "Diploma 3" },
+  { value: "S1", label: "Sarjana (S1)" },
+  { value: "S2", label: "Magister (S2)" },
+  { value: "S3", label: "Doktor (S3)" },
+];
 
-export default function DebtorInformationForm({
-  onNext,
-  onPrev,
-  initialValues,
-}: DebtorInformationFormProps) {
+const genderOptions = [
+  { value: "L", label: "Laki-laki" },
+  { value: "P", label: "Perempuan" },
+];
+
+const residenceStatusOptions = [
+  { value: "sendiri", label: "Milik Sendiri" },
+  { value: "orang_tua", label: "Milik Orang Tua" },
+  { value: "sewa", label: "Sewa/Kontrak" },
+];
+
+const relationshipOptions = [
+  { value: "Orang Tua", label: "Orang Tua" },
+  { value: "Saudara", label: "Saudara" },
+  { value: "Pasangan", label: "Pasangan" },
+];
+
+export default function DebtorInformationForm() {
   const [form] = Form.useForm();
   const [isFormValid, setIsFormValid] = useState(false);
 
-  const educationOptions = [
-    { value: "SD", label: "SD" },
-    { value: "SMP", label: "SMP" },
-    { value: "SMA", label: "SMA/SMK" },
-    { value: "D3", label: "Diploma 3" },
-    { value: "S1", label: "Sarjana (S1)" },
-    { value: "S2", label: "Magister (S2)" },
-    { value: "S3", label: "Doktor (S3)" },
-  ];
-
-  const genderOptions = [
-    { value: "L", label: "Laki-laki" },
-    { value: "P", label: "Perempuan" },
-  ];
-
-  const residenceStatusOptions = [
-    { value: "sendiri", label: "Milik Sendiri" },
-    { value: "orang_tua", label: "Milik Orang Tua" },
-    { value: "sewa", label: "Sewa/Kontrak" },
-  ];
-
-  const relationshipOptions = [
-    { value: "Orang Tua", label: "Orang Tua" },
-    { value: "Saudara", label: "Saudara" },
-    { value: "Pasangan", label: "Pasangan" },
-  ];
+  const { formData, next, prev } = useKprApplyStore(
+    useShallow((s) => ({
+      currentStep: s.currentStep,
+      formData: s.formData,
+      next: s.next,
+      prev: s.prev,
+      setCurrentStep: s.setCurrentStep,
+    }))
+  );
 
   const checkFormValidity = () => {
     const values = form.getFieldsValue();
@@ -67,7 +70,6 @@ export default function DebtorInformationForm({
       "email",
       "place_of_birth",
       "birth_date",
-
       "education",
       "gender",
       "residence_status",
@@ -78,31 +80,46 @@ export default function DebtorInformationForm({
       "emergency_contact_mobile_phone",
       "emergency_contact_relationship",
     ];
-
-    // Add domicile_address to required fields only if same_as_ktp is not checked
-    if (!values.same_as_ktp) {
-      requiredFields.push("domicile_address");
-    }
-
+    if (!values.same_as_ktp) requiredFields.push("domicile_address");
     const allRequiredFieldsFilled = requiredFields.every(
       (field) => values[field]
     );
-
     setIsFormValid(allRequiredFieldsFilled && !hasErrors);
   };
 
-  console.log(form.getFieldsValue());
+  useEffect(() => {
+    if (!formData) return;
+
+    const asDayjs = (v: any) => {
+      if (!v) return null;
+      if (dayjs.isDayjs?.(v)) return v;
+      const d = dayjs(v);
+      return d.isValid() ? d : null;
+    };
+
+    const values = {
+      ...formData,
+      birth_date: asDayjs(formData.birth_date),
+    };
+
+    form.setFieldsValue(values);
+    checkFormValidity();
+  }, [formData, form]);
+
+  // ====== Sinkronisasi alamat domisili dengan KTP saat checkbox aktif ======
+  const sameAsKtp = Form.useWatch("same_as_ktp", form);
+  const idCardAddress = Form.useWatch("id_card_address", form);
 
   useEffect(() => {
-    if (initialValues) {
-      form.setFieldsValue(initialValues);
-      checkFormValidity();
+    if (sameAsKtp) {
+      form.setFieldsValue({ domicile_address: idCardAddress || "" });
     }
-  }, [initialValues]);
+  }, [sameAsKtp, idCardAddress, form]);
+  // ========================================================================
 
   const handleNext = () => {
     const values = form.getFieldsValue();
-    onNext?.(values);
+    next(values);
   };
 
   return (
@@ -315,9 +332,9 @@ export default function DebtorInformationForm({
                 onChange={(e) => {
                   if (e.target.checked) {
                     const ktpAddress = form.getFieldValue("id_card_address");
-                    form.setFieldValue("domicile_address", ktpAddress);
+                    form.setFieldsValue({ domicile_address: ktpAddress || "" });
                   } else {
-                    form.setFieldValue("domicile_address", "");
+                    form.setFieldsValue({ domicile_address: "" });
                   }
                   setTimeout(checkFormValidity, 0);
                 }}
@@ -333,9 +350,8 @@ export default function DebtorInformationForm({
               }
             >
               {({ getFieldValue }) => {
-                const sameAsKtp = getFieldValue("same_as_ktp");
-
-                if (!sameAsKtp) {
+                const same = getFieldValue("same_as_ktp");
+                if (!same) {
                   return (
                     <Form.Item
                       className="!mb-3 md:!mb-4"
@@ -440,7 +456,7 @@ export default function DebtorInformationForm({
         </Row>
 
         <div className="flex justify-between mt-6">
-          <Button size="large" className="px-8" onClick={onPrev}>
+          <Button size="large" className="px-8" onClick={prev}>
             Kembali
           </Button>
           <Button
@@ -448,7 +464,7 @@ export default function DebtorInformationForm({
             size="large"
             className="px-8"
             onClick={handleNext}
-            // disabled={!isFormValid}
+            disabled={!isFormValid}
           >
             Lanjutkan
           </Button>

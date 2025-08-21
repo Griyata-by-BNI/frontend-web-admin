@@ -2,20 +2,20 @@
 import "@ant-design/v5-patch-for-react-19";
 import { Card, Form, Input, Select, InputNumber, Button, Row, Col } from "antd";
 import { useState, useEffect } from "react";
+import { useKprApplyStore } from "@/stores/useKprApplyStore";
+import { useShallow } from "zustand/react/shallow";
 
-interface EmploymentInformationFormProps {
-  onNext?: (data: any) => void;
-  onPrev?: () => void;
-  initialValues?: any;
-}
-
-export default function EmploymentInformationForm({
-  onNext,
-  onPrev,
-  initialValues,
-}: EmploymentInformationFormProps) {
+export default function EmploymentInformationForm() {
   const [form] = Form.useForm();
   const [isFormValid, setIsFormValid] = useState(false);
+
+  const { formData, next, prev } = useKprApplyStore(
+    useShallow((s) => ({
+      formData: s.formData,
+      next: s.next,
+      prev: s.prev,
+    }))
+  );
 
   const employmentTypeOptions = [
     { value: "Karyawan Swasta", label: "Karyawan Swasta" },
@@ -46,10 +46,9 @@ export default function EmploymentInformationForm({
   ];
 
   const calculateTotalIncome = () => {
-    const basicSalary = form.getFieldValue("basic_salary") || 0;
-    const otherIncome = form.getFieldValue("other_income") || 0;
-    const total = basicSalary + otherIncome;
-    form.setFieldValue("total_income", total);
+    const basicSalary = Number(form.getFieldValue("basic_salary") || 0);
+    const otherIncome = Number(form.getFieldValue("other_income") || 0);
+    form.setFieldValue("total_income", basicSalary + otherIncome);
   };
 
   const checkFormValidity = () => {
@@ -69,24 +68,25 @@ export default function EmploymentInformationForm({
       "basic_salary",
       "total_expenses",
     ];
-
     const allRequiredFieldsFilled = requiredFields.every(
-      (field) => values[field]
+      (field) =>
+        values[field] !== undefined &&
+        values[field] !== null &&
+        values[field] !== ""
     );
-
     setIsFormValid(allRequiredFieldsFilled && !hasErrors);
   };
 
   useEffect(() => {
-    if (initialValues) {
-      form.setFieldsValue(initialValues);
-    }
+    if (formData) form.setFieldsValue(formData);
     checkFormValidity();
-  }, [initialValues]);
+  }, [formData]);
 
-  const handleNext = () => {
-    const values = form.getFieldsValue();
-    onNext?.(values);
+  const handleNext = async () => {
+    try {
+      const values = await form.validateFields();
+      next(values);
+    } catch {}
   };
 
   return (
@@ -243,12 +243,12 @@ export default function EmploymentInformationForm({
                 placeholder="Masukkan gaji pokok"
                 prefix={<p className="font-semibold text-dark-tosca">Rp</p>}
                 formatter={(value) => {
-                  if (!value) return "";
-                  return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                  if (value === null || value === undefined) return "";
+                  return String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                 }}
                 parser={(value) => {
-                  if (!value) return "";
-                  return value.replace(/[^0-9]/g, "");
+                  if (!value) return undefined as unknown as number;
+                  return Number(value.replace(/[^0-9]/g, ""));
                 }}
                 onChange={calculateTotalIncome}
               />
@@ -269,12 +269,12 @@ export default function EmploymentInformationForm({
                 placeholder="Masukkan penghasilan lain"
                 prefix={<p className="font-semibold text-dark-tosca">Rp</p>}
                 formatter={(value) => {
-                  if (!value) return "";
-                  return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                  if (value === null || value === undefined) return "";
+                  return String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                 }}
                 parser={(value) => {
-                  if (!value) return "";
-                  return value.replace(/[^0-9]/g, "");
+                  if (!value) return undefined as unknown as number;
+                  return Number(value.replace(/[^0-9]/g, ""));
                 }}
                 onChange={calculateTotalIncome}
               />
@@ -294,8 +294,8 @@ export default function EmploymentInformationForm({
                 disabled
                 prefix={<p className="font-semibold text-dark-tosca">Rp</p>}
                 formatter={(value) => {
-                  if (!value) return "";
-                  return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                  if (value === null || value === undefined) return "";
+                  return String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                 }}
               />
             </Form.Item>
@@ -317,12 +317,12 @@ export default function EmploymentInformationForm({
                 placeholder="Masukkan total pengeluaran"
                 prefix={<p className="font-semibold text-dark-tosca">Rp</p>}
                 formatter={(value) => {
-                  if (!value) return "";
-                  return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                  if (value === null || value === undefined) return "";
+                  return String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                 }}
                 parser={(value) => {
-                  if (!value) return "";
-                  return value.replace(/[^0-9]/g, "");
+                  if (!value) return undefined as unknown as number;
+                  return Number(value.replace(/[^0-9]/g, ""));
                 }}
               />
             </Form.Item>
@@ -441,15 +441,16 @@ export default function EmploymentInformationForm({
         </Row>
 
         <div className="flex justify-between mt-6">
-          <Button size="large" className="px-8" onClick={onPrev}>
+          <Button size="large" className="px-8" onClick={prev}>
             Kembali
           </Button>
+
           <Button
             type="primary"
             size="large"
             className="px-8"
             onClick={handleNext}
-            // disabled={!isFormValid}
+            disabled={!isFormValid}
           >
             Lanjutkan
           </Button>

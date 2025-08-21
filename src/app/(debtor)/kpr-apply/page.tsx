@@ -1,5 +1,6 @@
-import { StepCard } from "./_components/StepCard";
+import { ButtonCTA } from "./_components/ButtonCTA";
 import { DocumentChecklist } from "./_components/DocumentChecklist";
+import { StepCard } from "./_components/StepCard";
 
 const steps = [
   {
@@ -60,10 +61,10 @@ export default function KprApplyPage() {
           <div className="max-w-3xl mx-auto mt-12">
             <div className="bg-white rounded-2xl shadow-lg p-8">
               <DocumentChecklist />
+
               <div className="mt-8 text-center">
-                <button className="w-full max-w-sm bg-teal-500 text-white font-bold py-4 px-6 rounded-xl text-lg hover:bg-teal-600 transition-all duration-300 shadow-md hover:shadow-lg">
-                  Ajukan Sekarang
-                </button>
+                <ButtonCTA />
+
                 <p className="text-gray-500 text-sm mt-4">
                   Pengisian membutuhkan waktu 5-10 menit
                 </p>

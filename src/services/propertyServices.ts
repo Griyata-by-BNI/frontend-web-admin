@@ -149,6 +149,14 @@ export const useFetchPropertyById = () => {
   });
 };
 
+export const usePropertyById = (id?: number) => {
+  return useQuery<PropertyDetailResponse>({
+    queryKey: ["property", id],
+    queryFn: () => fetchPropertyById(id as number),
+    enabled: typeof id === "number" && Number.isFinite(id),
+  });
+};
+
 export const deleteProperty = async ({
   propertyData,
 }: {
