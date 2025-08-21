@@ -22,7 +22,6 @@ import {
   faRulerCombined,
   faLocationDot,
 } from "@fortawesome/free-solid-svg-icons";
-import Link from "next/link";
 
 // =================================================================
 // 2. API & LOCAL TYPE DEFINITIONS
