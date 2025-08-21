@@ -1,10 +1,26 @@
+"use client";
+
 import Sidebar from "@/components/Sidebar";
+import { useAuth } from "@/contexts/authContext";
+import { redirect } from "next/navigation";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { user } = useAuth();
+
+  if (user && user.role !== "ADMIN") {
+    if (user.role === "DEBTOR") {
+      redirect("/");
+    }
+
+    if (user.role === "SALES") {
+      redirect("/sales/approval-list");
+    }
+  }
+
   return (
     <div className="flex h-screen">
       <Sidebar />

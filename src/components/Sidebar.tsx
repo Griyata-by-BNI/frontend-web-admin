@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/authContext";
+import { App } from "antd";
 import { BarChart3, HousePlus, LogOut, PieChart, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -30,7 +31,20 @@ const getInitials = (name?: string) =>
 
 const Sidebar = () => {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const { modal } = App.useApp();
+
+  const handleLogout = () => {
+    modal.confirm({
+      icon: <></>,
+      title: "Konfirmasi Logout",
+      content: "Apakah Anda yakin ingin keluar dari aplikasi?",
+      okText: "Logout",
+      okType: "danger",
+      cancelText: "Batal",
+      onOk: () => logout(),
+    });
+  };
 
   return (
     <aside className="w-64 bg-primary-black h-screen text-white flex flex-col">
@@ -81,7 +95,7 @@ const Sidebar = () => {
         className="text-sm flex items-center w-max cursor-pointer mx-6 my-8 font-medium text-red-500 hover:text-red-700 transition-colors"
         type="button"
         aria-label="Logout"
-        // onClick={handleLogout}
+        onClick={handleLogout}
       >
         <LogOut className="w-5 h-5 mr-3" />
         Logout

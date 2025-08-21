@@ -78,3 +78,9 @@ export interface PayloadCluster {
   photos: File[];
   nearbyPlaces: NearbyPlace;
 }
+
+export type FetchClustersOptions = {
+  pageNumber?: number;
+  pageSize?: number;
+  signal?: AbortSignal;
+};

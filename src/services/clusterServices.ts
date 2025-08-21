@@ -1,20 +1,29 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "@/utils/axios";
 import {
+  FetchClustersOptions,
   GetClustersResponse,
   GetDetailClusterResponse,
   PayloadCluster,
 } from "@/types/cluster";
 
-export const fetchClusters = async (): Promise<GetClustersResponse> => {
-  const { data } = await axiosInstance.get<GetClustersResponse>("/clusters");
+export const fetchClusters = async ({
+  pageNumber = 1,
+  pageSize = 10,
+  signal,
+}: FetchClustersOptions): Promise<GetClustersResponse> => {
+  const { data } = await axiosInstance.get<GetClustersResponse>("/clusters", {
+    params: { pageNumber, pageSize },
+    signal,
+  });
   return data;
 };
 
-export const useClusters = () => {
+export const useClusters = (pageNumber = 1, pageSize = 10) => {
   return useQuery({
-    queryKey: ["clusters"],
-    queryFn: fetchClusters,
+    queryKey: ["clusters", { pageNumber, pageSize }],
+    queryFn: ({ signal }) => fetchClusters({ pageNumber, pageSize, signal }),
+    placeholderData: keepPreviousData,
   });
 };
 
