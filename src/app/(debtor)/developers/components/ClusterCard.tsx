@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { Carousel } from "antd";
 
 // =================================================================
 // INTERFACE & PROPS
@@ -47,15 +48,13 @@ const calculateInstallment = (
 
   const dp = priceNum * (dpPercent / 100);
   const loanPrincipal = priceNum - dp;
-  const monthlyInterest = (annualInterest / 100) / 12;
+  const monthlyInterest = annualInterest / 100 / 12;
 
   const n = tenor; // number of payments
   const r = monthlyInterest; // monthly interest rate
 
   // Annuity formula to calculate the monthly installment
   const installment = (loanPrincipal * r) / (1 - Math.pow(1 + r, -n));
-
-
 
   // Formats the output string based on the installment amount
   if (installment >= 1_000_000) {
@@ -69,11 +68,7 @@ const calculateInstallment = (
   } else if (installment >= 1_000) {
     const thousand = installment / 1_000;
     // Displays the amount in thousands (Ribu), e.g., "Rp 632 RB"
-    return (
-      "Rp " +
-      Math.round(thousand) +
-      " RB"
-    );
+    return "Rp " + Math.round(thousand) + " RB";
   }
   // Displays the rounded amount for values less than 1000
   return "Rp " + Math.round(installment).toLocaleString("id-ID");
@@ -95,14 +90,36 @@ const ClusterCard: React.FC<ClusterCardProps> = ({ cluster, developerId }) => {
       {/* ✨ Mengubah rounded-lg menjadi rounded-2xl */}
       <div className="bg-white rounded-2xl shadow-xl shadow-gray-500/10 overflow-hidden hover:shadow-primary-tosca/30 flex flex-col w-full">
         {/* GAMBAR: ✨ Mengubah tinggi dari h-40 menjadi h-48 */}
-        <div className="relative w-full h-48">
-          <Image
-            src={imageUrl}
-            alt={cluster.name}
-            layout="fill"
-            objectFit="cover"
-            className="w-full h-full"
-          />
+        <div className="relative w-full h-48 bg-gray-100">
+          {cluster.cluster_photo_urls &&
+          cluster.cluster_photo_urls.length > 0 ? (
+            <div className="h-full relative z-10">
+              <Carousel 
+                dots 
+                arrows 
+                className="h-full [&_.slick-prev]:left-2 [&_.slick-next]:right-2 [&_.slick-prev]:z-20 [&_.slick-next]:z-20 [&_.slick-prev]:bg-black/50 [&_.slick-next]:bg-black/50 [&_.slick-prev]:rounded-full [&_.slick-next]:rounded-full [&_.slick-prev]:w-8 [&_.slick-next]:w-8 [&_.slick-prev]:h-8 [&_.slick-next]:h-8 [&_.slick-dots]:z-20"
+              >
+                {cluster.cluster_photo_urls.map((src, idx) => (
+                  <div key={idx} className="relative w-full h-48">
+                    <Image
+                      src={src}
+                      alt={`cluster-photo-${idx + 1}`}
+                      layout="fill"
+                      objectFit="cover"
+                      priority={idx === 0}
+                    />
+                  </div>
+                ))}
+              </Carousel>
+            </div>
+          ) : (
+            <Image
+              src={imageUrl}
+              alt={cluster.name}
+              layout="fill"
+              objectFit="cover"
+            />
+          )}
         </div>
 
         {/* KONTEN: ✨ Mengubah padding dari p-4 menjadi p-5 */}

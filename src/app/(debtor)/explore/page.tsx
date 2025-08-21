@@ -26,6 +26,8 @@ export interface Property {
   facilities: Facility[];
   updatedAt: string;
   photoUrl: string | null;
+  distanceKm?: number;
+  clusterTypeName?: string;
 }
 
 const SearchIcon = () => (
@@ -153,6 +155,7 @@ const SkeletonCard = () => (
 export default function ExplorePage() {
   // ... semua state (useState) tetap sama ...
   const [properties, setProperties] = useState<Property[]>([]);
+  const [totalItems, setTotalItems] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -172,8 +175,24 @@ export default function ExplorePage() {
 
   useEffect(() => {
     const query = searchParams.get("search");
+    const maxPrice = searchParams.get("maxPrice");
+
     if (query) {
       setSearchTerm(query);
+    }
+
+    if (maxPrice) {
+      const priceValue = parseInt(maxPrice);
+      if (!isNaN(priceValue)) {
+        setAppliedFilters({
+          price: { min: 0, max: priceValue },
+          bedrooms: 0,
+          bathrooms: 0,
+          floors: 0,
+          landArea: { min: 0, max: 500 },
+          buildingArea: { min: 0, max: 500 },
+        });
+      }
     }
   }, [searchParams]);
 
@@ -236,8 +255,6 @@ export default function ExplorePage() {
       try {
         const params: any = {
           search: currentSearchTerm,
-          pageNumber: 1,
-          pageSize: 50,
         };
 
         params.sortBy = currentSortOption;
@@ -265,6 +282,7 @@ export default function ExplorePage() {
             params.luasBangunanMin = currentFilters.buildingArea.min;
           if (currentFilters.buildingArea.max < 500)
             params.luasBangunanMax = currentFilters.buildingArea.max;
+
         }
         const response = await axiosServer.get(`/properties/explore`, {
           params,
@@ -273,6 +291,7 @@ export default function ExplorePage() {
         const result = response.data;
         if (result.data && Array.isArray(result.data.properties)) {
           setProperties(result.data.properties);
+          setTotalItems(result.pagination?.itemsTotal || 0);
         } else {
           throw new Error("Struktur data dari API tidak sesuai");
         }
@@ -415,7 +434,7 @@ export default function ExplorePage() {
             <h2 className="text-3xl font-bold text-gray-800 mb-2">
               {loading || locationLoading
                 ? "Mencari..."
-                : `${properties.length} Properti Tersedia`}
+                : `${totalItems} Properti Tersedia`}
             </h2>
             <p className="text-gray-600 text-lg">
               Pilihan terbaik untuk investasi dan hunian

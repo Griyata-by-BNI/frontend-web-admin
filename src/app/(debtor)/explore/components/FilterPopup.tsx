@@ -11,6 +11,8 @@ import {
   faChartArea,
   faHome,
   faXmark,
+
+
 } from "@fortawesome/free-solid-svg-icons";
 import { axiosInstance } from "@/utils/axios";
 
@@ -21,6 +23,7 @@ export interface FilterState {
   floors: number;
   landArea: { min: number; max: number };
   buildingArea: { min: number; max: number };
+
 }
 
 interface FilterRanges {
@@ -42,6 +45,8 @@ const defaultRanges: FilterRanges = {
   floors: { min: 0, max: 5 },
 };
 
+
+
 export const getInitialFilterState = (ranges: FilterRanges): FilterState => ({
   price: { min: ranges.price.min, max: ranges.price.max },
   bedrooms: 0,
@@ -49,6 +54,7 @@ export const getInitialFilterState = (ranges: FilterRanges): FilterState => ({
   floors: 0,
   landArea: { min: ranges.landArea.min, max: ranges.landArea.max },
   buildingArea: { min: ranges.buildingArea.min, max: ranges.buildingArea.max },
+
 });
 
 interface FilterPopupProps {
@@ -95,7 +101,25 @@ export default function FilterPopup({
         if (properties.length > 0) {
           const calculatedRanges = calculateRanges(properties);
           setRanges(calculatedRanges);
-          setFilters(currentFilters || getInitialFilterState(calculatedRanges));
+
+          if (currentFilters) {
+            // Use current filters but ensure they're within the calculated ranges
+            setFilters({
+              ...currentFilters,
+              price: {
+                min: Math.max(
+                  currentFilters.price.min,
+                  calculatedRanges.price.min
+                ),
+                max: Math.min(
+                  currentFilters.price.max,
+                  calculatedRanges.price.max
+                ),
+              },
+            });
+          } else {
+            setFilters(getInitialFilterState(calculatedRanges));
+          }
         }
       } catch (error) {
         console.error("Failed to fetch filter ranges:", error);
@@ -364,6 +388,8 @@ export default function FilterPopup({
                   }
                 />
               </FilterSection>
+
+
             </>
           )}
         </div>

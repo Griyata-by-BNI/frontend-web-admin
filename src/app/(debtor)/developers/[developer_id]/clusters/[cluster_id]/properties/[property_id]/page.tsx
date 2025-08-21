@@ -1,9 +1,14 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { axiosInstance, axiosServer } from "@/utils/axios";
 import { KPRSimulator } from "@/app/(debtor)/kpr-simulator";
-import MapLoader from "@/app/(debtor)/developers/components/Map";
+import MapLoader, {
+  MapWithNearbyPlaces,
+} from "@/app/(debtor)/developers/components/Map";
+import StickyCard from "@/app/(debtor)/developers/components/StickyCard";
+import ImageSlider from "@/app/(debtor)/developers/components/ImageSlider";
 
 // 1. Import Font Awesome components and icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -38,10 +43,25 @@ interface ApiPropertyDetail {
   landArea: string;
   buildingArea: string;
   property_photo_urls: string[];
+  clusterTypeName?: string;
 }
 
 interface ApiDeveloper {
   developerPhotoUrl: string;
+}
+
+interface ApiCluster {
+  id: number;
+  name: string;
+  latitude: string;
+  longitude: string;
+  nearbyPlaces?: {
+    type: string;
+    places: {
+      name: string;
+      distance: number;
+    }[];
+  }[];
 }
 
 // ✨ Define the type for a single specification item
@@ -91,29 +111,79 @@ const parseSpecifications = (
   return specs;
 };
 
-// This function calculates a sample installment
-const calculateInstallment = (price: number): number => {
-  // Simple estimation: 1% of the price
-  return Math.round(price * 0.01);
+const formatPrice = (priceString: string | null): string => {
+  if (!priceString) return "N/A";
+  const price = Number(priceString);
+  if (isNaN(price)) return "N/A";
+  if (price >= 1_000_000_000)
+    return `${(price / 1_000_000_000).toFixed(1).replace(".0", "")} M`;
+  if (price >= 1_000_000)
+    return `${(price / 1_000_000).toFixed(1).replace(".0", "")} JT`;
+  return price.toLocaleString("id-ID");
+};
+
+const calculateInstallment = (
+  price?: string | null,
+  tenor: number = 180,
+  dpPercent: number = 10,
+  annualInterest: number = 3.25
+) => {
+  if (!price) return "N/A";
+  const priceNum = parseFloat(price);
+  if (isNaN(priceNum) || priceNum === 0) return "-";
+
+  const dp = priceNum * (dpPercent / 100);
+  const loanPrincipal = priceNum - dp;
+  const monthlyInterest = annualInterest / 12 / 100;
+
+  const n = tenor;
+  const r = monthlyInterest;
+
+  const installment = loanPrincipal * (r / (1 - Math.pow(1 + r, -n)));
+
+  if (installment >= 1_000_000) {
+    const million = installment / 1_000_000;
+    return (
+      "Rp " +
+      (million % 1 === 0 ? `${million}` : `${million.toFixed(1)}`) +
+      " JT"
+    );
+  } else if (installment >= 1_000) {
+    const thousand = installment / 1_000;
+    return (
+      "Rp " +
+      (thousand % 1 === 0 ? `${thousand}` : `${thousand.toFixed(1)}`) +
+      " RB"
+    );
+  }
+  return "Rp " + Math.round(installment).toLocaleString("id-ID");
 };
 
 // =================================================================
 // 4. API FETCHING LOGIC
 // =================================================================
 
-async function getPropertyPageData(propertyId: string, developerId: string) {
+async function getPropertyPageData(
+  propertyId: string,
+  developerId: string,
+  clusterId: string
+) {
   try {
-    const [propertyRes, developerRes] = await Promise.all([
+    const [propertyRes, developerRes, clusterRes] = await Promise.all([
       axiosServer.get<{ data: ApiPropertyDetail }>(`/properties/${propertyId}`),
       axiosServer.get<{ data: { developer: ApiDeveloper } }>(
         `/developers/${developerId}`
+      ),
+      axiosServer.get<{ data: { clusters: ApiCluster[] } }>(
+        `/clusters/${clusterId}`
       ),
     ]);
 
     const property = propertyRes.data.data;
     const developer = developerRes.data.data.developer;
+    const cluster = clusterRes.data.data.clusters[0];
 
-    if (!property || !developer) return null;
+    if (!property || !developer || !cluster) return null;
 
     // Process the raw API data to fit the UI
     const specifications = parseSpecifications(
@@ -121,11 +191,12 @@ async function getPropertyPageData(propertyId: string, developerId: string) {
       property.landArea,
       property.buildingArea
     );
-    const installment = calculateInstallment(Number(property.price));
+    const installment = calculateInstallment(property.price);
 
     return {
       property,
       developer,
+      cluster,
       processed: {
         specifications,
         installment,
@@ -144,37 +215,41 @@ async function getPropertyPageData(propertyId: string, developerId: string) {
 export default async function PropertyDetailPage({
   params,
 }: {
-  params: { property_id: string; developer_id: string };
+  params: { property_id: string; developer_id: string; cluster_id: string };
 }) {
   const data = await getPropertyPageData(
     params.property_id,
-    params.developer_id
+    params.developer_id,
+    params.cluster_id
   );
 
   if (!data) {
     notFound();
   }
 
-  const { property, developer, processed } = data;
+  const { property, developer, cluster, processed } = data;
+
+  const areCoordinatesValid =
+    cluster.latitude &&
+    cluster.longitude &&
+    !isNaN(Number(cluster.latitude)) &&
+    !isNaN(Number(cluster.longitude));
 
   return (
-    <div className="bg-light-tosca min-h-screen font-sans">
-      <main className="container">
+    <div className="bg-gradient-to-t from-white to-light-tosca min-h-screen py-8">
+      <main className="container mx-auto px-4">
         <div className="lg:grid lg:grid-cols-3 lg:gap-8">
           {/* Kolom Kiri */}
           <div className="lg:col-span-2">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              {property.name}
+              {property.clusterTypeName
+                ? `${property.clusterTypeName} - ${property.name}`
+                : property.name}
             </h1>
-            <div className="relative w-full h-80 rounded-2xl overflow-hidden shadow-lg mb-6">
-              <Image
-                src={
-                  property.property_photo_urls?.[0] ||
-                  "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800"
-                }
-                alt={property.name}
-                layout="fill"
-                objectFit="cover"
+            <div className="relative w-full h-96 lg:h-[350px] mb-6">
+              <ImageSlider
+                urls={property.property_photo_urls}
+                altText={property.name}
               />
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-3">Deskripsi</h2>
@@ -208,68 +283,38 @@ export default async function PropertyDetailPage({
               <KPRSimulator initialPropertyPrice={Number(property.price)} />
             </div>
 
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Lokasi</h2>
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-              <div className="w-full h-96">
-                <MapLoader
-                  center={[
-                    Number(property.latitude),
-                    Number(property.longitude),
-                  ]}
-                  popupText={`Lokasi ${property.name}`}
-                />
-              </div>
-            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+              Lokasi & Tempat Terdekat
+            </h2>
+            {areCoordinatesValid ? (
+              <MapWithNearbyPlaces
+                center={[Number(cluster.latitude), Number(cluster.longitude)]}
+                popupText={`Lokasi ${cluster.name}`}
+                nearbyPlaces={cluster.nearbyPlaces || []}
+              />
+            ) : (
+              <p className="text-gray-500">Peta lokasi tidak tersedia.</p>
+            )}
           </div>
 
           {/* Kolom Kanan */}
-          <div className="lg:col-span-1 mt-8 lg:mt-0">
-            <div className="sticky top-24">
-              <div className="relative bg-white rounded-xl shadow-lg overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-teal-400 to-cyan-500"></div>
-                <div className="p-6">
-                  <p className="text-sm text-teal-700">Harga</p>
-                  <p className="text-4xl font-bold text-gray-800 mt-1">
-                    <span className="text-2xl align-top">Rp </span>
-                    {new Intl.NumberFormat("id-ID").format(
-                      Number(property.price)
-                    )}
-                  </p>
-                  <p className="text-teal-600 font-semibold mt-2">
-                    Angsuran Rp{" "}
-                    {new Intl.NumberFormat("id-ID").format(
-                      processed.installment
-                    )}
-                    /bulan
-                  </p>
-                  <div className="my-5 border-t"></div>
-                  <p className="text-xl font-bold text-gray-900">
-                    {property.developerName}
-                  </p>
-                  <p className="text-gray-500">{property.location}</p>
-                  <div className="my-5 border-t"></div>
-                  <p className="text-sm text-gray-500 mb-2">Developer:</p>
-                  <Image
-                    src={
-                      developer.developerPhotoUrl ||
-                      "https://via.placeholder.com/150x50.png?text=Logo"
-                    }
-                    alt="Developer Logo"
-                    width={150}
-                    height={50}
-                    style={{ objectFit: "contain" }}
-                  />
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 h-3 bg-gradient-to-r from-teal-400 to-cyan-500"></div>
-              </div>
-              <div className="px-6 py-4">
-                <Link href={`/kpr-apply?property_id=${property.id}`}>
-                  <button className="w-full bg-teal-500 text-white font-bold py-3 rounded-full mt-2 hover:bg-teal-600 transition-colors text-lg shadow-md">
-                    Ajukan KPR
-                  </button>
-                </Link>
-              </div>
-            </div>
+          <div className="space-y-4">
+            <StickyCard
+              priceLabel="Harga"
+              price={`Rp ${new Intl.NumberFormat("id-ID").format(
+                Number(property.price)
+              )}`}
+              installmentText={`Angsuran mulai dari ${processed.installment}/bulan`}
+              developerName={property.developerName}
+              location={property.location}
+              developerPhotoUrl={developer.developerPhotoUrl}
+              stock={property.stock}
+            />
+            <Link href="/kpr-apply">
+              <button className="w-full py-3 px-6 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold rounded-lg hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-lg">
+                Ajukan KPR
+              </button>
+            </Link>
           </div>
         </div>
       </main>

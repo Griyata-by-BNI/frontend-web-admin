@@ -7,9 +7,6 @@ import { axiosInstance, axiosServer } from "@/utils/axios";
 // ✨ 1. Mengimpor komponen ClusterCard yang benar dari file terpisah
 import ClusterCard from "@/app/(debtor)/developers/components/ClusterCard";
 
-// =================================================================
-// 2. TYPE DEFINITIONS
-// =================================================================
 interface ApiDeveloper {
   id: number;
   name: string;
@@ -70,7 +67,7 @@ const getDeveloperDetails = async (
       return { ...developer, clusters: [] };
     }
     const clusterDetailPromises = summaryClusters.map((cluster) =>
-      axiosInstance.get<{ data: { clusters: ApiCluster[] } }>(
+      axiosServer.get<{ data: { clusters: ApiCluster[] } }>(
         `/clusters/${cluster.id}`
       )
     );

@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { Carousel } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBed,
@@ -28,6 +29,9 @@ export interface Property {
   facilities: Facility[];
   updatedAt: string;
   photoUrl: string | null;
+  property_photo_urls?: string[];
+  distanceKm?: number;
+  clusterTypeName?: string;
 }
 
 // --- IKON SVG KHUSUS UNTUK CARD ---
@@ -138,23 +142,51 @@ const PropertyCard: React.FC<{ property: Property }> = ({ property }) => {
     <Link
       href={`/developers/${property.developerId}/clusters/${property.clusterId}/properties/${property.id}`}
     >
-      <div className="min-w-[360px] bg-white rounded-2xl shadow-xl shadow-gray-500/10 overflow-hidden hover:shadow-primary-tosca/30 flex flex-col h-full">
-        <div className="relative w-full h-56 bg-gray-200">
-          <Image
-            src={
-              property.photoUrl ||
-              "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800"
-            }
-            alt={property.propertyName}
-            layout="fill"
-            objectFit="cover"
-          />
+      <div className="min-w-[360px] bg-white rounded-2xl shadow-lg shadow-gray-500/10 overflow-hidden hover:shadow-primary-tosca/30 flex flex-col h-full">
+        <div className="relative w-full h-56 bg-gray-100">
+          {property.property_photo_urls &&
+          property.property_photo_urls.length > 0 ? (
+            <div className="h-full relative z-10 group">
+              <Carousel
+                dots
+                arrows
+                className="h-full [&_.slick-prev]:!left-2 [&_.slick-next]:!right-2 [&_.slick-prev]:!z-30 [&_.slick-next]:!z-30 [&_.slick-prev]:!bg-white/90 [&_.slick-next]:!bg-white/90 [&_.slick-prev]:!rounded-full [&_.slick-next]:!rounded-full [&_.slick-prev]:!w-10 [&_.slick-next]:!w-10 [&_.slick-prev]:!h-10 [&_.slick-next]:!h-10 [&_.slick-prev]:!flex [&_.slick-next]:!flex [&_.slick-prev]:!items-center [&_.slick-next]:!items-center [&_.slick-prev]:!justify-center [&_.slick-next]:!justify-center [&_.slick-prev]:!shadow-lg [&_.slick-next]:!shadow-lg [&_.slick-prev]:hover:!bg-white [&_.slick-next]:hover:!bg-white [&_.slick-prev]:!text-gray-700 [&_.slick-next]:!text-gray-700 [&_.slick-dots]:!z-20"
+              >
+                {property.property_photo_urls.map((src, idx) => (
+                  <div key={idx} className="relative w-full h-56">
+                    <Image
+                      src={src}
+                      alt={`property-photo-${idx + 1}`}
+                      layout="fill"
+                      objectFit="cover"
+                      priority={idx === 0}
+                    />
+                  </div>
+                ))}
+              </Carousel>
+            </div>
+          ) : (
+            <Image
+              src={
+                property.photoUrl ||
+                "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800"
+              }
+              alt={property.propertyName}
+              layout="fill"
+              objectFit="cover"
+            />
+          )}
         </div>
         <div className="p-5">
           <div className="flex justify-between items-center mb-2">
             <div className="flex items-center text-sm text-teal-700">
               <LocationPinIcon />
               <span className="ml-1">{property.location}</span>
+              {property.distanceKm && (
+                <span className="ml-2 text-xs bg-light-tosca text-dark-tosca px-2 py-1 rounded-full">
+                  {property.distanceKm.toFixed(1)} km
+                </span>
+              )}
             </div>
             <div className="text-xs bg-teal-500 text-white font-semibold px-3 py-1 rounded-full">
               {getTimeAgo(property.updatedAt)}
@@ -162,9 +194,9 @@ const PropertyCard: React.FC<{ property: Property }> = ({ property }) => {
           </div>
           <h3
             className="text-xl font-bold text-gray-900 truncate"
-            title={property.propertyName}
+            title={property.clusterTypeName ? `${property.clusterTypeName} - ${property.propertyName}` : property.propertyName}
           >
-            {property.propertyName}
+            {property.clusterTypeName ? `${property.clusterTypeName} - ${property.propertyName}` : property.propertyName}
           </h3>
           <p className="text-sm text-gray-500">{property.developerName}</p>
           <div className="my-4 flex items-center py-3">
