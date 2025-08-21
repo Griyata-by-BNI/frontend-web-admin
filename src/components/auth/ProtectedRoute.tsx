@@ -9,20 +9,20 @@ interface ProtectedRouteProps {
   redirectTo?: string;
 }
 
-export default function ProtectedRoute({ 
-  children, 
-  redirectTo = "/login" 
+export default function ProtectedRoute({
+  children,
+  redirectTo = "/login",
 }: ProtectedRouteProps) {
-  const { user, token, isLoading } = useAuth();
+  const { user, token, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && (!user || !token)) {
+    if (!loading && (!user || !token)) {
       router.push(redirectTo);
     }
-  }, [user, token, isLoading, router, redirectTo]);
+  }, [user, token, loading, router, redirectTo]);
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="bg-gray-50 w-full flex items-center justify-center p-4 min-h-screen">
         <div className="text-gray-600">Memuat...</div>

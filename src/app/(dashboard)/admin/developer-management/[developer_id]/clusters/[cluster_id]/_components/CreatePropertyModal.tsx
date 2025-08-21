@@ -1,300 +1,355 @@
 "use client";
 
 import {
+  App,
   Button,
   Form,
   Input,
+  InputNumber,
   Modal,
+  Select,
   Typography,
   Upload,
-  InputNumber,
-  Select,
-  Space,
 } from "antd";
-import { Upload as UploadIcon, X, Plus, Minus } from "lucide-react";
+import { Plus, Upload as UploadIcon, X } from "lucide-react";
 import { useState } from "react";
-import type { PayloadProperty } from "../../../../_types";
+import { useCreateProperty } from "@/services/propertyServices";
+import type { CreatePropertyPayload } from "@/types/property";
+import { bniRegions, initialSpecOptions } from "../../../constants";
+import { useImageStore } from "@/stores";
 
 interface CreatePropertyModalProps {
-  open: boolean;
-  onCancel: () => void;
-  onSubmit: (values: PayloadProperty) => void;
   clusterTypeId: number;
 }
 
-const bniRegions = [
-  { value: 1, label: "Wilayah I - Sumatera" },
-  { value: 2, label: "Wilayah II - Jakarta" },
-  { value: 3, label: "Wilayah III - Jawa Barat" },
-  { value: 4, label: "Wilayah IV - Jawa Tengah & DIY" },
-  { value: 5, label: "Wilayah V - Jawa Timur" },
-  { value: 6, label: "Wilayah VI - Kalimantan" },
-  { value: 7, label: "Wilayah VII - Sulawesi" },
-  { value: 8, label: "Wilayah VIII - Bali & Nusa Tenggara" },
-  { value: 9, label: "Wilayah IX - Maluku & Papua" },
-];
-
 export default function CreatePropertyModal({
-  open,
-  onCancel,
-  onSubmit,
   clusterTypeId,
 }: CreatePropertyModalProps) {
   const [form] = Form.useForm();
-  const [previewImages, setPreviewImages] = useState<string[]>([]);
-  const [specifications, setSpecifications] = useState<
-    { name: string; quantity: number }[]
-  >([{ name: "", quantity: 1 }]);
+  const { message } = App.useApp();
 
-  const handleSubmit = (values: any) => {
-    const specsString = specifications
-      .filter((spec) => spec.name.trim())
-      .map((spec) => `${spec.quantity} ${spec.name}`)
-      .join(", ");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [specOptions, setSpecOptions] = useState(initialSpecOptions);
 
-    onSubmit({
-      ...values,
-      clusterTypeId,
-      spesifications: specsString,
-      photos: values.photos || [],
-      createdBy: "admin",
-      updatedBy: "admin",
-    });
+  const {
+    fileList,
+    setFileList,
+    ensurePreviews,
+    removeByUid,
+    reset: resetImages,
+  } = useImageStore();
+
+  const createMutation = useCreateProperty();
+
+  const resetAll = () => {
     form.resetFields();
-    setPreviewImages([]);
-    setSpecifications([{ name: "", quantity: 1 }]);
+    resetImages();
   };
 
   const handleCancel = () => {
-    form.resetFields();
-    setPreviewImages([]);
-    setSpecifications([{ name: "", quantity: 1 }]);
-    onCancel();
+    setModalOpen(false);
+    resetAll();
   };
 
-  const addSpecification = () => {
-    setSpecifications([...specifications, { name: "", quantity: 1 }]);
-  };
+  const handleSubmit = async (values: any) => {
+    if (fileList.length === 0) {
+      message.error("Mohon upload minimal satu gambar!");
+      return;
+    }
 
-  const removeSpecification = (index: number) => {
-    if (specifications.length > 1) {
-      setSpecifications(specifications.filter((_, i) => i !== index));
+    const specsString = (values.specifications || [])
+      .map((s: string) => s.trim())
+      .filter(Boolean)
+      .join(", ");
+
+    const newFiles: File[] = fileList
+      .map((f) => f.originFileObj)
+      .filter(Boolean) as File[];
+
+    const payload: CreatePropertyPayload = {
+      clusterTypeId,
+      name: values.name,
+      description: values.description,
+      price: String(values.price),
+      location: values.location ?? "",
+      isDeleted: false,
+      spesification: specsString,
+      collateralAddress: values.collateralAddress ?? "",
+      regionId: Number(values.regionId),
+      stock: Number(values.stock ?? 0),
+      luasTanah: values.landArea ? Number(values.landArea) : null,
+      luasBangunan: values.buildingArea ? Number(values.buildingArea) : null,
+      jumlahLantai:
+        values.jumlahLantai != null ? Number(values.jumlahLantai) : null,
+      jumlahKamarTidur:
+        values.jumlahKamarTidur != null
+          ? Number(values.jumlahKamarTidur)
+          : null,
+      jumlahKamarMandi:
+        values.jumlahKamarMandi != null
+          ? Number(values.jumlahKamarMandi)
+          : null,
+      garasi: Boolean(values.garasi ?? false),
+      kolamRenang: Boolean(values.kolamRenang ?? false),
+      photos: newFiles,
+    };
+
+    try {
+      await createMutation.mutateAsync(payload);
+      message.success("Properti berhasil dibuat");
+      setModalOpen(false);
+      resetAll();
+    } catch {
+      message.error("Gagal membuat properti");
     }
   };
 
-  const updateSpecification = (
-    index: number,
-    field: "name" | "quantity",
-    value: string | number
-  ) => {
-    const updated = [...specifications];
-    updated[index] = { ...updated[index], [field]: value };
-    setSpecifications(updated);
-  };
-
   return (
-    <Modal
-      centered
-      title={
-        <Typography.Title level={5} className="!text-dark-tosca">
-          Buat Data Properti
-        </Typography.Title>
-      }
-      maskClosable={false}
-      open={open}
-      onCancel={handleCancel}
-      onOk={() => form.submit()}
-      okText="Buat"
-      classNames={{
-        body: "!pt-2 max-h-[75vh] overflow-y-auto !px-6",
-        content: "!p-0",
-        header: "!pt-5 !px-6",
-        footer: "!pb-5 !px-6",
-      }}
-    >
-      <Form form={form} layout="vertical" onFinish={handleSubmit}>
-        <Form.Item
-          name="name"
-          label="Nama Properti"
-          className="!mb-3"
-          rules={[{ required: true, message: "Mohon masukkan nama properti!" }]}
-        >
-          <Input placeholder="Masukkan nama properti" />
-        </Form.Item>
+    <>
+      <Button
+        size="small"
+        icon={<Plus className="w-3 h-3" />}
+        onClick={() => setModalOpen(true)}
+      >
+        Tambah Properti
+      </Button>
 
-        <Form.Item
-          name="description"
-          label="Deskripsi"
-          className="!mb-3"
-          rules={[{ required: true, message: "Mohon masukkan deskripsi!" }]}
-        >
-          <Input.TextArea placeholder="Masukkan deskripsi" rows={3} />
-        </Form.Item>
-
-        <Form.Item
-          name="price"
-          label="Harga"
-          className="!mb-3"
-          rules={[{ required: true, message: "Mohon masukkan harga!" }]}
-        >
-          <InputNumber
-            placeholder="Masukkan harga"
-            className="!w-full"
-            formatter={(value) =>
-              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-            }
-            parser={(value) => value!.replace(/\$\s?|(,*)/g, "")}
-          />
-        </Form.Item>
-
-        <Form.Item
-          name="landArea"
-          label="Luas Tanah (m²)"
-          className="!mb-3"
-          rules={[{ required: true, message: "Mohon masukkan luas tanah!" }]}
-        >
-          <InputNumber placeholder="Masukkan luas tanah" className="!w-full" />
-        </Form.Item>
-
-        <Form.Item
-          name="buildingArea"
-          label="Luas Bangunan (m²)"
-          className="!mb-3"
-          rules={[{ required: true, message: "Mohon masukkan luas bangunan!" }]}
-        >
-          <InputNumber
-            placeholder="Masukkan luas bangunan"
-            className="!w-full"
-          />
-        </Form.Item>
-
-        <div className="!mb-3">
-          <label className="block text-sm font-medium mb-2">Spesifikasi</label>
-
-          {specifications.map((spec, index) => (
-            <div key={index} className="flex items-center gap-2 mb-2">
-              <InputNumber
-                min={1}
-                value={spec.quantity}
-                onChange={(value) =>
-                  updateSpecification(index, "quantity", value || 1)
-                }
-                controls={false}
-                className="!w-10"
-              />
-
-              <Input
-                placeholder="Nama spesifikasi (contoh: lantai, kamar tidur)"
-                value={spec.name}
-                onChange={(e) =>
-                  updateSpecification(index, "name", e.target.value)
-                }
-                className="!w-full"
-              />
-
-              <Button
-                icon={<Minus className="w-4 h-4" />}
-                onClick={() => removeSpecification(index)}
-                disabled={specifications.length === 1}
-              />
-            </div>
-          ))}
-
-          <Button
-            type="dashed"
-            icon={<Plus className="w-4 h-4" />}
-            onClick={addSpecification}
-            className="w-full"
+      <Modal
+        centered
+        destroyOnHidden
+        title={
+          <Typography.Title level={5} className="!text-dark-tosca">
+            Buat Data Properti
+          </Typography.Title>
+        }
+        maskClosable={false}
+        open={modalOpen}
+        onCancel={handleCancel}
+        onOk={() => form.submit()}
+        okText={createMutation.isPending ? "Menyimpan..." : "Buat"}
+        okButtonProps={{ loading: createMutation.isPending }}
+        classNames={{
+          body: "!pt-2 max-h-[75vh] overflow-y-auto !px-6",
+          content: "!p-0",
+          header: "!pt-5 !px-6",
+          footer: "!pb-5 !px-6",
+        }}
+      >
+        <Form form={form} layout="vertical" onFinish={handleSubmit}>
+          <Form.Item
+            name="name"
+            label="Nama Properti"
+            className="!mb-3"
+            rules={[
+              { required: true, message: "Mohon masukkan nama properti!" },
+            ]}
           >
-            Tambah Spesifikasi
-          </Button>
-        </div>
+            <Input placeholder="Masukkan nama properti" />
+          </Form.Item>
 
-        <Form.Item
-          name="regionId"
-          label="Wilayah BNI"
-          className="!mb-3"
-          rules={[{ required: true, message: "Mohon pilih wilayah BNI!" }]}
-        >
-          <Select placeholder="Pilih wilayah BNI" options={bniRegions} />
-        </Form.Item>
+          <Form.Item
+            name="description"
+            label="Deskripsi"
+            className="!mb-3"
+            rules={[{ required: true, message: "Mohon masukkan deskripsi!" }]}
+          >
+            <Input.TextArea placeholder="Masukkan deskripsi" rows={3} />
+          </Form.Item>
 
-        <Form.Item
-          name="photos"
-          label="Gambar"
-          className="!mb-3"
-          rules={[
-            { required: true, message: "Mohon upload minimal satu gambar!" },
-          ]}
-          valuePropName="fileList"
-        >
-          <Upload
-            multiple
-            beforeUpload={() => false}
-            showUploadList={false}
-            onChange={(info) => {
-              if (info.fileList.length > 0) {
-                const images: string[] = [];
-                let processedCount = 0;
-
-                info.fileList.forEach((file) => {
-                  if (file.originFileObj) {
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                      images.push(reader.result as string);
-                      processedCount++;
-
-                      if (processedCount === info.fileList.length) {
-                        form.setFieldValue("photos", images);
-                        setPreviewImages(images);
-                      }
-                    };
-                    reader.readAsDataURL(file.originFileObj);
-                  }
-                });
-              } else {
-                form.setFieldValue("photos", []);
-                setPreviewImages([]);
+          <Form.Item
+            name="price"
+            label="Harga"
+            className="!mb-3"
+            rules={[{ required: true, message: "Mohon masukkan harga!" }]}
+          >
+            <InputNumber
+              placeholder="Masukkan harga"
+              className="!w-full"
+              formatter={(v) =>
+                `${v ?? ""}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
               }
-            }}
+              parser={(v) => (v ? v.replace(/[.\s]/g, "") : "")}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="landArea"
+            label="Luas Tanah (m²)"
+            className="!mb-3"
+            rules={[{ required: true, message: "Mohon masukkan luas tanah!" }]}
           >
-            <Button icon={<UploadIcon className="w-4 h-4" />}>
-              Upload Gambar
-            </Button>
-          </Upload>
+            <InputNumber
+              min={10}
+              placeholder="Masukkan luas tanah"
+              className="!w-full"
+            />
+          </Form.Item>
 
-          {previewImages.length > 0 && (
+          <Form.Item
+            name="buildingArea"
+            label="Luas Bangunan (m²)"
+            className="!mb-3"
+            rules={[
+              { required: true, message: "Mohon masukkan luas bangunan!" },
+            ]}
+          >
+            <InputNumber
+              min={10}
+              placeholder="Masukkan luas bangunan"
+              className="!w-full"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="jumlahLantai"
+            label="Jumlah Lantai"
+            className="!mb-3"
+            rules={[
+              { required: true, message: "Mohon masukkan jumlah lantai!" },
+            ]}
+          >
+            <InputNumber min={1} className="!w-full" placeholder="Contoh: 2" />
+          </Form.Item>
+
+          <Form.Item
+            name="jumlahKamarTidur"
+            label="Jumlah Kamar Tidur"
+            className="!mb-3"
+            rules={[
+              { required: true, message: "Mohon masukkan jumlah kamar tidur!" },
+            ]}
+          >
+            <InputNumber min={1} className="!w-full" placeholder="Contoh: 4" />
+          </Form.Item>
+
+          <Form.Item
+            name="jumlahKamarMandi"
+            label="Jumlah Kamar Mandi"
+            className="!mb-3"
+            rules={[
+              { required: true, message: "Mohon masukkan jumlah kamar mandi!" },
+            ]}
+          >
+            <InputNumber min={0} className="!w-full" placeholder="Contoh: 2" />
+          </Form.Item>
+
+          <Form.Item
+            name="stock"
+            label="Stok"
+            className="!mb-3"
+            rules={[{ required: true, message: "Mohon masukkan stok rumah!" }]}
+          >
+            <InputNumber min={0} className="!w-full" placeholder="Contoh: 4" />
+          </Form.Item>
+
+          {/* Spesifikasi */}
+          <Form.Item
+            name="specifications"
+            label="Spesifikasi"
+            className="!mb-3"
+            rules={[
+              {
+                required: true,
+                message: "Mohon pilih/setidaknya satu spesifikasi!",
+              },
+            ]}
+          >
+            <Select
+              mode="tags"
+              allowClear
+              placeholder="Pilih atau ketik spesifikasi (mis. Kolam Renang, Gym)"
+              options={specOptions}
+              onChange={(values: string[]) => {
+                const current = new Set(specOptions.map((o) => o.value));
+                const toAdd = values
+                  .filter((v) => !current.has(v))
+                  .map((v) => ({ label: v, value: v }));
+                if (toAdd.length) setSpecOptions((prev) => [...prev, ...toAdd]);
+              }}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="regionId"
+            label="Wilayah BNI"
+            className="!mb-3"
+            rules={[{ required: true, message: "Mohon pilih wilayah BNI!" }]}
+          >
+            <Select placeholder="Pilih wilayah BNI" options={bniRegions} />
+          </Form.Item>
+
+          <Form.Item
+            name="location"
+            label="Kota / Provinsi"
+            className="!mb-3"
+            rules={[{ required: true, message: "Mohon isi kota / provinsi!" }]}
+          >
+            <Input placeholder="Masukkan kota / provinsi" />
+          </Form.Item>
+
+          <Form.Item
+            name="collateralAddress"
+            label="Alamat Lengkap Rumah"
+            className="!mb-3"
+            rules={[
+              { required: true, message: "Mohon isi alamat lengkap rumah!" },
+            ]}
+          >
+            <Input.TextArea
+              placeholder="Masukkan alamat lengkap rumah"
+              rows={3}
+            />
+          </Form.Item>
+
+          {/* 🔹 Upload dikontrol oleh store (bukan Form) */}
+          <Form.Item label="Gambar" className="!mb-3">
+            <Upload
+              multiple
+              showUploadList={false}
+              beforeUpload={() => false}
+              fileList={fileList}
+              onChange={async ({ fileList: fl }) => {
+                setFileList(fl);
+                await ensurePreviews(); // isi thumbUrl untuk file baru
+              }}
+            >
+              <Button icon={<UploadIcon className="w-4 h-4" />}>
+                Upload Gambar
+              </Button>
+            </Upload>
+          </Form.Item>
+
+          {/* Preview gabungan (url lama — untuk create tidak ada — & thumbUrl baru) */}
+          {fileList.length > 0 && (
             <div className="grid grid-cols-2 gap-3 mt-3">
-              {previewImages.map((image, index) => (
-                <div
-                  key={index}
-                  className="relative border border-gray-200 rounded-lg overflow-hidden"
-                >
-                  <img
-                    src={image}
-                    alt={`Preview ${index + 1}`}
-                    className="h-24 w-full object-cover"
-                  />
-
-                  <Button
-                    shape="circle"
-                    size="small"
-                    icon={<X className="w-4 h-4" />}
-                    className="!absolute top-1 right-1 !z-[9999999]"
-                    onClick={() => {
-                      const newImages = previewImages.filter(
-                        (_, i) => i !== index
-                      );
-                      setPreviewImages(newImages);
-                      form.setFieldValue("photos", newImages);
-                    }}
-                  />
-                </div>
-              ))}
+              {fileList.map((file, index) => {
+                const src = file.url ?? file.thumbUrl;
+                if (!src) return null;
+                return (
+                  <div
+                    key={file.uid}
+                    className="relative border border-gray-200 rounded-lg overflow-hidden"
+                  >
+                    <img
+                      src={src}
+                      alt={file.name || `Preview ${index + 1}`}
+                      className="h-24 w-full object-cover"
+                    />
+                    <Button
+                      shape="circle"
+                      size="small"
+                      className="!absolute top-1 right-1 !z-[9999999] flex items-center justify-center"
+                      onClick={() => removeByUid(file.uid)}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                );
+              })}
             </div>
           )}
-        </Form.Item>
-      </Form>
-    </Modal>
+        </Form>
+      </Modal>
+    </>
   );
 }

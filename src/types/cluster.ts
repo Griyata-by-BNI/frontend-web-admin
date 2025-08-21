@@ -72,7 +72,7 @@ export interface PayloadCluster {
   createdBy: number;
   updatedBy: number;
   address: string;
-  phone_number: string;
+  phoneNumber: string;
   longitude: number;
   latitude: number;
   photos: File[];

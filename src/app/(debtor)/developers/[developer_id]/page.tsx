@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import axiosInstance from "@/utils/axios";
+import { axiosInstance } from "@/utils/axios";
 
 // ✨ 1. Mengimpor komponen ClusterCard yang benar dari file terpisah
 import ClusterCard from "@/app/(debtor)/developers/components/ClusterCard";
@@ -60,18 +60,18 @@ const getDeveloperDetails = async (
   try {
     const developerRes = await axiosInstance.get<{
       data: { developer: ApiDeveloper };
-    }>(`/api/v1/developers/${id}`);
+    }>(`/developers/${id}`);
     const developer = developerRes.data.data.developer;
     const summaryClustersRes = await axiosInstance.get<{
       data: { clusters: ApiCluster[] };
-    }>(`/api/v1/clusters/developer/${id}`);
+    }>(`/clusters/developer/${id}`);
     const summaryClusters = summaryClustersRes.data.data.clusters;
     if (!summaryClusters || summaryClusters.length === 0) {
       return { ...developer, clusters: [] };
     }
     const clusterDetailPromises = summaryClusters.map((cluster) =>
       axiosInstance.get<{ data: { clusters: ApiCluster[] } }>(
-        `/api/v1/clusters/${cluster.id}`
+        `/clusters/${cluster.id}`
       )
     );
     const clusterDetailResults = await Promise.allSettled(

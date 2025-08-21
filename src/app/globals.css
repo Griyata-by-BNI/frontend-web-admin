@@ -12,6 +12,22 @@
   --color-dark-purple: #745fa4;
 }
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.leaflet-control {
+  z-index: 2 !important;
+}
+
+.leaflet-control-attribution {
+  z-index: 2 !important;
+}
+
 /* .ant-table-tbody > tr:nth-child(even) > td {
   background-color: #f0f0f0;
 } */

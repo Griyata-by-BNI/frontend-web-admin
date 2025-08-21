@@ -1,20 +1,23 @@
-import { Table, Button, Tooltip } from "antd";
-import { Edit, Trash } from "lucide-react";
-import { mockPropertyData } from "../../../../_constants";
-import type { Property } from "../../../../_types";
+"use client";
+
+import { usePropertiesByClusterType } from "@/services/propertyServices";
+import type { Property } from "@/types/property";
+import { Table } from "antd";
+import type { ColumnsType } from "antd/es/table";
+import { useMemo } from "react";
+import EditPropertyModal from "./EditPropertyModal";
+import DeletePropertyModal from "./DeletePropertyModal";
+import DetailPropertyModal from "./DetailPropertyModal";
 
 interface TablePropertyProps {
   clusterTypeId: number;
-  onEdit: (record: Property) => void;
-  onDelete: (record: Property) => void;
 }
 
-export default function TableProperty({
-  clusterTypeId,
-  onEdit,
-  onDelete,
-}: TablePropertyProps) {
-  const columns = [
+export default function TableProperty({ clusterTypeId }: TablePropertyProps) {
+  const { data, isLoading, isError } =
+    usePropertiesByClusterType(clusterTypeId);
+
+  const columns: ColumnsType<Property> = [
     {
       title: "Nama Properti",
       dataIndex: "name",
@@ -24,25 +27,25 @@ export default function TableProperty({
       title: "Harga",
       dataIndex: "price",
       key: "price",
-      render: (price: string) =>
-        `Rp ${parseInt(price).toLocaleString("id-ID")}`,
+      render: (price: string | null) =>
+        price ? `Rp ${Number(price).toLocaleString("id-ID")}` : "-",
     },
     {
       title: "Lokasi",
-      dataIndex: "location",
-      key: "location",
+      dataIndex: "collateral_address",
+      key: "collateral_address",
     },
     {
       title: "Luas Tanah",
       dataIndex: "landArea",
       key: "landArea",
-      render: (area: string) => `${area} m²`,
+      render: (area: string | null) => (area ? `${area} m²` : "-"),
     },
     {
       title: "Luas Bangunan",
       dataIndex: "buildingArea",
       key: "buildingArea",
-      render: (area: string) => `${area} m²`,
+      render: (area: string | null) => (area ? `${area} m²` : "-"),
     },
     {
       title: "Stok",
@@ -52,36 +55,33 @@ export default function TableProperty({
     {
       title: "Aksi",
       key: "action",
-      render: (_: any, record: Property) => (
+      render: (_: unknown, record: Property) => (
         <div className="flex gap-1">
-          <Tooltip title="Edit Properti">
-            <Button
-              size="small"
-              icon={<Edit className="w-4 h-4" />}
-              onClick={() => onEdit(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Hapus Properti">
-            <Button
-              size="small"
-              icon={<Trash className="w-4 h-4 stroke-red-500" />}
-              onClick={() => onDelete(record)}
-            />
-          </Tooltip>
+          <DetailPropertyModal propertyId={record.propertyId} />
+
+          <EditPropertyModal
+            propertyId={record.propertyId}
+            clusterTypeId={clusterTypeId}
+          />
+
+          <DeletePropertyModal propertyData={record} />
         </div>
       ),
     },
   ];
 
-  const filteredData = mockPropertyData.filter(
-    (property) => property.clusterTypeId === clusterTypeId
-  );
+  const dataSource = useMemo(() => data?.data ?? [], [data]);
+
+  if (isError) {
+    return <div className="text-red-500">Gagal memuat data properti.</div>;
+  }
 
   return (
     <Table
       bordered
-      dataSource={filteredData}
-      rowKey="id"
+      loading={isLoading}
+      dataSource={dataSource}
+      rowKey="propertyId"
       pagination={false}
       columns={columns}
       size="small"

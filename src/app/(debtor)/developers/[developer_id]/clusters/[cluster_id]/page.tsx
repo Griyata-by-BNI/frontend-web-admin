@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import MapLoader from "@/app/(debtor)/developers/components/Map";
-import axiosInstance from "@/utils/axios";
+import { axiosServer } from "@/utils/axios";
 import PropertyCard from "@/app/(debtor)/developers/components/PropertyCard";
 import ImageSlider from "@/app/(debtor)/developers/components/ImageSlider";
 
@@ -242,14 +242,14 @@ async function getClusterPageData(
 ): Promise<ClusterPageData | null> {
   try {
     const [clusterRes, typesRes, developerRes] = await Promise.all([
-      axiosInstance.get<{ data: { clusters: ApiClusterDetail[] } }>(
-        `/api/v1/clusters/${clusterId}`
+      axiosServer.get<{ data: { clusters: ApiClusterDetail[] } }>(
+        `/clusters/${clusterId}`
       ),
-      axiosInstance.get<{ data: { clusterTypes: ApiPropertyType[] } }>(
-        `/api/v1/clusters/type/cluster/${clusterId}`
+      axiosServer.get<{ data: { clusterTypes: ApiPropertyType[] } }>(
+        `/clusters/type/cluster/${clusterId}`
       ),
-      axiosInstance.get<{ data: { developer: ApiDeveloper } }>(
-        `/api/v1/developers/${developerId}`
+      axiosServer.get<{ data: { developer: ApiDeveloper } }>(
+        `/developers/${developerId}`
       ),
     ]);
 
@@ -261,8 +261,8 @@ async function getClusterPageData(
 
     if (propertyTypesData && propertyTypesData.length > 0) {
       const propertyPromises = propertyTypesData.map((type) =>
-        axiosInstance.get<{ data: ApiProperty[] }>(
-          `/api/v1/properties/cluster-type/${type.id}`
+        axiosServer.get<{ data: ApiProperty[] }>(
+          `/properties/cluster-type/${type.id}`
         )
       );
       const propertyResults = await Promise.all(propertyPromises);
@@ -271,17 +271,17 @@ async function getClusterPageData(
       for (let i = 0; i < propertyTypesData.length; i++) {
         const properties = propertyResults[i].data.data || [];
         const detailPromises = properties.map((prop) =>
-          axiosInstance.get<{ data: ApiPropertyDetail }>(
-            `/api/v1/properties/${prop.propertyId}`
-          ).catch(() => ({ data: { data: null } }))
+          axiosServer
+            .get<{ data: ApiPropertyDetail }>(`/properties/${prop.propertyId}`)
+            .catch(() => ({ data: { data: null } }))
         );
         const detailResults = await Promise.all(detailPromises);
-        
+
         propertyTypesData[i].properties = properties.map((prop, idx) => {
           const detail = detailResults[idx].data.data;
           return {
             ...prop,
-            property_photo_urls: detail?.property_photo_urls || []
+            property_photo_urls: detail?.property_photo_urls || [],
           };
         });
       }

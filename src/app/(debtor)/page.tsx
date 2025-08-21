@@ -3,8 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { KPRSimulator } from "@/app/(debtor)/kpr-simulator/_components/KPRSimulator";
 import { CTASection } from "@/app/(debtor)/kpr-information/detail/components/CTASection";
-import axiosInstance from "@/utils/axios";
-import HeroSearch from "@/app/(debtor)/developers/components/HeroSearch"; 
+import { axiosInstance, axiosServer } from "@/utils/axios";
+import HeroSearch from "@/app/(debtor)/developers/components/HeroSearch";
 
 // --- TYPE DEFINITION ---
 interface Property {
@@ -20,12 +20,12 @@ interface Property {
 // --- API FETCHING ---
 async function getLatestProperties(): Promise<Property[]> {
   try {
-    const response = await axiosInstance.get('/api/v1/properties/explore', {
+    const response = await axiosServer.get("/properties/explore", {
       params: {
-        sortBy: 'updatedAt',
-        sortDir: 'DESC',
+        sortBy: "updatedAt",
+        sortDir: "DESC",
         pageSize: 4,
-      }
+      },
     });
     return response.data?.data?.properties || [];
   } catch (error) {
@@ -36,23 +36,28 @@ async function getLatestProperties(): Promise<Property[]> {
 
 // --- CHILD COMPONENT ---
 const PropertyCard: React.FC<{ property: Property }> = ({ property }) => (
-  <Link 
+  <Link
     href={`/developers/${property.developerId}/clusters/${property.clusterId}/properties/${property.id}`}
     className="block bg-white rounded-2xl shadow-md overflow-hidden transition-transform duration-300 hover:scale-105 hover:shadow-lg h-full"
   >
     <div className="relative w-full h-48 bg-gray-200">
       <Image
-        src={property.photoUrl || "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800"}
+        src={
+          property.photoUrl ||
+          "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800"
+        }
         alt={property.propertyName}
         layout="fill"
         objectFit="cover"
       />
     </div>
     <div className="p-4">
-      <h4 className="font-bold text-gray-800 truncate">{property.propertyName}</h4>
+      <h4 className="font-bold text-gray-800 truncate">
+        {property.propertyName}
+      </h4>
       <p className="text-sm text-gray-500 mt-1">{property.location}</p>
       <p className="text-lg font-bold text-teal-600 mt-3">
-        Rp {Number(property.price).toLocaleString('id-ID')}
+        Rp {Number(property.price).toLocaleString("id-ID")}
       </p>
     </div>
   </Link>
@@ -81,8 +86,7 @@ export default async function HomePage() {
             <HeroSearch />
           </div>
         </div>
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-32 opacity-20">
-        </div>
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-32 opacity-20"></div>
       </section>
 
       {/* Main Content Section */}
@@ -97,15 +101,19 @@ export default async function HomePage() {
         <div className="container mx-auto px-4">
           <div className="mb-16">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-gray-800">Cluster Terbaru</h3>
-              <Link href="/explore" className="text-cyan-600 font-semibold hover:underline">Lihat Semua</Link>
+              <h3 className="text-2xl font-bold text-gray-800">
+                Cluster Terbaru
+              </h3>
+              <Link
+                href="/explore"
+                className="text-cyan-600 font-semibold hover:underline"
+              >
+                Lihat Semua
+              </Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {latestProperties.map(prop => (
-                <PropertyCard 
-                  key={prop.id} 
-                  property={prop} 
-                />
+              {latestProperties.map((prop) => (
+                <PropertyCard key={prop.id} property={prop} />
               ))}
             </div>
           </div>
@@ -116,8 +124,12 @@ export default async function HomePage() {
       <section className="bg-slate-100 py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-800">Simulasikan KPRmu!</h2>
-            <p className="text-gray-500 mt-2">Transparansi Angsuran di Ujung Jari Anda</p>
+            <h2 className="text-3xl font-bold text-gray-800">
+              Simulasikan KPRmu!
+            </h2>
+            <p className="text-gray-500 mt-2">
+              Transparansi Angsuran di Ujung Jari Anda
+            </p>
             <div className="mt-8 max-w-5xl mx-auto">
               <KPRSimulator initialPropertyPrice={2400000000} />
             </div>
@@ -128,7 +140,7 @@ export default async function HomePage() {
       <section className="bg-white py-16">
         <div className="mt-8 max-w-7xl mx-auto">
           <div className="text-center">
-            <CTASection/>
+            <CTASection />
           </div>
         </div>
       </section>

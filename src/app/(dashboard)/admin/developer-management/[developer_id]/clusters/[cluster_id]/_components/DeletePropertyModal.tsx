@@ -1,49 +1,75 @@
 "use client";
 
-import { Modal, Typography } from "antd";
-import type { Property } from "../../../../_types";
+import { App, Button, Modal, Tooltip, Typography } from "antd";
+import { Trash } from "lucide-react";
+import { useState } from "react";
+import { useDeleteProperty } from "@/services/propertyServices";
+import { Property } from "@/types/property";
 
 interface DeletePropertyModalProps {
-  open: boolean;
-  onCancel: () => void;
-  onConfirm: () => void;
-  propertyData: Property | null;
+  propertyData: Property;
 }
 
 export default function DeletePropertyModal({
-  open,
-  onCancel,
-  onConfirm,
   propertyData,
 }: DeletePropertyModalProps) {
-  return (
-    <Modal
-      title={
-        <Typography.Title level={5} className="!text-red-500">
-          Hapus Data Properti
-        </Typography.Title>
-      }
-      open={open}
-      onCancel={onCancel}
-      onOk={onConfirm}
-      okText="Hapus"
-      cancelText="Batal"
-      okButtonProps={{ danger: true }}
-      classNames={{
-        content: "!p-0",
-        header: "!pt-5 !px-6",
-        body: "!px-6",
-        footer: "!pb-5 !px-6",
-      }}
-    >
-      <p>
-        Apakah Anda yakin ingin menghapus properti{" "}
-        <strong>{propertyData?.name}</strong>?
-      </p>
+  const { message } = App.useApp();
+  const [modalOpen, setModalOpen] = useState(false);
+  const { mutate, isPending } = useDeleteProperty();
 
-      <p className="text-gray-500 text-sm mt-2">
-        Tindakan ini tidak dapat dibatalkan.
-      </p>
-    </Modal>
+  const handleDelete = () => {
+    mutate(
+      { propertyData: propertyData },
+      {
+        onSuccess: () => {
+          message.success("Berhasil menghapus data property!");
+          setModalOpen(false);
+        },
+        onError: () => {
+          message.error("Gagal menghapus data property, silahkan coba lagi!");
+        },
+      }
+    );
+  };
+
+  return (
+    <>
+      <Tooltip title="Hapus Properti">
+        <Button
+          size="small"
+          onClick={() => setModalOpen(true)}
+          icon={<Trash className="w-4 h-4 stroke-red-500" />}
+        />
+
+        <Modal
+          title={
+            <Typography.Title level={5} className="!text-red-500">
+              Hapus Data Properti
+            </Typography.Title>
+          }
+          open={modalOpen}
+          onCancel={() => setModalOpen(false)}
+          onOk={handleDelete}
+          okText="Hapus"
+          cancelText="Batal"
+          okButtonProps={{ danger: true, loading: isPending }}
+          classNames={{
+            content: "!p-0",
+            header: "!pt-5 !px-6",
+            body: "!px-6",
+            footer: "!pb-5 !px-6",
+          }}
+        >
+          <p>
+            Apakah Anda yakin ingin menghapus properti{" "}
+            <strong>{propertyData?.name}</strong>?
+          </p>
+
+          <p className="text-gray-500 text-sm mt-2">
+            Tindakan ini tidak dapat dibatalkan.
+          </p>
+        </Modal>
+      </Tooltip>
+    </>
   );
 }

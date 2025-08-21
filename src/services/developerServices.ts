@@ -5,7 +5,7 @@ import {
   ResponseGetAllDeveloper,
   ResponseGetDeveloperById,
 } from "@/types/developer";
-import axiosInstance from "@/utils/axios";
+import { axiosInstance } from "@/utils/axios";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 const createDeveloper = async (data: PayloadDeveloper) => {

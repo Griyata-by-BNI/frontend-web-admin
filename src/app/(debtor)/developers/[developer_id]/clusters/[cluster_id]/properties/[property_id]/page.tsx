@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import axiosInstance from "@/utils/axios";
+import { axiosInstance, axiosServer } from "@/utils/axios";
 import { KPRSimulator } from "@/app/(debtor)/kpr-simulator";
 import MapLoader from "@/app/(debtor)/developers/components/Map";
 
@@ -74,7 +74,10 @@ const parseSpecifications = (
   }
 
   if (landArea) {
-    specs.push({ text: `Luas Tanah ${Number(landArea)} m²`, icon: faChartArea });
+    specs.push({
+      text: `Luas Tanah ${Number(landArea)} m²`,
+      icon: faChartArea,
+    });
   }
 
   if (buildingArea) {
@@ -100,11 +103,9 @@ const calculateInstallment = (price: number): number => {
 async function getPropertyPageData(propertyId: string, developerId: string) {
   try {
     const [propertyRes, developerRes] = await Promise.all([
-      axiosInstance.get<{ data: ApiPropertyDetail }>(
-        `/api/v1/properties/${propertyId}`
-      ),
-      axiosInstance.get<{ data: { developer: ApiDeveloper } }>(
-        `/api/v1/developers/${developerId}`
+      axiosServer.get<{ data: ApiPropertyDetail }>(`/properties/${propertyId}`),
+      axiosServer.get<{ data: { developer: ApiDeveloper } }>(
+        `/developers/${developerId}`
       ),
     ]);
 
@@ -144,7 +145,10 @@ export default async function PropertyDetailPage({
 }: {
   params: { property_id: string; developer_id: string };
 }) {
-  const data = await getPropertyPageData(params.property_id, params.developer_id);
+  const data = await getPropertyPageData(
+    params.property_id,
+    params.developer_id
+  );
 
   if (!data) {
     notFound();

@@ -12,7 +12,7 @@ import {
   faHome,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
-import axiosInstance from "@/utils/axios";
+import { axiosInstance } from "@/utils/axios";
 
 export interface FilterState {
   price: { min: number; max: number };
@@ -77,18 +77,20 @@ export default function FilterPopup({
   currentFilters,
 }: FilterPopupProps) {
   const [ranges, setRanges] = useState<FilterRanges>(defaultRanges);
-  const [filters, setFilters] = useState<FilterState>(getInitialFilterState(defaultRanges));
+  const [filters, setFilters] = useState<FilterState>(
+    getInitialFilterState(defaultRanges)
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchFilterRanges = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get('/api/v1/properties/explore', {
+        const response = await axiosInstance.get("/properties/explore", {
           params: { pageSize: 50 },
-          headers: { 'ngrok-skip-browser-warning': 'true' },
+          headers: { "ngrok-skip-browser-warning": "true" },
         });
-        
+
         const properties = response.data?.data?.properties || [];
         if (properties.length > 0) {
           const calculatedRanges = calculateRanges(properties);
@@ -96,7 +98,7 @@ export default function FilterPopup({
           setFilters(currentFilters || getInitialFilterState(calculatedRanges));
         }
       } catch (error) {
-        console.error('Failed to fetch filter ranges:', error);
+        console.error("Failed to fetch filter ranges:", error);
       } finally {
         setLoading(false);
       }
@@ -108,22 +110,33 @@ export default function FilterPopup({
   }, [isOpen, currentFilters]);
 
   const calculateRanges = (properties: any[]): FilterRanges => {
-    const prices = properties.map(p => p.price).filter(Boolean);
-    const landAreas = properties.flatMap(p => 
-      p.facilities?.find((f: any) => f.name === 'LT')?.value || []
-    ).filter(Boolean);
-    const buildingAreas = properties.flatMap(p => 
-      p.facilities?.find((f: any) => f.name === 'LB')?.value || []
-    ).filter(Boolean);
-    const bedrooms = properties.flatMap(p => 
-      p.facilities?.find((f: any) => f.name === 'KT')?.value || []
-    ).filter(Boolean);
-    const bathrooms = properties.flatMap(p => 
-      p.facilities?.find((f: any) => f.name === 'KM')?.value || []
-    ).filter(Boolean);
-    const floors = properties.flatMap(p => 
-      p.facilities?.find((f: any) => f.name === 'jumlahLantai')?.value || []
-    ).filter(Boolean);
+    const prices = properties.map((p) => p.price).filter(Boolean);
+    const landAreas = properties
+      .flatMap(
+        (p) => p.facilities?.find((f: any) => f.name === "LT")?.value || []
+      )
+      .filter(Boolean);
+    const buildingAreas = properties
+      .flatMap(
+        (p) => p.facilities?.find((f: any) => f.name === "LB")?.value || []
+      )
+      .filter(Boolean);
+    const bedrooms = properties
+      .flatMap(
+        (p) => p.facilities?.find((f: any) => f.name === "KT")?.value || []
+      )
+      .filter(Boolean);
+    const bathrooms = properties
+      .flatMap(
+        (p) => p.facilities?.find((f: any) => f.name === "KM")?.value || []
+      )
+      .filter(Boolean);
+    const floors = properties
+      .flatMap(
+        (p) =>
+          p.facilities?.find((f: any) => f.name === "jumlahLantai")?.value || []
+      )
+      .filter(Boolean);
 
     return {
       price: {
@@ -131,20 +144,36 @@ export default function FilterPopup({
         max: prices.length ? Math.max(...prices) : defaultRanges.price.max,
       },
       landArea: {
-        min: landAreas.length ? Math.min(...landAreas) : defaultRanges.landArea.min,
-        max: landAreas.length ? Math.max(...landAreas) : defaultRanges.landArea.max,
+        min: landAreas.length
+          ? Math.min(...landAreas)
+          : defaultRanges.landArea.min,
+        max: landAreas.length
+          ? Math.max(...landAreas)
+          : defaultRanges.landArea.max,
       },
       buildingArea: {
-        min: buildingAreas.length ? Math.min(...buildingAreas) : defaultRanges.buildingArea.min,
-        max: buildingAreas.length ? Math.max(...buildingAreas) : defaultRanges.buildingArea.max,
+        min: buildingAreas.length
+          ? Math.min(...buildingAreas)
+          : defaultRanges.buildingArea.min,
+        max: buildingAreas.length
+          ? Math.max(...buildingAreas)
+          : defaultRanges.buildingArea.max,
       },
       bedrooms: {
-        min: bedrooms.length ? Math.min(...bedrooms) : defaultRanges.bedrooms.min,
-        max: bedrooms.length ? Math.max(...bedrooms) : defaultRanges.bedrooms.max,
+        min: bedrooms.length
+          ? Math.min(...bedrooms)
+          : defaultRanges.bedrooms.min,
+        max: bedrooms.length
+          ? Math.max(...bedrooms)
+          : defaultRanges.bedrooms.max,
       },
       bathrooms: {
-        min: bathrooms.length ? Math.min(...bathrooms) : defaultRanges.bathrooms.min,
-        max: bathrooms.length ? Math.max(...bathrooms) : defaultRanges.bathrooms.max,
+        min: bathrooms.length
+          ? Math.min(...bathrooms)
+          : defaultRanges.bathrooms.min,
+        max: bathrooms.length
+          ? Math.max(...bathrooms)
+          : defaultRanges.bathrooms.max,
       },
       floors: {
         min: floors.length ? Math.min(...floors) : defaultRanges.floors.min,
@@ -196,128 +225,145 @@ export default function FilterPopup({
           )}
           {!loading && (
             <>
-          <FilterSection
-            icon={
-              <FontAwesomeIcon
-                icon={faMoneyCheckDollar}
-                className="text-teal-600 w-5"
-              />
-            }
-            title="Kisaran Harga Properti"
-          >
-            <div className="flex justify-between items-center mb-2 text-gray-700">
-              <span className="text-sm font-medium bg-gray-100 px-4 py-2 rounded-md">
-                {formatRupiah(filters.price.min)}
-              </span>
-              <span className="text-sm font-medium bg-gray-100 px-4 py-2 rounded-md">
-                {formatRupiah(filters.price.max)}
-              </span>
-            </div>
-            <RangeSlider
-              min={ranges.price.min}
-              max={ranges.price.max}
-              step={Math.max(1000000, Math.floor((ranges.price.max - ranges.price.min) / 100))}
-              value={[filters.price.min, filters.price.max]}
-              onValueChange={(value) =>
-                setFilters((prev) => ({
-                  ...prev,
-                  price: { min: value[0], max: value[1] },
-                }))
-              }
-            />
-          </FilterSection>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <CounterSection
-              icon={
-                <FontAwesomeIcon icon={faBed} className="text-teal-600 w-5" />
-              }
-              title="Kamar Tidur"
-              value={filters.bedrooms}
-              onUpdate={createCounterHandler("bedrooms")}
-            />
-            <CounterSection
-              icon={
-                <FontAwesomeIcon
-                  icon={faShower}
-                  className="text-teal-600 w-5"
+              <FilterSection
+                icon={
+                  <FontAwesomeIcon
+                    icon={faMoneyCheckDollar}
+                    className="text-teal-600 w-5"
+                  />
+                }
+                title="Kisaran Harga Properti"
+              >
+                <div className="flex justify-between items-center mb-2 text-gray-700">
+                  <span className="text-sm font-medium bg-gray-100 px-4 py-2 rounded-md">
+                    {formatRupiah(filters.price.min)}
+                  </span>
+                  <span className="text-sm font-medium bg-gray-100 px-4 py-2 rounded-md">
+                    {formatRupiah(filters.price.max)}
+                  </span>
+                </div>
+                <RangeSlider
+                  min={ranges.price.min}
+                  max={ranges.price.max}
+                  step={Math.max(
+                    1000000,
+                    Math.floor((ranges.price.max - ranges.price.min) / 100)
+                  )}
+                  value={[filters.price.min, filters.price.max]}
+                  onValueChange={(value) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      price: { min: value[0], max: value[1] },
+                    }))
+                  }
                 />
-              }
-              title="Kamar Mandi"
-              value={filters.bathrooms}
-              onUpdate={createCounterHandler("bathrooms")}
-            />
-            <CounterSection
-              icon={
-                <FontAwesomeIcon
-                  icon={faStairs}
-                  className="text-teal-600 w-5"
+              </FilterSection>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <CounterSection
+                  icon={
+                    <FontAwesomeIcon
+                      icon={faBed}
+                      className="text-teal-600 w-5"
+                    />
+                  }
+                  title="Kamar Tidur"
+                  value={filters.bedrooms}
+                  onUpdate={createCounterHandler("bedrooms")}
                 />
-              }
-              title="Jumlah Lantai"
-              value={filters.floors}
-              onUpdate={createCounterHandler("floors")}
-            />
-          </div>
+                <CounterSection
+                  icon={
+                    <FontAwesomeIcon
+                      icon={faShower}
+                      className="text-teal-600 w-5"
+                    />
+                  }
+                  title="Kamar Mandi"
+                  value={filters.bathrooms}
+                  onUpdate={createCounterHandler("bathrooms")}
+                />
+                <CounterSection
+                  icon={
+                    <FontAwesomeIcon
+                      icon={faStairs}
+                      className="text-teal-600 w-5"
+                    />
+                  }
+                  title="Jumlah Lantai"
+                  value={filters.floors}
+                  onUpdate={createCounterHandler("floors")}
+                />
+              </div>
 
-          <FilterSection
-            icon={
-              <FontAwesomeIcon
-                icon={faChartArea}
-                className="text-teal-600 w-5"
-              />
-            }
-            title="Luas Tanah (m²)"
-          >
-            <div className="flex justify-between items-center mb-2 text-gray-700">
-              <span className="text-sm font-medium bg-gray-100 px-4 py-2 rounded-md">
-                {filters.landArea.min} m²
-              </span>
-              <span className="text-sm font-medium bg-gray-100 px-4 py-2 rounded-md">
-                {filters.landArea.max} m²
-              </span>
-            </div>
-            <RangeSlider
-              min={ranges.landArea.min}
-              max={ranges.landArea.max}
-              step={Math.max(1, Math.floor((ranges.landArea.max - ranges.landArea.min) / 50))}
-              value={[filters.landArea.min, filters.landArea.max]}
-              onValueChange={(value) =>
-                setFilters((prev) => ({
-                  ...prev,
-                  landArea: { min: value[0], max: value[1] },
-                }))
-              }
-            />
-          </FilterSection>
+              <FilterSection
+                icon={
+                  <FontAwesomeIcon
+                    icon={faChartArea}
+                    className="text-teal-600 w-5"
+                  />
+                }
+                title="Luas Tanah (m²)"
+              >
+                <div className="flex justify-between items-center mb-2 text-gray-700">
+                  <span className="text-sm font-medium bg-gray-100 px-4 py-2 rounded-md">
+                    {filters.landArea.min} m²
+                  </span>
+                  <span className="text-sm font-medium bg-gray-100 px-4 py-2 rounded-md">
+                    {filters.landArea.max} m²
+                  </span>
+                </div>
+                <RangeSlider
+                  min={ranges.landArea.min}
+                  max={ranges.landArea.max}
+                  step={Math.max(
+                    1,
+                    Math.floor((ranges.landArea.max - ranges.landArea.min) / 50)
+                  )}
+                  value={[filters.landArea.min, filters.landArea.max]}
+                  onValueChange={(value) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      landArea: { min: value[0], max: value[1] },
+                    }))
+                  }
+                />
+              </FilterSection>
 
-          <FilterSection
-            icon={
-              <FontAwesomeIcon icon={faHome} className="text-teal-600 w-5" />
-            }
-            title="Luas Bangunan (m²)"
-          >
-            <div className="flex justify-between items-center mb-2 text-gray-700">
-              <span className="text-sm font-medium bg-gray-100 px-4 py-2 rounded-md">
-                {filters.buildingArea.min} m²
-              </span>
-              <span className="text-sm font-medium bg-gray-100 px-4 py-2 rounded-md">
-                {filters.buildingArea.max} m²
-              </span>
-            </div>
-            <RangeSlider
-              min={ranges.buildingArea.min}
-              max={ranges.buildingArea.max}
-              step={Math.max(1, Math.floor((ranges.buildingArea.max - ranges.buildingArea.min) / 50))}
-              value={[filters.buildingArea.min, filters.buildingArea.max]}
-              onValueChange={(value) =>
-                setFilters((prev) => ({
-                  ...prev,
-                  buildingArea: { min: value[0], max: value[1] },
-                }))
-              }
-            />
-          </FilterSection>
+              <FilterSection
+                icon={
+                  <FontAwesomeIcon
+                    icon={faHome}
+                    className="text-teal-600 w-5"
+                  />
+                }
+                title="Luas Bangunan (m²)"
+              >
+                <div className="flex justify-between items-center mb-2 text-gray-700">
+                  <span className="text-sm font-medium bg-gray-100 px-4 py-2 rounded-md">
+                    {filters.buildingArea.min} m²
+                  </span>
+                  <span className="text-sm font-medium bg-gray-100 px-4 py-2 rounded-md">
+                    {filters.buildingArea.max} m²
+                  </span>
+                </div>
+                <RangeSlider
+                  min={ranges.buildingArea.min}
+                  max={ranges.buildingArea.max}
+                  step={Math.max(
+                    1,
+                    Math.floor(
+                      (ranges.buildingArea.max - ranges.buildingArea.min) / 50
+                    )
+                  )}
+                  value={[filters.buildingArea.min, filters.buildingArea.max]}
+                  onValueChange={(value) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      buildingArea: { min: value[0], max: value[1] },
+                    }))
+                  }
+                />
+              </FilterSection>
             </>
           )}
         </div>

@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import axiosInstance from "@/utils/axios";
+import { axiosInstance } from "@/utils/axios";
 import {
   GetClustersResponse,
   GetDetailClusterResponse,
@@ -62,7 +62,7 @@ const createCluster = async (payload: PayloadCluster) => {
   formData.append("createdBy", payload.createdBy.toString());
   formData.append("updatedBy", payload.updatedBy.toString());
   formData.append("address", payload.address);
-  formData.append("phone_number", payload.phone_number);
+  formData.append("phoneNumber", payload.phoneNumber);
   formData.append("longitude", payload.longitude.toString());
   formData.append("latitude", payload.latitude.toString());
   formData.append("nearbyPlaces", JSON.stringify(payload.nearbyPlaces));
@@ -102,7 +102,7 @@ const updateCluster = async ({
   formData.append("createdBy", payload.createdBy.toString());
   formData.append("updatedBy", payload.updatedBy.toString());
   formData.append("address", payload.address);
-  formData.append("phone_number", payload.phone_number);
+  formData.append("phoneNumber", payload.phoneNumber);
   formData.append("longitude", payload.longitude.toString());
   formData.append("latitude", payload.latitude.toString());
   formData.append("nearbyPlaces", JSON.stringify(payload.nearbyPlaces));
@@ -123,5 +123,24 @@ const updateCluster = async ({
 export const useUpdateCluster = () => {
   return useMutation({
     mutationFn: updateCluster,
+  });
+};
+
+const deleteCluster = async ({ id }: { id: string }) => {
+  const formData = new FormData();
+  formData.append("isDeleted", "true");
+
+  const { data } = await axiosInstance.put(`/clusters/${id}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  return data;
+};
+
+export const useDeleteCluster = () => {
+  return useMutation({
+    mutationFn: deleteCluster,
   });
 };

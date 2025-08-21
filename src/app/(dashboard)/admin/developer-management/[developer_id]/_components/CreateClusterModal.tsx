@@ -10,7 +10,6 @@ import {
   Spin,
   Typography,
   Upload,
-  UploadFile,
 } from "antd";
 import { Upload as UploadIcon, X, MapPin, Plus } from "lucide-react";
 import { useState } from "react";
@@ -21,6 +20,7 @@ import { useCreateCluster } from "@/services";
 import { useParams } from "next/navigation";
 import { NearbyPlaceTypeLabel } from "../constants";
 import { useQueryClient } from "@tanstack/react-query";
+import { useImageStore } from "@/stores"; // ⬅️ pakai store gambar yang sama
 
 const MapSelector = dynamic(() => import("./MapSelector"), { ssr: false });
 
@@ -28,12 +28,20 @@ export default function CreateClusterModal() {
   const [form] = Form.useForm();
   const { message } = App.useApp();
   const { developer_id } = useParams();
-  const [previewImages, setPreviewImages] = useState<string[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [coordinates, setCoordinates] = useState<{
     lat?: number;
     lng?: number;
   }>({});
+
+  // 🔹 Gambar via Zustand store
+  const {
+    fileList,
+    setFileList,
+    ensurePreviews,
+    removeByUid,
+    reset: resetImages,
+  } = useImageStore();
 
   const {
     nearbyPlaces,
@@ -44,7 +52,7 @@ export default function CreateClusterModal() {
 
   const handleCancel = () => {
     form.resetFields();
-    setPreviewImages([]);
+    resetImages(); // bersihkan fileList
     setCoordinates({});
     resetPlaces();
     setModalOpen(false);
@@ -60,9 +68,15 @@ export default function CreateClusterModal() {
   const { mutate, status } = useCreateCluster();
 
   const handleSubmit = (values: any) => {
+    // minimal 1 gambar untuk create
+    if (fileList.length === 0) {
+      message.error("Mohon upload minimal satu gambar!");
+      return;
+    }
+
     try {
-      const files: UploadFile[] = values.images || [];
-      const images: File[] = files
+      // hanya file BARU (punya originFileObj)
+      const images: File[] = fileList
         .map((f) => f.originFileObj)
         .filter(Boolean) as File[];
 
@@ -74,9 +88,9 @@ export default function CreateClusterModal() {
           updatedBy: 1,
           longitude: Number(values.longitude),
           latitude: Number(values.latitude),
-          photos: images,
+          photos: images, // ⬅️ kirim file baru saja
           nearbyPlaces,
-          facilities: values.facilities.join(", "),
+          facilities: (values.facilities || []).join(", "),
         },
         {
           onSuccess: () => {
@@ -88,7 +102,7 @@ export default function CreateClusterModal() {
           },
         }
       );
-    } catch (err) {
+    } catch {
       message.error("Gagal membuat cluster, silakan coba lagi.");
     }
   };
@@ -97,6 +111,7 @@ export default function CreateClusterModal() {
     <>
       <Modal
         centered
+        destroyOnHidden
         title={
           <Typography.Title level={5} className="!text-dark-tosca">
             Buat Data Cluster
@@ -200,13 +215,11 @@ export default function CreateClusterModal() {
 
                 {nearbyPlaces.map((category, idx) => {
                   if (category.places.length === 0) return null;
-
                   return (
                     <div key={idx} className="mb-2">
                       <p className="text-xs font-medium text-gray-700 mb-1">
                         {NearbyPlaceTypeLabel[category.type] ?? category.type}:
                       </p>
-
                       {category.places.map((place, idx2) => (
                         <p key={idx2} className="text-xs text-gray-600">
                           • {place.name} ({place.distance}m)
@@ -244,37 +257,16 @@ export default function CreateClusterModal() {
             />
           </Form.Item>
 
-          <Form.Item
-            name="images"
-            label="Gambar"
-            className="!mb-3"
-            rules={[
-              { required: true, message: "Mohon upload minimal satu gambar!" },
-            ]}
-            valuePropName="fileList"
-            getValueFromEvent={(e) => e?.fileList} // penting!
-          >
+          {/* 🔹 Upload dikontrol oleh store (bukan Form) */}
+          <Form.Item label="Gambar" className="!mb-3">
             <Upload
               multiple
+              showUploadList={false}
               beforeUpload={() => false}
-              onChange={(info) => {
-                const files = info.fileList;
-
-                // preview
-                const readers: Promise<string>[] = files.map(
-                  (file) =>
-                    new Promise((resolve) => {
-                      if (file.originFileObj) {
-                        const reader = new FileReader();
-                        reader.onload = () => resolve(reader.result as string);
-                        reader.readAsDataURL(file.originFileObj);
-                      } else {
-                        resolve("");
-                      }
-                    })
-                );
-
-                Promise.all(readers).then(setPreviewImages);
+              fileList={fileList}
+              onChange={async ({ fileList: fl }) => {
+                setFileList(fl);
+                await ensurePreviews(); // set thumbUrl untuk file baru
               }}
             >
               <Button icon={<UploadIcon className="w-4 h-4" />}>
@@ -283,45 +275,45 @@ export default function CreateClusterModal() {
             </Upload>
           </Form.Item>
 
-          {previewImages.length > 0 && (
+          {/* Preview gabungan (url/thumbUrl) */}
+          {fileList.length > 0 && (
             <div className="grid grid-cols-2 gap-3 mt-3">
-              {previewImages.map((image, index) => (
-                <div
-                  key={index}
-                  className="relative border border-gray-200 rounded-lg overflow-hidden"
-                >
-                  <img
-                    src={image}
-                    alt={`Preview ${index + 1}`}
-                    className="h-24 w-full object-cover"
-                  />
-
-                  <Button
-                    shape="circle"
-                    size="small"
-                    icon={<X className="w-4 h-4" />}
-                    className="!absolute top-1 right-1 !z-[9999999]"
-                    onClick={() => {
-                      const newImages = previewImages.filter(
-                        (_, i) => i !== index
-                      );
-                      setPreviewImages(newImages);
-                      form.setFieldValue("images", newImages);
-                    }}
-                  />
-                </div>
-              ))}
+              {fileList.map((file, index) => {
+                const src = file.url ?? file.thumbUrl;
+                if (!src) return null;
+                return (
+                  <div
+                    key={file.uid}
+                    className="relative border border-gray-200 rounded-lg overflow-hidden"
+                  >
+                    <img
+                      src={src}
+                      alt={file.name || `Preview ${index + 1}`}
+                      className="h-24 w-full object-cover"
+                    />
+                    <Button
+                      shape="circle"
+                      size="small"
+                      className="!absolute top-1 right-1 !z-[9999999]"
+                      onClick={() => removeByUid(file.uid)}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </Form>
       </Modal>
+
       <Button
         type="primary"
         icon={<Plus className="w-4 h-4" />}
         onClick={() => setModalOpen(true)}
       >
         Buat Data
-      </Button>{" "}
+      </Button>
     </>
   );
 }
