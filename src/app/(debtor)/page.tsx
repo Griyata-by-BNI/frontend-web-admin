@@ -1,5 +1,137 @@
+import React from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { KPRSimulator } from "@/app/(debtor)/kpr-simulator/_components/KPRSimulator";
+import { CTASection } from "@/app/(debtor)/kpr-information/detail/components/CTASection";
+import axiosInstance from "@/utils/axios";
+import HeroSearch from "@/app/(debtor)/developers/components/HeroSearch"; 
 
-export default function Home() {
-  return <></>;
+// --- TYPE DEFINITION ---
+interface Property {
+  id: number;
+  developerId: number;
+  clusterId: number;
+  propertyName: string;
+  location: string;
+  price: string;
+  photoUrl: string | null;
+}
+
+// --- API FETCHING ---
+async function getLatestProperties(): Promise<Property[]> {
+  try {
+    const response = await axiosInstance.get('/api/v1/properties/explore', {
+      params: {
+        sortBy: 'updatedAt',
+        sortDir: 'DESC',
+        pageSize: 4,
+      }
+    });
+    return response.data?.data?.properties || [];
+  } catch (error) {
+    console.error("Failed to fetch latest properties:", error);
+    return [];
+  }
+}
+
+// --- CHILD COMPONENT ---
+const PropertyCard: React.FC<{ property: Property }> = ({ property }) => (
+  <Link 
+    href={`/developers/${property.developerId}/clusters/${property.clusterId}/properties/${property.id}`}
+    className="block bg-white rounded-2xl shadow-md overflow-hidden transition-transform duration-300 hover:scale-105 hover:shadow-lg h-full"
+  >
+    <div className="relative w-full h-48 bg-gray-200">
+      <Image
+        src={property.photoUrl || "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800"}
+        alt={property.propertyName}
+        layout="fill"
+        objectFit="cover"
+      />
+    </div>
+    <div className="p-4">
+      <h4 className="font-bold text-gray-800 truncate">{property.propertyName}</h4>
+      <p className="text-sm text-gray-500 mt-1">{property.location}</p>
+      <p className="text-lg font-bold text-teal-600 mt-3">
+        Rp {Number(property.price).toLocaleString('id-ID')}
+      </p>
+    </div>
+  </Link>
+);
+
+// --- MAIN PAGE COMPONENT ---
+export default async function HomePage() {
+  const latestProperties = await getLatestProperties();
+
+  return (
+    <div className="bg-gray-50 font-sans">
+      {/* Hero Section */}
+      <section className="bg-gradient-to-b from-teal-100 to-white pt-20 pb-10 text-center relative overflow-hidden">
+        {/* ✨ FIX: Added `relative z-10` to ensure this content is on top */}
+        <div className="container mx-auto px-4 relative z-10">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 leading-tight">
+            Gunakan Cara Baru,
+          </h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-cyan-500 leading-tight mt-2">
+            untuk Pindah ke Rumah Baru!
+          </h1>
+          <p className="text-gray-600 mt-4 max-w-xl mx-auto">
+            Bersama BNI, wujudkan KPR dengan sentuhan jari.
+          </p>
+          <div className="text-center mb-12">
+            <HeroSearch />
+          </div>
+        </div>
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-32 opacity-20">
+        </div>
+      </section>
+
+      {/* Main Content Section */}
+      <div className="relative">
+        <Image
+          src="/home.png"
+          alt="Content background shape"
+          width={1920}
+          height={150}
+          className="w-full -mt-5"
+        />
+        <div className="container mx-auto px-4">
+          <div className="mb-16">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-800">Cluster Terbaru</h3>
+              <Link href="/explore" className="text-cyan-600 font-semibold hover:underline">Lihat Semua</Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {latestProperties.map(prop => (
+                <PropertyCard 
+                  key={prop.id} 
+                  property={prop} 
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Other Sections */}
+      <section className="bg-slate-100 py-16">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-800">Simulasikan KPRmu!</h2>
+            <p className="text-gray-500 mt-2">Transparansi Angsuran di Ujung Jari Anda</p>
+            <div className="mt-8 max-w-5xl mx-auto">
+              <KPRSimulator initialPropertyPrice={2400000000} />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-16">
+        <div className="mt-8 max-w-7xl mx-auto">
+          <div className="text-center">
+            <CTASection/>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import * as Slider from "@radix-ui/react-slider";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -12,8 +12,9 @@ import {
   faHome,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
+import axiosInstance from "@/utils/axios";
 
-interface FilterState {
+export interface FilterState {
   price: { min: number; max: number };
   bedrooms: number;
   bathrooms: number;
@@ -22,24 +23,49 @@ interface FilterState {
   buildingArea: { min: number; max: number };
 }
 
-const initialFilterState: FilterState = {
-  price: { min: 0, max: 15500000 },
+interface FilterRanges {
+  price: { min: number; max: number };
+  landArea: { min: number; max: number };
+  buildingArea: { min: number; max: number };
+  bedrooms: { min: number; max: number };
+  bathrooms: { min: number; max: number };
+  floors: { min: number; max: number };
+}
+
+// Default ranges as fallback
+const defaultRanges: FilterRanges = {
+  price: { min: 0, max: 10000000000 },
+  landArea: { min: 0, max: 500 },
+  buildingArea: { min: 0, max: 500 },
+  bedrooms: { min: 0, max: 10 },
+  bathrooms: { min: 0, max: 10 },
+  floors: { min: 0, max: 5 },
+};
+
+export const getInitialFilterState = (ranges: FilterRanges): FilterState => ({
+  price: { min: ranges.price.min, max: ranges.price.max },
   bedrooms: 0,
   bathrooms: 0,
   floors: 0,
-  landArea: { min: 0, max: 200 },
-  buildingArea: { min: 0, max: 180 },
-};
+  landArea: { min: ranges.landArea.min, max: ranges.landArea.max },
+  buildingArea: { min: ranges.buildingArea.min, max: ranges.buildingArea.max },
+});
 
 interface FilterPopupProps {
   isOpen: boolean;
   onCloseAction: () => void;
   onApplyAction: (filters: FilterState) => void;
+  currentFilters?: FilterState | null;
 }
 
 const formatRupiah = (value: number) => {
+  if (value >= 1000000000) {
+    const formattedValue = (value / 1000000000).toFixed(1).replace(/\.0$/, "");
+    return `Rp ${formattedValue}M`;
+  }
   if (value >= 1000000) {
-    return `Rp ${(value / 1000000).toFixed(1)}M`;
+    const formattedValue = (value / 1000000).toFixed(1).replace(/\.0$/, "");
+    return `Rp ${formattedValue}Jt`;
   }
   return `Rp ${value.toLocaleString("id-ID")}`;
 };
@@ -48,15 +74,91 @@ export default function FilterPopup({
   isOpen,
   onCloseAction,
   onApplyAction,
+  currentFilters,
 }: FilterPopupProps) {
-  const [filters, setFilters] = useState<FilterState>(initialFilterState);
+  const [ranges, setRanges] = useState<FilterRanges>(defaultRanges);
+  const [filters, setFilters] = useState<FilterState>(getInitialFilterState(defaultRanges));
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFilterRanges = async () => {
+      try {
+        setLoading(true);
+        const response = await axiosInstance.get('/api/v1/properties/explore', {
+          params: { pageSize: 50 },
+          headers: { 'ngrok-skip-browser-warning': 'true' },
+        });
+        
+        const properties = response.data?.data?.properties || [];
+        if (properties.length > 0) {
+          const calculatedRanges = calculateRanges(properties);
+          setRanges(calculatedRanges);
+          setFilters(currentFilters || getInitialFilterState(calculatedRanges));
+        }
+      } catch (error) {
+        console.error('Failed to fetch filter ranges:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isOpen) {
+      fetchFilterRanges();
+    }
+  }, [isOpen, currentFilters]);
+
+  const calculateRanges = (properties: any[]): FilterRanges => {
+    const prices = properties.map(p => p.price).filter(Boolean);
+    const landAreas = properties.flatMap(p => 
+      p.facilities?.find((f: any) => f.name === 'LT')?.value || []
+    ).filter(Boolean);
+    const buildingAreas = properties.flatMap(p => 
+      p.facilities?.find((f: any) => f.name === 'LB')?.value || []
+    ).filter(Boolean);
+    const bedrooms = properties.flatMap(p => 
+      p.facilities?.find((f: any) => f.name === 'KT')?.value || []
+    ).filter(Boolean);
+    const bathrooms = properties.flatMap(p => 
+      p.facilities?.find((f: any) => f.name === 'KM')?.value || []
+    ).filter(Boolean);
+    const floors = properties.flatMap(p => 
+      p.facilities?.find((f: any) => f.name === 'jumlahLantai')?.value || []
+    ).filter(Boolean);
+
+    return {
+      price: {
+        min: prices.length ? Math.min(...prices) : defaultRanges.price.min,
+        max: prices.length ? Math.max(...prices) : defaultRanges.price.max,
+      },
+      landArea: {
+        min: landAreas.length ? Math.min(...landAreas) : defaultRanges.landArea.min,
+        max: landAreas.length ? Math.max(...landAreas) : defaultRanges.landArea.max,
+      },
+      buildingArea: {
+        min: buildingAreas.length ? Math.min(...buildingAreas) : defaultRanges.buildingArea.min,
+        max: buildingAreas.length ? Math.max(...buildingAreas) : defaultRanges.buildingArea.max,
+      },
+      bedrooms: {
+        min: bedrooms.length ? Math.min(...bedrooms) : defaultRanges.bedrooms.min,
+        max: bedrooms.length ? Math.max(...bedrooms) : defaultRanges.bedrooms.max,
+      },
+      bathrooms: {
+        min: bathrooms.length ? Math.min(...bathrooms) : defaultRanges.bathrooms.min,
+        max: bathrooms.length ? Math.max(...bathrooms) : defaultRanges.bathrooms.max,
+      },
+      floors: {
+        min: floors.length ? Math.min(...floors) : defaultRanges.floors.min,
+        max: floors.length ? Math.max(...floors) : defaultRanges.floors.max,
+      },
+    };
+  };
 
   if (!isOpen) {
     return null;
   }
 
   const handleReset = () => {
-    setFilters(initialFilterState);
+    setFilters(getInitialFilterState(ranges));
   };
 
   const handleApply = () => {
@@ -86,6 +188,14 @@ export default function FilterPopup({
         </div>
 
         <div className="p-6 space-y-8 overflow-y-auto">
+          {loading && (
+            <div className="flex justify-center items-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+              <span className="ml-2 text-gray-600">Memuat filter...</span>
+            </div>
+          )}
+          {!loading && (
+            <>
           <FilterSection
             icon={
               <FontAwesomeIcon
@@ -104,9 +214,9 @@ export default function FilterPopup({
               </span>
             </div>
             <RangeSlider
-              min={0}
-              max={15500000}
-              step={100000}
+              min={ranges.price.min}
+              max={ranges.price.max}
+              step={Math.max(1000000, Math.floor((ranges.price.max - ranges.price.min) / 100))}
               value={[filters.price.min, filters.price.max]}
               onValueChange={(value) =>
                 setFilters((prev) => ({
@@ -168,9 +278,9 @@ export default function FilterPopup({
               </span>
             </div>
             <RangeSlider
-              min={0}
-              max={200}
-              step={5}
+              min={ranges.landArea.min}
+              max={ranges.landArea.max}
+              step={Math.max(1, Math.floor((ranges.landArea.max - ranges.landArea.min) / 50))}
               value={[filters.landArea.min, filters.landArea.max]}
               onValueChange={(value) =>
                 setFilters((prev) => ({
@@ -196,9 +306,9 @@ export default function FilterPopup({
               </span>
             </div>
             <RangeSlider
-              min={0}
-              max={180}
-              step={5}
+              min={ranges.buildingArea.min}
+              max={ranges.buildingArea.max}
+              step={Math.max(1, Math.floor((ranges.buildingArea.max - ranges.buildingArea.min) / 50))}
               value={[filters.buildingArea.min, filters.buildingArea.max]}
               onValueChange={(value) =>
                 setFilters((prev) => ({
@@ -208,6 +318,8 @@ export default function FilterPopup({
               }
             />
           </FilterSection>
+            </>
+          )}
         </div>
 
         <div className="flex justify-end items-center gap-4 p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl">

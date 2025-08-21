@@ -1,58 +1,210 @@
-import Image from "next/image";
-import Link from "next/link"; // 1. Impor Link dari Next.js
-import React from "react";
-import { Property } from "@/types/developer";
+"use client";
 
-interface PropertyCardProps {
-  property: Property;
-  developerId: string; // 2. Tambahkan prop developerId
+import React from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faBed,
+  faShower,
+  faHouse,
+  faChartArea,
+} from "@fortawesome/free-solid-svg-icons";
+
+export interface Facility {
+  name: "KT" | "KM" | "LB" | "LT";
+  value: number;
 }
 
-const PropertyCard: React.FC<PropertyCardProps> = ({
-  property,
-  developerId,
-}) => {
-  // 3. Tentukan URL tujuan. Kita asumsikan property.id adalah ID untuk cluster.
-  const href = `/developers/${developerId}/clusters/${property.id}`;
+export interface Property {
+  id: number;
+  developerId: number;
+  clusterId: number;
+  location: string;
+  propertyName: string;
+  developerName: string;
+  price: number;
+  installment?: number;
+  facilities: Facility[];
+  updatedAt: string;
+  photoUrl: string | null;
+}
 
+// --- IKON SVG KHUSUS UNTUK CARD ---
+const LocationPinIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="text-teal-600"
+  >
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+    <circle cx="12" cy="10" r="3" />
+  </svg>
+);
+
+// --- KOMPONEN PROPERTY CARD ---
+const PropertyCard: React.FC<{ property: Property }> = ({ property }) => {
+  // --- FUNGSI HELPER (Tetap di dalam atau pindah ke file utils jika digunakan di banyak tempat) ---
+  const getFacilityValue = (name: Facility["name"]): number | string =>
+    property.facilities.find((f) => f.name === name)?.value ?? "N/A";
+
+  const formatCurrency = (amount: number) => {
+    if (amount >= 1_000_000_000)
+      return `Rp ${(amount / 1_000_000_000).toFixed(1).replace(".0", "")} M`;
+    if (amount >= 1_000_000)
+      return `Rp ${(amount / 1_000_000).toFixed(1).replace(".0", "")} JT`;
+    return `Rp ${amount.toLocaleString("id-ID")}`;
+  };
+
+  const formatInstallment = (amount: number) => {
+    if (amount >= 1000000)
+      return `Rp ${(amount / 1000000).toLocaleString("id-ID", {
+        maximumFractionDigits: 1,
+      })} jt`;
+    return `Rp ${amount.toLocaleString("id-ID")}`;
+  };
+
+  const getTimeAgo = (dateString: string) => {
+    const seconds = Math.floor(
+      (new Date().getTime() - new Date(dateString).getTime()) / 1000
+    );
+    let interval = seconds / 31536000;
+    if (interval > 1) return `${Math.floor(interval)} tahun lalu`;
+    interval = seconds / 2592000;
+    if (interval > 1) return `${Math.floor(interval)} bulan lalu`;
+    interval = seconds / 86400;
+    if (interval > 1) return `${Math.floor(interval)} hari lalu`;
+    interval = seconds / 3600;
+    if (interval > 1) return `${Math.floor(interval)} jam lalu`;
+    interval = seconds / 60;
+    if (interval > 1) return `${Math.floor(interval)} menit lalu`;
+    return `beberapa detik lalu`;
+  };
+
+  const calculateInstallment = (
+    price?: string | null,
+    tenor: number = 180, //default
+    dpPercent: number = 10, // default 10%
+    annualInterest: number = 3.25 // default 3.25%
+  ) => {
+    if (!price) return "N/A";
+    // Parses the price string to a number
+    const priceNum = parseFloat(price);
+    if (isNaN(priceNum) || priceNum === 0) return "-";
+
+    const dp = priceNum * (dpPercent / 100);
+    const loanPrincipal = priceNum - dp;
+    const monthlyInterest = annualInterest / 12 / 100;
+
+    const n = tenor; // number of payments
+    const r = monthlyInterest; // monthly interest rate
+
+    // Annuity formula to calculate the monthly installment
+    const installment = loanPrincipal * (r / (1 - Math.pow(1 + r, -n)));
+
+    // Formats the output string based on the installment amount
+    if (installment >= 1_000_000) {
+      const million = installment / 1_000_000;
+      // Displays the amount in millions (Juta), e.g., "Rp 1.5 JT"
+      return (
+        "Rp " +
+        (million % 1 === 0 ? `${million}` : `${million.toFixed(1)}`) +
+        " JT"
+      );
+    } else if (installment >= 1_000) {
+      const thousand = installment / 1_000;
+      // Displays the amount in thousands (Ribu), e.g., "Rp 500 RB"
+      return (
+        "Rp " +
+        (thousand % 1 === 0 ? `${thousand}` : `${thousand.toFixed(1)}`) +
+        " RB"
+      );
+    }
+    // Displays the rounded amount for values less than 1000
+    return "Rp " + Math.round(installment).toLocaleString("id-ID");
+  };
+
+  const monthlyInstallment = calculateInstallment(property.price.toString());
+
+  // --- RENDER JSX ---
   return (
-    // 4. Bungkus seluruh div dengan komponen Link
-    <Link href={href} className="flex">
-      <div className="bg-white rounded-2xl shadow-md overflow-hidden transition-transform duration-300 hover:scale-105 hover:shadow-xl flex flex-col w-full">
-        <div className="relative w-full h-48">
+    <Link
+      href={`/developers/${property.developerId}/clusters/${property.clusterId}/properties/${property.id}`}
+    >
+      <div className="min-w-[360px] bg-white rounded-2xl shadow-xl shadow-gray-500/10 overflow-hidden hover:shadow-primary-tosca/30 flex flex-col h-full">
+        <div className="relative w-full h-56 bg-gray-200">
           <Image
-            src={property.imageUrl}
-            alt={property.name}
+            src={
+              property.photoUrl ||
+              "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800"
+            }
+            alt={property.propertyName}
             layout="fill"
             objectFit="cover"
-            className="w-full h-full"
           />
         </div>
-        <div className="p-5 flex-grow flex flex-col">
-          <h3 className="text-xl font-bold text-teal-700">{property.name}</h3>
-          <p className="text-base text-teal-600/90 mt-1 mb-5">
-            {property.location}
-          </p>
-
-          <div className="mt-auto flex items-center">
+        <div className="p-5">
+          <div className="flex justify-between items-center mb-2">
+            <div className="flex items-center text-sm text-teal-700">
+              <LocationPinIcon />
+              <span className="ml-1">{property.location}</span>
+            </div>
+            <div className="text-xs bg-teal-500 text-white font-semibold px-3 py-1 rounded-full">
+              {getTimeAgo(property.updatedAt)}
+            </div>
+          </div>
+          <h3
+            className="text-xl font-bold text-gray-900 truncate"
+            title={property.propertyName}
+          >
+            {property.propertyName}
+          </h3>
+          <p className="text-sm text-gray-500">{property.developerName}</p>
+          <div className="my-4 flex items-center py-3">
             <div className="flex-1">
-              <p className="text-xs text-gray-500">Harga mulai dari</p>
-              <p className="text-xl font-bold text-gray-800 mt-1">
-                <span className="font-normal text-base">Rp</span>{" "}
-                {property.price}
+              <p className="text-xs text-gray-500">Harga</p>
+              <p className="text-xl font-bold text-gray-800">
+                {formatCurrency(property.price ?? 0)}
               </p>
             </div>
             <div className="h-10 w-px bg-gray-200 mx-4"></div>
             <div className="flex-1">
               <p className="text-xs text-gray-500">Angsuran mulai dari</p>
-              <p className="text-xl font-bold text-gray-800 mt-1">
-                <span className="font-normal text-base">Rp</span>{" "}
-                {property.installment}
-                <span className="text-xs text-gray-500 font-normal">
+              <p className="text-xl font-bold text-gray-800">
+                {monthlyInstallment}
+                <span className="text-sm font-normal text-gray-500">
                   {" "}
                   /bulan
                 </span>
               </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-gray-700">
+            <div className="flex items-center gap-2">
+              <FontAwesomeIcon icon={faBed} className="w-4 text-gray-500" />
+              <span>KT: {getFacilityValue("KT")}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FontAwesomeIcon icon={faHouse} className="w-4 text-gray-500" />
+              <span>LB: {getFacilityValue("LB")} m²</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FontAwesomeIcon icon={faShower} className="w-4 text-gray-500" />
+              <span>KM: {getFacilityValue("KM")}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FontAwesomeIcon
+                icon={faChartArea}
+                className="w-4 text-gray-500"
+              />
+              <span>LT: {getFacilityValue("LT")} m²</span>
             </div>
           </div>
         </div>

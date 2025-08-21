@@ -26,8 +26,8 @@ export default function YourPage() {
 
       <FilterPopup
         isOpen={isFilterOpen}
-        onClose={() => setFilterOpen(false)}
-        onApply={handleApplyFilter}
+        onCloseAction={() => setFilterOpen(false)}
+        onApplyAction={handleApplyFilter}
       />
     </main>
   );

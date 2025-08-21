@@ -1,76 +1,41 @@
-import { Developer } from "@/types/developer";
-import DeveloperSection from "@/app/(debtor)/developers/components/DeveloperSection";
-import Pagination from "@/app/(debtor)/developers/components/Pagination";
+import React from "react";
+import Link from "next/link";
+import Image from "next/image";
+import axiosInstance from "@/utils/axios";
+import ClusterCard from "@/app/(debtor)/developers/components/ClusterCard";
+// =================================================================
+// 1. TYPE DEFINITIONS (DISESUAIKAN DENGAN PAYLOAD)
+// =================================================================
 
-// --- DATA DUMMY ---
-// Nantinya, data ini akan Anda fetch dari API
-const MOCK_DEVELOPERS: Developer[] = [
-  {
-    id: "summarecon",
-    name: "Summarecon",
-    logoUrl: "/file.svg", // Ganti dengan path logo yang sesuai di folder public
-    description:
-      "Sejak 2024, salah satu unit bisnis pengembang properti terkemuka di Indonesia, Summarecon, sukses mengembangkan kawasan hunian bersama Summarecon Serpong yang hingga kini telah berhasil mengembangkan perumahan maupun komersial di area seluas kurang lebih 320 hektar.",
-    properties: [
-      {
-        id: "p1",
-        name: "Suvarna Sutera",
-        location: "Tangerang, Banten",
-        imageUrl:
-          "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=1200",
-        price: "2.1 M",
-        installment: "8.1 jt",
-      },
-      {
-        id: "p2",
-        name: "Suvarna Sutera",
-        location: "Tangerang, Banten",
-        imageUrl:
-          "https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=1200",
-        price: "2.1 M",
-        installment: "8.1 jt",
-      },
-      {
-        id: "p3",
-        name: "Suvarna Sutera",
-        location: "Tangerang, Banten",
-        imageUrl:
-          "https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=1200",
-        price: "2.1 M",
-        installment: "8.1 jt",
-      },
-    ],
-  },
-  // Anda bisa menambahkan developer lain di sini
-  {
-    id: "sinarmas",
-    name: "Sinarmas Land",
-    logoUrl: "/globe.svg", // Ganti dengan path logo yang sesuai di folder public
-    description:
-      "Sinarmas Land adalah pengembang properti terkemuka dengan portofolio yang terdiversifikasi di berbagai kota besar di Indonesia.",
-    properties: [
-      {
-        id: "p4",
-        name: "BSD City",
-        location: "Tangerang Selatan, Banten",
-        imageUrl:
-          "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=1200",
-        price: "3.5 M",
-        installment: "15 jt",
-      },
-      {
-        id: "p5",
-        name: "Grand Wisata",
-        location: "Bekasi, Jawa Barat",
-        imageUrl:
-          "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=1200",
-        price: "1.8 M",
-        installment: "7.5 jt",
-      },
-    ],
-  },
-];
+// ✨ Interface ini sekarang cocok dengan struktur data dari API Anda
+interface ApiDeveloper {
+  id: number;
+  name: string;
+  description: string;
+  isDeleted: boolean;
+  developerPhotoUrl: string;
+  createdBy: number;
+  updatedBy: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
+interface ApiCluster {
+  id: number;
+  developerId: number;
+  name: string;
+  address: string | null;
+  minPrice: string | null;
+  cluster_photo_urls: string[];
+}
+
+interface DeveloperWithClusters extends ApiDeveloper {
+  clusters: ApiCluster[];
+}
+
+// =================================================================
+// 2. HELPER COMPONENTS & FUNCTIONS (Tidak ada perubahan)
+// =================================================================
 const SearchIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -88,21 +53,67 @@ const SearchIcon = () => (
   </svg>
 );
 
-const PartnerDeveloperPage = () => {
+// =================================================================
+// 3. API FETCHING LOGIC (Tidak ada perubahan)
+// =================================================================
+const getDevelopersWithClusters = async (): Promise<
+  DeveloperWithClusters[]
+> => {
+  try {
+    const developerResponse = await axiosInstance.get<{
+      data: { developers: ApiDeveloper[] };
+    }>(`/api/v1/developers`);
+    const developers = developerResponse.data.data.developers;
+
+    if (!developers || developers.length === 0) return [];
+
+    const detailedDataPromises = developers.map(async (developer) => {
+      try {
+        const summaryClustersRes = await axiosInstance.get<{
+          data: { clusters: ApiCluster[] };
+        }>(`/api/v1/clusters/developer/${developer.id}`);
+
+        const summaryClusters = summaryClustersRes.data.data.clusters;
+
+        if (!summaryClusters || summaryClusters.length === 0) {
+          return { ...developer, clusters: [] };
+        }
+
+        return { ...developer, clusters: summaryClusters };
+      } catch (error) {
+        console.error(
+          `Failed to fetch clusters for developer ${developer.id}:`,
+          error
+        );
+        return { ...developer, clusters: [] }; // Return the developer with no clusters
+      }
+    });
+
+    return await Promise.all(detailedDataPromises);
+  } catch (error) {
+    console.error("Failed to fetch initial list of developers:", error);
+    return [];
+  }
+};
+// =================================================================
+// 4. MAIN PAGE COMPONENT (Tidak ada perubahan)
+// =================================================================
+export default async function PartnerDeveloperPage() {
+  const developers = await getDevelopersWithClusters();
+
   return (
-    <main className="container">
-      {/* Header dan Search Bar */}
-      <div className="flex justify-between items-center mb-6">
+    <main className="container p-4 md:p-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
             Partner Developer
           </h1>
         </div>
-        <div className="relative">
+        <div className="relative w-full md:w-auto">
           <input
             type="text"
             placeholder="Cari Developer"
-            className="pl-10 pr-4 py-2 border border-gray-300 rounded-full w-64 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="pl-10 pr-4 py-2 border border-gray-300 rounded-full w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-teal-500"
           />
           <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
             <SearchIcon />
@@ -110,15 +121,66 @@ const PartnerDeveloperPage = () => {
         </div>
       </div>
 
-      {/* Daftar Developer */}
-      {MOCK_DEVELOPERS.map((dev) => (
-        <DeveloperSection key={dev.id} developer={dev} />
-      ))}
+      <div className="space-y-12">
+        {developers.length > 0 ? (
+          developers.map((dev) => {
+            const logoUrl =
+              dev.developerPhotoUrl ||
+              `https://via.placeholder.com/120x60.png?text=${dev.name.replace(
+                /\s/g,
+                "+"
+              )}`;
 
-      {/* Pagination */}
-      <Pagination />
+            return (
+              <section key={dev.id}>
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex items-center gap-4">
+                    <Image
+                      src={logoUrl}
+                      alt={`${dev.name} logo`}
+                      width={100}
+                      height={50}
+                      className="object-contain rounded-md bg-white p-1 shadow-sm"
+                    />
+                    <h2 className="text-2xl font-bold text-gray-800">
+                      {dev.name}
+                    </h2>
+                  </div>
+
+                  <Link
+                    href={`/developers/${dev.id}`}
+                    className="text-teal-600 font-semibold hover:underline flex-shrink-0"
+                  >
+                    Lihat lebih lengkap
+                  </Link>
+                </div>
+
+                <p className="text-gray-600 mb-6 max-w-4xl">
+                  {dev.description}
+                </p>
+
+                {dev.clusters && dev.clusters.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {dev.clusters.slice(0, 3).map((cluster) => (
+                      <ClusterCard
+                        key={cluster.id}
+                        cluster={cluster}
+                        developerId={dev.id}
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
+            );
+          })
+        ) : (
+          <div className="text-center py-10">
+            <p className="text-gray-500">
+              Could not load developers or none are available.
+            </p>
+          </div>
+        )}
+      </div>
     </main>
   );
-};
-
-export default PartnerDeveloperPage;
+}
