@@ -1,18 +1,10 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { axiosInstance, axiosServer } from "@/utils/axios";
+import { axiosServer } from "@/utils/axios";
 import { KPRSimulator } from "@/app/(debtor)/kpr-simulator";
-import MapLoader, {
-  MapWithNearbyPlaces,
-} from "@/app/(debtor)/developers/components/Map";
-import StickyCard from "@/app/(debtor)/developers/components/StickyCard";
-import ImageSlider from "@/app/(debtor)/developers/components/ImageSlider";
-import MapLoader, {
-  MapWithNearbyPlaces,
-} from "@/app/(debtor)/developers/components/Map";
+import { MapWithNearbyPlaces } from "@/app/(debtor)/developers/components/Map";
 import StickyCard from "@/app/(debtor)/developers/components/StickyCard";
 import ImageSlider from "@/app/(debtor)/developers/components/ImageSlider";
 
@@ -49,25 +41,10 @@ interface ApiPropertyDetail {
   buildingArea: string;
   property_photo_urls: string[];
   clusterTypeName?: string;
-  clusterTypeName?: string;
 }
 
 interface ApiDeveloper {
   developerPhotoUrl: string;
-}
-
-interface ApiCluster {
-  id: number;
-  name: string;
-  latitude: string;
-  longitude: string;
-  nearbyPlaces?: {
-    type: string;
-    places: {
-      name: string;
-      distance: number;
-    }[];
-  }[];
 }
 
 interface ApiCluster {
@@ -177,75 +154,32 @@ const calculateInstallment = (
     );
   }
   return "Rp " + Math.round(installment).toLocaleString("id-ID");
-const formatPrice = (priceString: string | null): string => {
-  if (!priceString) return "N/A";
-  const price = Number(priceString);
-  if (isNaN(price)) return "N/A";
-  if (price >= 1_000_000_000)
-    return `${(price / 1_000_000_000).toFixed(1).replace(".0", "")} M`;
-  if (price >= 1_000_000)
-    return `${(price / 1_000_000).toFixed(1).replace(".0", "")} JT`;
-  return price.toLocaleString("id-ID");
-};
-
-const calculateInstallment = (
-  price?: string | null,
-  tenor: number = 180,
-  dpPercent: number = 10,
-  annualInterest: number = 3.25
-) => {
-  if (!price) return "N/A";
-  const priceNum = parseFloat(price);
-  if (isNaN(priceNum) || priceNum === 0) return "-";
-
-  const dp = priceNum * (dpPercent / 100);
-  const loanPrincipal = priceNum - dp;
-  const monthlyInterest = annualInterest / 12 / 100;
-
-  const n = tenor;
-  const r = monthlyInterest;
-
-  const installment = loanPrincipal * (r / (1 - Math.pow(1 + r, -n)));
-
-  if (installment >= 1_000_000) {
-    const million = installment / 1_000_000;
-    return (
-      "Rp " +
-      (million % 1 === 0 ? `${million}` : `${million.toFixed(1)}`) +
-      " JT"
-    );
-  } else if (installment >= 1_000) {
-    const thousand = installment / 1_000;
-    return (
-      "Rp " +
-      (thousand % 1 === 0 ? `${thousand}` : `${thousand.toFixed(1)}`) +
-      " RB"
-    );
-  }
-  return "Rp " + Math.round(installment).toLocaleString("id-ID");
 };
 
 // =================================================================
 // 4. API FETCHING LOGIC
 // =================================================================
 
-async function getPropertyPageData(propertyId: string, developerId: string, clusterId: string) {
+async function getPropertyPageData(
+  propertyId: string,
+  developerId: string,
+  clusterId: string
+) {
   try {
-    const [propertyRes, developerRes, clusterRes] = await Promise.all([
     const [propertyRes, developerRes, clusterRes] = await Promise.all([
       axiosServer.get<{ data: ApiPropertyDetail }>(`/properties/${propertyId}`),
       axiosServer.get<{ data: { developer: ApiDeveloper } }>(
         `/developers/${developerId}`
       ),
-      axiosServer.get<{ data: { clusters: ApiCluster[] } }>(`/clusters/${clusterId}`),
+      axiosServer.get<{ data: { clusters: ApiCluster[] } }>(
+        `/clusters/${clusterId}`
+      ),
     ]);
 
     const property = propertyRes.data.data;
     const developer = developerRes.data.data.developer;
     const cluster = clusterRes.data.data.clusters[0];
-    const cluster = clusterRes.data.data.clusters[0];
 
-    if (!property || !developer || !cluster) return null;
     if (!property || !developer || !cluster) return null;
 
     // Process the raw API data to fit the UI
@@ -255,12 +189,10 @@ async function getPropertyPageData(propertyId: string, developerId: string, clus
       property.buildingArea
     );
     const installment = calculateInstallment(property.price);
-    const installment = calculateInstallment(property.price);
 
     return {
       property,
       developer,
-      cluster,
       cluster,
       processed: {
         specifications,
@@ -281,12 +213,9 @@ export default async function PropertyDetailPage({
   params,
 }: {
   params: { property_id: string; developer_id: string; cluster_id: string };
-  params: { property_id: string; developer_id: string; cluster_id: string };
 }) {
   const data = await getPropertyPageData(
     params.property_id,
-    params.developer_id,
-    params.cluster_id
     params.developer_id,
     params.cluster_id
   );
@@ -297,12 +226,13 @@ export default async function PropertyDetailPage({
 
   const { property, developer, cluster, processed } = data;
 
-  const areCoordinatesValid = cluster.latitude && cluster.longitude && 
-    !isNaN(Number(cluster.latitude)) && !isNaN(Number(cluster.longitude));
+  const areCoordinatesValid =
+    cluster.latitude &&
+    cluster.longitude &&
+    !isNaN(Number(cluster.latitude)) &&
+    !isNaN(Number(cluster.longitude));
 
   return (
-    <div className="bg-gradient-to-t from-white to-light-tosca min-h-screen py-8">
-      <main className="container mx-auto px-4">
     <div className="bg-gradient-to-t from-white to-light-tosca min-h-screen py-8">
       <main className="container mx-auto px-4">
         <div className="lg:grid lg:grid-cols-3 lg:gap-8">
@@ -312,14 +242,7 @@ export default async function PropertyDetailPage({
               {property.clusterTypeName
                 ? `${property.clusterTypeName} - ${property.name}`
                 : property.name}
-              {property.clusterTypeName
-                ? `${property.clusterTypeName} - ${property.name}`
-                : property.name}
             </h1>
-            <div className="relative w-full h-96 lg:h-[350px] mb-6">
-              <ImageSlider
-                urls={property.property_photo_urls}
-                altText={property.name}
             <div className="relative w-full h-96 lg:h-[350px] mb-6">
               <ImageSlider
                 urls={property.property_photo_urls}
@@ -369,38 +292,9 @@ export default async function PropertyDetailPage({
             ) : (
               <p className="text-gray-500">Peta lokasi tidak tersedia.</p>
             )}
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              Lokasi & Tempat Terdekat
-            </h2>
-            {areCoordinatesValid ? (
-              <MapWithNearbyPlaces
-                center={[Number(cluster.latitude), Number(cluster.longitude)]}
-                popupText={`Lokasi ${cluster.name}`}
-                nearbyPlaces={cluster.nearbyPlaces || []}
-              />
-            ) : (
-              <p className="text-gray-500">Peta lokasi tidak tersedia.</p>
-            )}
           </div>
 
           {/* Kolom Kanan */}
-          <div className="space-y-4">
-            <StickyCard
-              priceLabel="Harga"
-              price={`Rp ${new Intl.NumberFormat("id-ID").format(
-                Number(property.price)
-              )}`}
-              installmentText={`Angsuran mulai dari ${processed.installment}/bulan`}
-              developerName={property.developerName}
-              location={property.location}
-              developerPhotoUrl={developer.developerPhotoUrl}
-              stock={property.stock}
-            />
-            <Link href="/kpr-apply">
-              <button className="w-full py-3 px-6 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold rounded-lg hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-lg">
-                Ajukan KPR
-              </button>
-            </Link>
           <div className="space-y-4">
             <StickyCard
               priceLabel="Harga"
