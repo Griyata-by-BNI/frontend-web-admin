@@ -39,11 +39,11 @@ export default function ClusterDetailPage() {
             { title: "Dashboard" },
             {
               title: "Developer Management",
-              href: "/admin/developer-management",
+              path: "/admin/developer-management",
             },
             {
               title: cluster.developerName,
-              href: `/admin/developer-management/${developerId}`,
+              path: `/admin/developer-management/${developerId}`,
             },
             {
               title: (

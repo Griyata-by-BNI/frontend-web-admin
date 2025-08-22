@@ -129,7 +129,7 @@ export default function DeveloperManagementPage() {
                   Developer Management
                 </p>
               ),
-              href: "/admin/developer-management",
+              path: "/admin/developer-management",
             },
           ]}
         />

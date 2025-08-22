@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/authContext";
+import { App } from "antd";
 import { BarChart3, HousePlus, LogOut, PieChart, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -20,6 +21,10 @@ const menuItems = [
   },
 ];
 
+const salesMenuItems = [
+  { label: "Approval List", href: "/sales/approval-list", icon: BarChart3 },
+];
+
 const getInitials = (name?: string) =>
   (name ?? "")
     .split(" ")
@@ -28,13 +33,30 @@ const getInitials = (name?: string) =>
     .map((n) => n[0]?.toUpperCase())
     .join("") || "AD";
 
-const Sidebar = () => {
+const Sidebar = ({ type = "admin" }: { type?: "sales" | "admin" }) => {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const { modal } = App.useApp();
+
+  const handleLogout = () => {
+    modal.confirm({
+      icon: <></>,
+      title: "Konfirmasi Logout",
+      content: "Apakah Anda yakin ingin keluar dari aplikasi?",
+      okText: "Logout",
+      okType: "danger",
+      cancelText: "Batal",
+      onOk: () => logout(),
+    });
+  };
+
+  const items = type === "sales" ? salesMenuItems : menuItems;
 
   return (
     <aside className="w-64 bg-primary-black h-screen text-white flex flex-col">
-      <p className="px-4 py-6 font-semibold text-white ">Admin Dashboard</p>
+      <p className="px-4 py-6 font-semibold text-white capitalize">
+        {type} Dashboard
+      </p>
 
       <div className="h-px bg-white/10 mx-4" />
 
@@ -55,7 +77,7 @@ const Sidebar = () => {
 
       {/* Menu (kembali ke gaya lama) */}
       <nav className="mt-6 space-y-2 flex-1">
-        {menuItems.map((item) => {
+        {items.map((item) => {
           const Icon = item.icon;
           const isActive = pathname.startsWith(item.href);
 
@@ -81,7 +103,7 @@ const Sidebar = () => {
         className="text-sm flex items-center w-max cursor-pointer mx-6 my-8 font-medium text-red-500 hover:text-red-700 transition-colors"
         type="button"
         aria-label="Logout"
-        // onClick={handleLogout}
+        onClick={handleLogout}
       >
         <LogOut className="w-5 h-5 mr-3" />
         Logout

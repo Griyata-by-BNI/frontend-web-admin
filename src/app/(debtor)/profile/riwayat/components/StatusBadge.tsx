@@ -1,30 +1,23 @@
 import { ApiStatus } from "@/types/riwayat";
+import { STATUS_COLORS, STATUS_LABELS } from "@/utils/constants";
+import { clsx } from "clsx";
 
 interface StatusBadgeProps {
   status: ApiStatus;
 }
 
-const getStatusInfo = (status: ApiStatus) => {
-  switch (status) {
-    case "done":
-      return { text: "Selesai", style: "bg-green-500" };
-    case "submitted":
-      return { text: "Diajukan", style: "bg-blue-500" };
-    case "under_review":
-      return { text: "Direview", style: "bg-yellow-500" };
-    default:
-      return { text: "Diproses", style: "bg-gray-500" };
-  }
-};
-
 export default function StatusBadge({ status }: StatusBadgeProps) {
-  const { text, style } = getStatusInfo(status);
+  const colorClass = STATUS_COLORS[status] || "bg-gray-500";
+  const label = STATUS_LABELS[status] || "Diproses";
 
   return (
     <div
-      className={`px-3 py-1.5 rounded-full text-xs font-medium text-white whitespace-nowrap ${style}`}
+      className={clsx(
+        "px-3 py-1.5 rounded-full text-xs font-medium text-white whitespace-nowrap",
+        colorClass
+      )}
     >
-      {text}
+      {label}
     </div>
   );
 }

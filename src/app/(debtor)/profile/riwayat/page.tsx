@@ -1,50 +1,42 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { SubmissionSummary, ApiStatus } from "@/types/riwayat";
-import { getSubmissionsByUserId } from "@/services/kprService";
-import { useAuth } from "@/contexts/authContext";
+import { useState, useMemo } from "react";
+import { useSubmissionsByStatus } from "@/services/kprService";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import TabButton from "./components/TabButton";
 import SubmissionList from "./components/SubmissionList";
 
 export default function RiwayatPengajuanPage() {
-  const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<"dalam-proses" | "selesai">("dalam-proses");
-  const [inProcessSubmissions, setInProcessSubmissions] = useState<SubmissionSummary[]>([]);
-  const [completedSubmissions, setCompletedSubmissions] = useState<SubmissionSummary[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"dalam-proses" | "selesai">(
+    "dalam-proses"
+  );
 
-  useEffect(() => {
-    const fetchSubmissions = async () => {
-      if (!user?.userId) return;
-      
-      try {
-        setIsLoading(true);
-        const userId = parseInt(user.userId);
-        
-        // Fetch in-process submissions (submitted + under_review)
-        const [submittedData, underReviewData] = await Promise.all([
-          getSubmissionsByUserId(userId, "submitted"),
-          getSubmissionsByUserId(userId, "under_review")
-        ]);
-        
-        // Fetch completed submissions
-        const completedData = await getSubmissionsByUserId(userId, "done");
+  const {
+    data: submittedData = [],
+    isLoading: loadingSubmitted,
+    error: errorSubmitted,
+  } = useSubmissionsByStatus("submitted");
+  const {
+    data: underReviewData = [],
+    isLoading: loadingUnderReview,
+    error: errorUnderReview,
+  } = useSubmissionsByStatus("under_review");
+  const {
+    data: completedData = [],
+    isLoading: loadingCompleted,
+    error: errorCompleted,
+  } = useSubmissionsByStatus("verified");
 
-        setInProcessSubmissions([...submittedData, ...underReviewData]);
-        setCompletedSubmissions(completedData);
-      } catch (error) {
-        console.error("Error fetching submissions:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const inProcessSubmissions = useMemo(
+    () => [...submittedData, ...underReviewData],
+    [submittedData, underReviewData]
+  );
 
-    fetchSubmissions();
-  }, [user]);
+  const isLoading = loadingSubmitted || loadingUnderReview || loadingCompleted;
+  const hasError = errorSubmitted || errorUnderReview || errorCompleted;
 
-  const submissionsToDisplay = activeTab === "dalam-proses" ? inProcessSubmissions : completedSubmissions;
+  const submissionsToDisplay =
+    activeTab === "dalam-proses" ? inProcessSubmissions : completedData;
 
   return (
     <ProtectedRoute>
@@ -69,6 +61,16 @@ export default function RiwayatPengajuanPage() {
 
         {isLoading ? (
           <p className="text-center py-8">Memuat data...</p>
+        ) : hasError ? (
+          <div className="text-center py-8">
+            <p className="text-red-500 mb-2">Gagal memuat data pengajuan</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="text-blue-500 hover:underline"
+            >
+              Coba lagi
+            </button>
+          </div>
         ) : (
           <SubmissionList submissions={submissionsToDisplay} />
         )}

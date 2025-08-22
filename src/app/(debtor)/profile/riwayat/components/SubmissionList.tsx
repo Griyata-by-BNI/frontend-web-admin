@@ -36,8 +36,8 @@ export default function SubmissionList({ submissions }: SubmissionListProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      {submissions.map((s) => (
-        <PengajuanCard key={s.submission.id} submission={s} />
+      {submissions.map((submission) => (
+        <PengajuanCard key={submission.submission?.id || Math.random()} submission={submission} />
       ))}
     </div>
   );

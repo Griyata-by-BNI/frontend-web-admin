@@ -40,7 +40,7 @@ export default function DeveloperDetailPage() {
             { title: "Dashboard" },
             {
               title: "Developer Management",
-              href: "/admin/developer-management",
+              path: "/admin/developer-management",
             },
             {
               title: (

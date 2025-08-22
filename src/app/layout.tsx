@@ -1,5 +1,9 @@
 // app/layout.tsx
 import "@ant-design/v5-patch-for-react-19";
+import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { ConfigProvider, App } from "antd";
 import type { Metadata } from "next";

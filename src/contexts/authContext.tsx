@@ -7,6 +7,7 @@ import {
   useEffect,
   useState,
   ReactNode,
+  useCallback,
 } from "react";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
@@ -22,22 +23,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const router = useRouter();
 
-  const logout = () => {
+  const hardLogout = useCallback(() => {
+    Cookies.remove("auth_token");
+    localStorage.removeItem("kpr-apply-form");
     setUser(null);
     setToken(null);
-    Cookies.remove("auth_token");
-    router.push("/login");
-    localStorage.removeItem("kpr-apply-form");
-  };
+  }, []);
+
+  const logout = useCallback(() => {
+    hardLogout();
+    router.replace("/login");
+  }, [hardLogout, router]);
 
   useEffect(() => {
-    const savedToken = Cookies.get("auth_token");
+    let active = true;
 
-    if (savedToken) {
+    const bootstrap = () => {
       try {
-        const decoded = jwtDecode<JwtPayload>(savedToken);
+        const savedToken = Cookies.get("auth_token");
+        if (!savedToken) return;
 
-        if (decoded.exp * 1000 > Date.now()) {
+        const decoded = jwtDecode<JwtPayload>(savedToken);
+        const hasExp = typeof decoded.exp === "number";
+        const isValid = hasExp ? decoded.exp * 1000 > Date.now() : false;
+
+        if (!isValid) {
+          hardLogout();
+          router.replace("/login");
+          return;
+        }
+
+        if (active) {
           setToken(savedToken);
           setUser({
             userId: decoded.userId,
@@ -45,40 +61,57 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             fullName: decoded.fullName,
             role: decoded.role,
           });
-        } else {
-          logout();
         }
       } catch {
-        logout();
+        hardLogout();
+        router.replace("/login");
       }
-    }
+    };
 
+    bootstrap();
     setLoading(false);
-  }, []);
 
-  const login = (token: string) => {
-    const { userId, email, fullName, role } = jwtDecode<JwtPayload>(token);
-    setUser({
-      userId,
-      email,
-      fullName,
-      role,
-    });
-    setToken(token);
-    Cookies.set("auth_token", token, {
-      expires: 7,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    });
+    return () => {
+      active = false;
+    };
+  }, [hardLogout, router]);
 
-    if (role === "user") {
-      router.push("/");
-    }
+  const login = useCallback(
+    (newToken: string) => {
+      try {
+        const { userId, email, fullName, role, exp } =
+          jwtDecode<JwtPayload>(newToken);
 
-    if (role === "admin") {
-      router.push("/admin/developer-management");
-    }
-  };
+        if (typeof exp === "number" && exp * 1000 <= Date.now()) {
+          throw new Error("Token expired");
+        }
+
+        setUser({ userId, email, fullName, role });
+        setToken(newToken);
+        Cookies.set("auth_token", newToken, {
+          expires: 7,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+        });
+
+        if (role === "ADMIN") {
+          router.push("/admin/developer-management");
+        }
+
+        if (role === "DEBTOR") {
+          router.push("/");
+        }
+
+        if (role === "SALES") {
+          router.push("/sales/approval-list");
+        }
+      } catch {
+        hardLogout();
+        router.replace("/login");
+      }
+    },
+    [hardLogout, router]
+  );
 
   if (loading) {
     return (

@@ -1,68 +1,80 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState } from "react";
 import { useParams } from "next/navigation";
+import { useSubmissionDetail, usePropertyDetail } from "@/services/kprService";
+import { SUBMISSION_STEPS } from "@/utils/constants";
 import { StatusTracker } from "../../in-process/[id]/components/StatusTracker";
 import { PengajuanKPRView } from "../../in-process/[id]/components/PengajuanKPRView";
 import { VerifikasiView } from "../../in-process/[id]/components/VerifikasiView";
 import { HasilPengajuanView } from "./components/HasilPengajuanView";
-import { getSubmissionById, getPropertyById } from "@/services/kprService";
-import { SubmissionDetail, PropertyDetail } from "@/types/riwayat";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 function CompletedPageContent() {
   const params = useParams();
   const id = Number(params.id);
 
-  const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
-  const [property, setProperty] = useState<PropertyDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    data: submission,
+    isLoading: submissionLoading,
+    error: submissionError,
+  } = useSubmissionDetail(id);
+  const { data: property, isLoading: propertyLoading } = usePropertyDetail(
+    submission?.loan_information?.property_id
+  );
 
-  useEffect(() => {
-    const fetchSubmission = async () => {
-      if (id) {
-        setIsLoading(true);
-        try {
-          const submissionData = await getSubmissionById(id);
-          setSubmission(submissionData);
-          
-          if (submissionData?.loan_information?.property_id) {
-            const propertyData = await getPropertyById(submissionData.loan_information.property_id);
-            setProperty(propertyData);
-          }
-        } catch (error) {
-          console.error("Failed to fetch submission detail:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    };
-    fetchSubmission();
-  }, [id]);
+  const isLoading = submissionLoading || propertyLoading;
+  const status =
+    submission?.submission.status === "verified" ? "selesai" : "dalam_proses";
+  const currentProgress = SUBMISSION_STEPS.HASIL;
+  const [viewedStep, setViewedStep] = useState<number>(currentProgress);
+
+  if (isNaN(id)) {
+    return (
+      <div className="text-center p-10 text-red-500">
+        ID pengajuan tidak valid
+      </div>
+    );
+  }
 
   if (isLoading) return <div className="text-center p-10">Memuat...</div>;
-  if (!submission) return <div className="text-center p-10">Data tidak ditemukan</div>;
 
-  const status = submission.submission.status === "done" ? "selesai" : "dalam_proses";
-  const currentProgress = 3;
-  const [viewedStep, setViewedStep] = useState(currentProgress);
+  if (submissionError || !submission) {
+    return (
+      <div className="text-center p-10">
+        <p className="text-red-500 mb-2">Gagal memuat data pengajuan</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="text-blue-500 hover:underline"
+        >
+          Coba lagi
+        </button>
+      </div>
+    );
+  }
 
   const stepsData = [
-    { 
-      title: "Pengajuan KPR", 
-      date: new Date(submission.submission.submitted_at).toLocaleDateString("id-ID")
+    {
+      title: "Pengajuan KPR",
+      date: new Date(submission.submission.submitted_at).toLocaleDateString(
+        "id-ID"
+      ),
     },
-    { 
-      title: "Verifikasi Pengajuan", 
-      date: submission.submission.verified_at 
-        ? new Date(submission.submission.verified_at).toLocaleDateString("id-ID")
-        : ""
+    {
+      title: "Verifikasi Pengajuan",
+      date: submission.submission.verified_at
+        ? new Date(submission.submission.verified_at).toLocaleDateString(
+            "id-ID"
+          )
+        : "",
     },
-    { 
-      title: "Hasil Pengajuan", 
-      date: submission.submission.verified_at 
-        ? new Date(submission.submission.verified_at).toLocaleDateString("id-ID")
-        : ""
+    {
+      title: "Hasil Pengajuan",
+      date: submission.submission.verified_at
+        ? new Date(submission.submission.verified_at).toLocaleDateString(
+            "id-ID"
+          )
+        : "",
     },
   ];
 
@@ -98,11 +110,18 @@ function CompletedPageContent() {
         </div>
 
         <main className="mt-8">
-          {viewedStep === 1 && <PengajuanKPRView submissionData={submission} propertyData={property} />}
-          {viewedStep === 2 && <VerifikasiView submissionData={submission} />}
-          {viewedStep === 3 && (
-            <HasilPengajuanView 
-              status={status} 
+          {viewedStep === SUBMISSION_STEPS.PENGAJUAN && (
+            <PengajuanKPRView
+              submissionData={submission}
+              propertyData={property ?? null}
+            />
+          )}
+          {viewedStep === SUBMISSION_STEPS.VERIFIKASI && (
+            <VerifikasiView submissionData={submission} />
+          )}
+          {viewedStep === SUBMISSION_STEPS.HASIL && (
+            <HasilPengajuanView
+              status={status}
               submissionId={submission.submission.id}
               verificationNotes={submission.submission.verification_notes}
             />

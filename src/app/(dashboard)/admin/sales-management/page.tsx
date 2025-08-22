@@ -1,7 +1,21 @@
 "use client";
 
+import {
+  useCreateSales,
+  useDeleteSales,
+  useSales,
+  useUpdateSales,
+} from "@/services/salesServices";
+import type {
+  CreateSalesPayload,
+  Sales,
+  SortBy,
+  SortOrder,
+  UpdateSalesPayload,
+} from "@/types/sales";
 import "@ant-design/v5-patch-for-react-19";
 import {
+  App,
   Breadcrumb,
   Button,
   Col,
@@ -12,53 +26,67 @@ import {
   Tooltip,
 } from "antd";
 import { Edit, Plus, Trash } from "lucide-react";
-import { useState } from "react";
-import EditSalesModal from "./_components/EditSalesModal";
-import DeleteConfirmModal from "./_components/DeleteConfirmModal";
+import { useMemo, useState } from "react";
+import { bniRegions } from "./constants";
 import CreateSalesModal from "./_components/CreateSalesModal";
-import type { Sales } from "./_types";
+import EditSalesModal from "./_components/EditSalesModal";
 
-const mockData: Sales[] = [
-  {
-    id: 1,
-    name: "John Doe",
-    email: "john@example.com",
-    phone_number: "081234567890",
-    gender: "Male",
-    address: "Jakarta",
-    target_score: 85,
-    created_at: "2025-08-13T04:42:53.000Z",
-    updated_at: "2025-08-13T04:42:53.000Z",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    email: "jane@example.com",
-    phone_number: "081234567891",
-    gender: "Female",
-    address: "Surabaya",
-    target_score: 92,
-    created_at: "2025-08-13T04:42:53.000Z",
-    updated_at: "2025-08-13T04:42:53.000Z",
-  },
-];
 export default function SalesManagementPage() {
+  const { message } = App.useApp();
+
   const [searchText, setSearchText] = useState("");
-  const [selectedRegion, setSelectedRegion] = useState<string | undefined>();
+  const [regionId, setRegionId] = useState<number | undefined>();
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [sortBy, setSortBy] = useState<SortBy>("npp");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("ASC");
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<Sales | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingRecord, setDeletingRecord] = useState<Sales | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  const { data, isLoading } = useSales({
+    pageNumber,
+    pageSize,
+    sort_by: sortBy,
+    sort_order: sortOrder,
+    search: searchText || undefined,
+    region_id: regionId,
+  });
+
+  const list: Sales[] = useMemo(() => {
+    const raw = (data?.data as any) ?? {};
+    return raw?.sales ?? [];
+  }, [data]);
+
+  const total: number = useMemo(() => {
+    const raw = (data?.data as any) ?? {};
+    return raw?.pagination?.total ?? list.length;
+  }, [data, list]);
+
+  const updateMut = useUpdateSales();
+  const deleteMut = useDeleteSales();
+
   const handleEdit = (record: Sales) => {
     setEditingRecord(record);
     setIsEditModalOpen(true);
   };
 
-  const handleEditSubmit = (values: Sales) => {
-    console.log("Updated values:", values);
-    setIsEditModalOpen(false);
+  const handleEditSubmit = (values: UpdateSalesPayload) => {
+    if (!editingRecord) return;
+    updateMut.mutate(
+      { salesId: editingRecord.id, payload: values },
+      {
+        onSuccess: () => {
+          message.success("Sales berhasil diperbarui");
+          setIsEditModalOpen(false);
+          setEditingRecord(null);
+        },
+        onError: () => message.error("Gagal memperbarui sales"),
+      }
+    );
   };
 
   const handleDelete = (record: Sales) => {
@@ -67,48 +95,53 @@ export default function SalesManagementPage() {
   };
 
   const handleDeleteConfirm = () => {
-    console.log("Deleting:", deletingRecord);
-    setIsDeleteModalOpen(false);
-    setDeletingRecord(null);
+    if (!deletingRecord) return;
+    deleteMut.mutate(deletingRecord.id, {
+      onSuccess: () => {
+        message.success("Sales berhasil dihapus");
+        setIsDeleteModalOpen(false);
+        setDeletingRecord(null);
+      },
+      onError: () => message.error("Gagal menghapus sales"),
+    });
   };
-
-  const handleCreateSubmit = (values: Omit<Sales, "id">) => {
-    console.log("Creating:", values);
-    setIsCreateModalOpen(false);
-  };
-
-  const filteredData = mockData.filter((item) => {
-    const matchesSearch =
-      item.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.email.toLowerCase().includes(searchText.toLowerCase());
-    const matchesRegion = !selectedRegion || item.address === selectedRegion;
-    return matchesSearch && matchesRegion;
-  });
 
   const columns = [
-    { title: "Nama", dataIndex: "name", key: "name" },
-    { title: "Email", dataIndex: "email", key: "email" },
-    { title: "Telepon", dataIndex: "phone_number", key: "phone_number" },
-    { title: "Jenis Kelamin", dataIndex: "gender", key: "gender" },
-    { title: "Wilayah", dataIndex: "address", key: "address" },
-    { title: "Target Skor", dataIndex: "target_score", key: "target_score" },
+    { title: "NPP", dataIndex: "npp", key: "npp", sorter: true },
+    {
+      title: "Performance",
+      dataIndex: "performance",
+      key: "performance",
+      sorter: true,
+      render: (v: number) => `${v}%`,
+    },
+    {
+      title: "Monthly Target",
+      dataIndex: "target_skor",
+      key: "target_skor",
+      sorter: true,
+    },
+    {
+      title: "Wilayah",
+      dataIndex: "region_id",
+      key: "region_id",
+      render: (id: number) =>
+        bniRegions.find((r: any) => r.value === id)?.label ?? id,
+    },
     {
       title: "Aksi",
       dataIndex: "action",
       key: "action",
       render: (_: any, record: Sales) => (
         <div className="flex items-center gap-2">
-          <Tooltip title="Edit Data">
-            <Button
-              icon={<Edit className="w-4 h-4" />}
-              onClick={() => handleEdit(record)}
-            />
-          </Tooltip>
+          <EditSalesModal record={record} />
 
           <Tooltip title="Hapus Data">
             <Button
-              icon={<Trash className="w-4 h-4 stroke-red-500" />}
+              danger
+              icon={<Trash className="w-4 h-4" />}
               onClick={() => handleDelete(record)}
+              loading={deleteMut.isPending && deletingRecord?.id === record.id}
             />
           </Tooltip>
         </div>
@@ -125,16 +158,14 @@ export default function SalesManagementPage() {
 
         <Breadcrumb
           items={[
-            {
-              title: "Dashboard",
-            },
+            { title: "Dashboard" },
             {
               title: (
                 <p className="text-dark-tosca font-semibold">
                   Sales Management
                 </p>
               ),
-              href: "/admin/sales-management",
+              path: "/admin/sales-management",
             },
           ]}
         />
@@ -143,51 +174,80 @@ export default function SalesManagementPage() {
       <Row gutter={16} className="mb-4">
         <Col span={6}>
           <Input.Search
-            placeholder="Cari berdasarkan nama atau email"
+            placeholder="Cari NPP / User ID"
             value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            onChange={(e) => {
+              setPageNumber(1);
+              setSearchText(e.target.value);
+            }}
+            allowClear
           />
         </Col>
 
-        <Col span={4}>
+        <Col span={6}>
           <Select
             placeholder="Filter berdasarkan wilayah"
-            value={selectedRegion}
-            onChange={setSelectedRegion}
+            value={regionId}
+            onChange={(val) => {
+              setPageNumber(1);
+              setRegionId(val);
+            }}
             allowClear
+            options={bniRegions as { label: string; value: number }[]}
             style={{ width: "100%" }}
-          >
-            <Select.Option value="Jakarta">Jakarta</Select.Option>
-            <Select.Option value="Surabaya">Surabaya</Select.Option>
-          </Select>
+          />
         </Col>
 
         <Col flex={"auto"}>
           <div className="flex justify-end">
-            <Button
-              type="primary"
-              icon={<Plus className="w-4 h-4" />}
-              onClick={() => setIsCreateModalOpen(true)}
-            >
-              Buat Data
-            </Button>
+            <CreateSalesModal />
           </div>
         </Col>
       </Row>
 
-      <Table
+      <Table<Sales>
         bordered
-        columns={columns}
-        dataSource={filteredData}
+        columns={columns as any}
+        dataSource={list}
         rowKey="id"
-        pagination={{ pageSize: 10 }}
+        loading={isLoading}
+        pagination={{
+          current: pageNumber,
+          pageSize,
+          total,
+          showSizeChanger: true,
+        }}
+        onChange={(pagination, _filters, sorter) => {
+          setPageNumber(pagination.current ?? 1);
+          setPageSize(pagination.pageSize ?? 10);
+          if (!Array.isArray(sorter) && sorter?.field) {
+            const allowed: SortBy[] = [
+              "npp",
+              "performance",
+              "monthly_target",
+              "created_at",
+              "updated_at",
+            ];
+            const nextSortBy = allowed.includes(sorter.field as SortBy)
+              ? (sorter.field as SortBy)
+              : "npp";
+            const nextSortOrder: SortOrder =
+              sorter.order === "descend" ? "DESC" : "ASC";
+            setSortBy(nextSortBy);
+            setSortOrder(nextSortOrder);
+          }
+        }}
       />
 
-      <EditSalesModal
+      {/* <EditSalesModal
         open={isEditModalOpen}
-        onCancel={() => setIsEditModalOpen(false)}
+        onCancel={() => {
+          setIsEditModalOpen(false);
+          setEditingRecord(null);
+        }}
         onSubmit={handleEditSubmit}
-        editingRecord={editingRecord}
+        initialValues={editingRecord ?? undefined}
+        loading={updateMut.isPending}
       />
 
       <DeleteConfirmModal
@@ -195,13 +255,15 @@ export default function SalesManagementPage() {
         onCancel={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
         salesData={deletingRecord}
+        loading={deleteMut.isPending}
       />
 
       <CreateSalesModal
         open={isCreateModalOpen}
         onCancel={() => setIsCreateModalOpen(false)}
         onSubmit={handleCreateSubmit}
-      />
+        loading={createMut.isPending}
+      /> */}
     </>
   );
 }

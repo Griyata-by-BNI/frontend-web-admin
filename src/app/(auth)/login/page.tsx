@@ -1,16 +1,13 @@
 "use client";
-import "@ant-design/v5-patch-for-react-19";
+import { useAuth } from "@/contexts/authContext";
 import { useLogin } from "@/services/authServices";
+import "@ant-design/v5-patch-for-react-19";
 import { App, Button, Checkbox, Form, Input } from "antd";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
-import { useAuth } from "@/contexts/authContext";
-
 
 const LoginPage: React.FC = () => {
-  const router = useRouter();
   const { login } = useAuth();
   const [form] = Form.useForm();
   const { message: messageApi } = App.useApp();
@@ -29,10 +26,7 @@ const LoginPage: React.FC = () => {
       login(response.data.token);
 
       if (rememberMe) {
-        localStorage.setItem(
-          "credential",
-          JSON.stringify({ email, password })
-        );
+        localStorage.setItem("credential", JSON.stringify({ email, password }));
       } else {
         localStorage.removeItem("credential");
       }

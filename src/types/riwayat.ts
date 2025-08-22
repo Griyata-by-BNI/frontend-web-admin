@@ -1,4 +1,4 @@
-export type ApiStatus = "submitted" | "under_review" | "done";
+export type ApiStatus = "submitted" | "under_review" | "verified";
 
 export interface SubmissionSummary {
   submission: {
@@ -16,6 +16,7 @@ export interface SubmissionSummary {
     clusterTypeName: string;
     developerName: string;
     propertyPhotoUrl: string[];
+    submissionId: number;
   };
 }
 
