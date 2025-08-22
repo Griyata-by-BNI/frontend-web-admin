@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -7,6 +9,8 @@ import { KPRSimulator } from "@/app/(debtor)/kpr-simulator";
 import { MapWithNearbyPlaces } from "@/app/(debtor)/developers/components/Map";
 import StickyCard from "@/app/(debtor)/developers/components/StickyCard";
 import ImageSlider from "@/app/(debtor)/developers/components/ImageSlider";
+import FavoriteButton from "@/app/(debtor)/developers/components/FavoriteButton";
+import { useAuth } from "@/contexts/authContext";
 
 // 1. Import Font Awesome components and icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -17,8 +21,10 @@ import {
   faShower,
   faHouse,
   faChartArea,
-  faRulerCombined,
+  faStairs,
   faLocationDot,
+  faSwimmingPool,
+  faWarehouse,
 } from "@fortawesome/free-solid-svg-icons";
 
 // =================================================================
@@ -41,6 +47,10 @@ interface ApiPropertyDetail {
   buildingArea: string;
   property_photo_urls: string[];
   clusterTypeName?: string;
+  facilities: {
+    name: string;
+    value: number | boolean;
+  }[];
 }
 
 interface ApiDeveloper {
@@ -71,39 +81,47 @@ interface Specification {
 // 3. HELPER FUNCTIONS for Data Processing
 // =================================================================
 
-// ✨ This function now has an explicit return type
 const parseSpecifications = (
-  specString: string,
-  landArea: string,
-  buildingArea: string
+  facilities: { name: string; value: number | boolean }[]
 ): Specification[] => {
-  // ✨ Explicitly type the 'specs' array
   const specs: Specification[] = [];
-  if (!specString) return specs;
+  if (!facilities) return specs;
 
-  const kamarTidurMatch = specString.match(/(\d+)\s*kamar tidur/i);
-  if (kamarTidurMatch) {
-    specs.push({ text: `${kamarTidurMatch[1]} Kamar Tidur`, icon: faBed });
-  }
-
-  const kamarMandiMatch = specString.match(/(\d+)\s*kamar mandi/i);
-  if (kamarMandiMatch) {
-    specs.push({ text: `${kamarMandiMatch[1]} Kamar Mandi`, icon: faShower });
-  }
-
-  if (landArea) {
-    specs.push({
-      text: `Luas Tanah ${Number(landArea)} m²`,
-      icon: faChartArea,
-    });
-  }
-
-  if (buildingArea) {
-    specs.push({
-      text: `Luas Bangunan ${Number(buildingArea)} m²`,
-      icon: faHouse,
-    });
-  }
+  facilities.forEach((facility) => {
+    switch (facility.name) {
+      case "KT":
+        specs.push({ text: `${facility.value} Kamar Tidur`, icon: faBed });
+        break;
+      case "KM":
+        specs.push({ text: `${facility.value} Kamar Mandi`, icon: faShower });
+        break;
+      case "LT":
+        specs.push({
+          text: `Luas Tanah ${facility.value} m²`,
+          icon: faChartArea,
+        });
+        break;
+      case "LB":
+        specs.push({
+          text: `Luas Bangunan ${facility.value} m²`,
+          icon: faHouse,
+        });
+        break;
+      case "jumlahLantai":
+        specs.push({ text: `${facility.value} Lantai`, icon: faStairs });
+        break;
+      case "garasi":
+        if (facility.value) {
+          specs.push({ text: "Garasi", icon: faWarehouse });
+        }
+        break;
+      case "kolamRenang":
+        if (facility.value) {
+          specs.push({ text: "Kolam Renang", icon: faSwimmingPool });
+        }
+        break;
+    }
+  });
 
   return specs;
 };
@@ -183,11 +201,7 @@ async function getPropertyPageData(
     if (!property || !developer || !cluster) return null;
 
     // Process the raw API data to fit the UI
-    const specifications = parseSpecifications(
-      property.spesifications,
-      property.landArea,
-      property.buildingArea
-    );
+    const specifications = parseSpecifications(property.facilities);
     const installment = calculateInstallment(property.price);
 
     return {
@@ -209,17 +223,36 @@ async function getPropertyPageData(
 // 5. MAIN PAGE COMPONENT
 // =================================================================
 
-export default async function PropertyDetailPage({
+export default function PropertyDetailPage({
   params,
 }: {
-  params: { property_id: string; developer_id: string; cluster_id: string };
+  params: Promise<{ property_id: string; developer_id: string; cluster_id: string }>;
 }) {
-  const data = await getPropertyPageData(
-    params.property_id,
-    params.developer_id,
-    params.cluster_id
-  );
+  const { user } = useAuth();
+  const resolvedParams = use(params);
+  const [data, setData] = useState<{
+    property: ApiPropertyDetail;
+    developer: ApiDeveloper;
+    cluster: ApiCluster;
+    processed: {
+      specifications: Specification[];
+      installment: string;
+    };
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    getPropertyPageData(
+      resolvedParams.property_id,
+      resolvedParams.developer_id,
+      resolvedParams.cluster_id
+    ).then((result) => {
+      setData(result);
+      setLoading(false);
+    });
+  }, [resolvedParams.property_id, resolvedParams.developer_id, resolvedParams.cluster_id]);
+
+  if (loading) return <div>Loading...</div>;
   if (!data) {
     notFound();
   }
@@ -259,7 +292,7 @@ export default async function PropertyDetailPage({
             </h2>
             <div className="bg-white/70 border-2 border-teal-200 rounded-2xl p-6 mb-8 shadow-sm backdrop-blur-sm">
               <div className="grid grid-cols-2 gap-x-8 gap-y-5">
-                {processed.specifications.map((spec, index) => (
+                {processed.specifications.map((spec: Specification, index: number) => (
                   <div key={index} className="flex items-center">
                     <FontAwesomeIcon
                       icon={spec.icon}
@@ -295,23 +328,30 @@ export default async function PropertyDetailPage({
           </div>
 
           {/* Kolom Kanan */}
-          <div className="space-y-4">
-            <StickyCard
-              priceLabel="Harga"
-              price={`Rp ${new Intl.NumberFormat("id-ID").format(
-                Number(property.price)
-              )}`}
-              installmentText={`Angsuran mulai dari ${processed.installment}/bulan`}
-              developerName={property.developerName}
-              location={property.location}
-              developerPhotoUrl={developer.developerPhotoUrl}
-              stock={property.stock}
-            />
-            <Link href="/kpr-apply">
-              <button className="w-full py-3 px-6 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold rounded-lg hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-lg">
-                Ajukan KPR
-              </button>
-            </Link>
+          <div className="lg:col-span-1 mt-8 lg:mt-0">
+            <div className="sticky top-20 space-y-4">
+              <StickyCard
+                priceLabel="Harga"
+                price={`Rp ${new Intl.NumberFormat("id-ID").format(
+                  Number(property.price)
+                )}`}
+                installmentText={`Angsuran mulai dari ${processed.installment}/bulan`}
+                developerName={property.developerName}
+                location={property.location}
+                developerPhotoUrl={developer.developerPhotoUrl}
+                stock={property.stock}
+              />
+              <div className="flex gap-3">
+                <Link href="/kpr-apply" className="flex-1">
+                  <button className="w-full py-3 px-6 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold rounded-full hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-lg">
+                    Ajukan KPR
+                  </button>
+                </Link>
+                {user?.userId && (
+                  <FavoriteButton propertyId={property.id} userId={Number(user.userId)} />
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </main>

@@ -7,7 +7,7 @@ import {
 } from "@/types/favorite";
 
 const apiClient = axios.create({
-  baseURL: "https://29c4e2f96966.ngrok-free.app/api/v1",
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   headers: {
     "ngrok-skip-browser-warning": "true",
   },
