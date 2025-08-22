@@ -89,8 +89,8 @@ const ClusterCard: React.FC<ClusterCardProps> = ({ cluster, developerId }) => {
     <Link href={href} className="flex">
       {/* ✨ Mengubah rounded-lg menjadi rounded-2xl */}
       <div className="bg-white rounded-2xl shadow-xl shadow-gray-500/10 overflow-hidden hover:shadow-primary-tosca/30 flex flex-col w-full">
-        {/* GAMBAR: ✨ Mengubah tinggi dari h-32 menjadi h-40 */}
-        <div className="relative w-full h-40 bg-gray-100">
+        {/* GAMBAR: Slightly reduced height */}
+        <div className="relative w-full h-44 bg-gray-100">
           {cluster.cluster_photo_urls &&
           cluster.cluster_photo_urls.length > 0 ? (
             <div className="h-full relative z-10">
@@ -100,7 +100,7 @@ const ClusterCard: React.FC<ClusterCardProps> = ({ cluster, developerId }) => {
                 className="h-full [&_.slick-prev]:left-2 [&_.slick-next]:right-2 [&_.slick-prev]:z-20 [&_.slick-next]:z-20 [&_.slick-prev]:bg-black/50 [&_.slick-next]:bg-black/50 [&_.slick-prev]:rounded-full [&_.slick-next]:rounded-full [&_.slick-prev]:w-8 [&_.slick-next]:w-8 [&_.slick-prev]:h-8 [&_.slick-next]:h-8 [&_.slick-dots]:z-20"
               >
                 {cluster.cluster_photo_urls.map((src, idx) => (
-                  <div key={idx} className="relative w-full h-40">
+                  <div key={idx} className="relative w-full h-44">
                     <Image
                       src={src}
                       alt={`cluster-photo-${idx + 1}`}
@@ -122,36 +122,36 @@ const ClusterCard: React.FC<ClusterCardProps> = ({ cluster, developerId }) => {
           )}
         </div>
 
-        {/* KONTEN: ✨ Mengubah padding dari p-3 menjadi p-4 */}
-        <div className="p-4 flex-grow flex flex-col">
-          {/* ✨ Judul: Mengubah ukuran dari text-xl menjadi text-lg */}
+        {/* KONTEN: Slightly reduced padding */}
+        <div className="p-5 flex-grow flex flex-col">
+          {/* Judul: Smaller font */}
           <h3 className="text-lg font-bold text-teal-700">{cluster.name}</h3>
 
-          {/* ✨ Alamat: Mengubah ukuran dari text-base menjadi text-sm, margin dari mb-5 menjadi mb-3 */}
-          <p className="text-sm text-teal-600/90 mt-1 mb-3">
+          {/* Alamat: Increased font size and margin */}
+          <p className="text-base text-teal-600/90 mt-2 mb-4">
             {cluster.address || "Lokasi tidak tersedia"}
           </p>
 
-          {/* HARGA & ANGSURAN: ✨ Mengubah padding atas dari pt-4 menjadi pt-2 */}
-          <div className="mt-auto flex items-center pt-2">
+          {/* HARGA & ANGSURAN: Increased padding */}
+          <div className="mt-auto flex items-center pt-4">
             <div className="flex-1">
-              <p className="text-xs text-gray-500">Harga mulai dari</p>
-              {/* ✨ Mengubah ukuran font harga dari text-lg menjadi text-sm */}
-              <p className="text-sm font-bold text-gray-800 mt-1">
-                <span className="font-normal text-xs">Rp</span>{" "}
+              <p className="text-sm text-gray-500">Harga mulai dari</p>
+              {/* Smaller price font size */}
+              <p className="text-base font-bold text-gray-800 mt-1">
+                <span className="font-normal text-sm">Rp</span>{" "}
                 {formatPrice(cluster.minPrice)}
               </p>
             </div>
 
-            {/* ✨ Mengubah margin divider dari mx-4 menjadi mx-2, tinggi dari h-10 menjadi h-8 */}
-            <div className="h-8 w-px bg-gray-200 mx-2"></div>
+            {/* Slightly smaller divider */}
+            <div className="h-10 w-px bg-gray-200 mx-3"></div>
 
             <div className="flex-1">
-              <p className="text-xs text-gray-500">Angsuran mulai dari</p>
-              {/* ✨ Mengubah ukuran font angsuran dari text-lg menjadi text-sm */}
-              <p className="text-sm font-bold text-gray-800 mt-1">
+              <p className="text-sm text-gray-500">Angsuran mulai dari</p>
+              {/* Smaller installment font size */}
+              <p className="text-base font-bold text-gray-800 mt-1">
                 {installment}
-                <span className="text-xs text-gray-500 font-normal">
+                <span className="text-sm text-gray-500 font-normal">
                   {" "}
                   /bulan
                 </span>

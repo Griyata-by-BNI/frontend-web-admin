@@ -89,7 +89,7 @@ export default async function HomePage() {
             </div>
             <div className="flex gap-4 max-w-full overflow-x-auto overflow-y-hidden pb-4">
               {latestClusters.map((cluster) => (
-                <div key={cluster.id} className="flex-shrink-0 w-72">
+                <div key={cluster.id} className="flex-shrink-0 w-80">
                   <ClusterCard cluster={{...cluster, developerId: 1}} developerId={1} />
                 </div>
               ))}
