@@ -5,12 +5,14 @@ import { KPRSimulator } from "@/app/(debtor)/kpr-simulator/_components/KPRSimula
 import { CTASection } from "@/app/(debtor)/kpr-information/detail/components/CTASection";
 import { axiosInstance, axiosServer } from "@/utils/axios";
 import HeroSearch from "@/app/(debtor)/developers/components/HeroSearch";
+import RecentlyViewedProperties from "@/components/home/RecentlyViewedProperties";
 
 // --- TYPE DEFINITION ---
 interface Property {
   id: number;
   developerId: number;
   clusterId: number;
+  clusterName: string;
   propertyName: string;
   location: string;
   price: string;
@@ -63,7 +65,10 @@ const PropertyCard: React.FC<{ property: Property }> = ({ property }) => (
   </Link>
 );
 
-// --- MAIN PAGE COMPONENT ---
+interface RecentlyViewedProperty extends Property {
+  lastViewed: string;
+}
+
 export default async function HomePage() {
   const latestProperties = await getLatestProperties();
 
@@ -99,6 +104,11 @@ export default async function HomePage() {
           className="w-full -mt-5"
         />
         <div className="container mx-auto px-4">
+          {/* START AI AGENT */}
+          {/* Agent Bot Griyata Introduction Section dengan Kombinasi Fitur */}
+
+          {/* END AI AGENT */}
+
           <div className="mb-16">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-2xl font-bold text-gray-800">
@@ -117,6 +127,10 @@ export default async function HomePage() {
               ))}
             </div>
           </div>
+
+          {/* START SECTION TERAKHIR DILIHAT */}
+          <RecentlyViewedProperties />
+          {/* END SECTION TERAKHIR DILIHAT */}
         </div>
       </div>
 
