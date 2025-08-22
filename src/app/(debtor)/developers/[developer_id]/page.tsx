@@ -56,11 +56,9 @@ const getDeveloperDetails = async (
 ): Promise<DeveloperWithClusters | null> => {
   try {
     const developerRes = await axiosServer.get<{
-    const developerRes = await axiosServer.get<{
       data: { developer: ApiDeveloper };
     }>(`/developers/${id}`);
     const developer = developerRes.data.data.developer;
-    const summaryClustersRes = await axiosServer.get<{
     const summaryClustersRes = await axiosServer.get<{
       data: { clusters: ApiCluster[] };
     }>(`/clusters/developer/${id}`);
@@ -69,7 +67,6 @@ const getDeveloperDetails = async (
       return { ...developer, clusters: [] };
     }
     const clusterDetailPromises = summaryClusters.map((cluster) =>
-      axiosServer.get<{ data: { clusters: ApiCluster[] } }>(
       axiosServer.get<{ data: { clusters: ApiCluster[] } }>(
         `/clusters/${cluster.id}`
       )

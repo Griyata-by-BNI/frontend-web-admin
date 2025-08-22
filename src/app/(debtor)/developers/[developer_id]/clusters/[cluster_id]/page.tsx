@@ -535,8 +535,9 @@ export default async function HousingDetailPage({
             )}
           </div>
 
-          {/* Kolom Kanan (Sticky) */}
-          <StickyCard
+          {/* Kolom Kanan */}
+          <div className="lg:col-span-1 mt-8 lg:mt-0">
+            <StickyCard
             priceLabel="Harga mulai dari"
             price={`${formatPrice(cluster.minPrice)} - ${formatPrice(
               cluster.maxPrice
@@ -548,6 +549,7 @@ export default async function HousingDetailPage({
             location={cluster.address || "Alamat tidak tersedia"}
             developerPhotoUrl={developer.developerPhotoUrl}
           />
+          </div>
         </div>
       </main>
     </div>
