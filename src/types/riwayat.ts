@@ -16,6 +16,7 @@ export interface SubmissionSummary {
     clusterTypeName: string;
     developerName: string;
     propertyPhotoUrl: string[];
+    submissionId: number;
   };
 }
 

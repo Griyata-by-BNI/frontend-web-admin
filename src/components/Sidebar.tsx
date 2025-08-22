@@ -21,6 +21,10 @@ const menuItems = [
   },
 ];
 
+const salesMenuItems = [
+  { label: "Approval List", href: "/sales/approval-list", icon: BarChart3 },
+];
+
 const getInitials = (name?: string) =>
   (name ?? "")
     .split(" ")
@@ -29,7 +33,7 @@ const getInitials = (name?: string) =>
     .map((n) => n[0]?.toUpperCase())
     .join("") || "AD";
 
-const Sidebar = () => {
+const Sidebar = ({ type = "admin" }: { type?: "sales" | "admin" }) => {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const { modal } = App.useApp();
@@ -46,9 +50,13 @@ const Sidebar = () => {
     });
   };
 
+  const items = type === "sales" ? salesMenuItems : menuItems;
+
   return (
     <aside className="w-64 bg-primary-black h-screen text-white flex flex-col">
-      <p className="px-4 py-6 font-semibold text-white ">Admin Dashboard</p>
+      <p className="px-4 py-6 font-semibold text-white capitalize">
+        {type} Dashboard
+      </p>
 
       <div className="h-px bg-white/10 mx-4" />
 
@@ -69,7 +77,7 @@ const Sidebar = () => {
 
       {/* Menu (kembali ke gaya lama) */}
       <nav className="mt-6 space-y-2 flex-1">
-        {menuItems.map((item) => {
+        {items.map((item) => {
           const Icon = item.icon;
           const isActive = pathname.startsWith(item.href);
 
