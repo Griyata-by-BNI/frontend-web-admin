@@ -32,8 +32,13 @@ export default function RecentlyViewedProperties() {
         console.error("Failed to fetch recently viewed properties:", error);
       }
     }
-    getRecentlyViewedProperties();
-  }, []);
+
+    if (user) {
+      getRecentlyViewedProperties();
+    }
+  }, [user]);
+
+  if (!user || properties.length === 0) return <></>;
 
   return (
     <div className="mb-12">
