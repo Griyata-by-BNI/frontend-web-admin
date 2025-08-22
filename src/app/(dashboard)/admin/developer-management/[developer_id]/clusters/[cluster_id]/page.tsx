@@ -3,7 +3,7 @@
 import { useClusterById } from "@/services";
 import "@ant-design/v5-patch-for-react-19";
 import { Breadcrumb, Col, Collapse, Row, Tag } from "antd";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import DeleteClusterModal from "../../_components/DeleteClusterModal";
 import EditClusterModal from "../../_components/EditClusterModal";
 import SkeletonDetailDeveloper from "../../_components/SkeletonDetailDeveloper";
@@ -18,6 +18,7 @@ export default function ClusterDetailPage() {
   const developerId = params.developer_id as string;
   const clusterId = params.cluster_id as string;
 
+  const router = useRouter();
   const { data, status } = useClusterById(clusterId as string);
   const cluster = data?.data?.clusters?.[0];
 
@@ -39,11 +40,12 @@ export default function ClusterDetailPage() {
             { title: "Dashboard" },
             {
               title: "Developer Management",
-              path: "/admin/developer-management",
+              onClick: () => router.push("/admin/developer-management"),
             },
             {
               title: cluster.developerName,
-              path: `/admin/developer-management/${developerId}`,
+              onClick: () =>
+                router.push(`/admin/developer-management/${developerId}`),
             },
             {
               title: (

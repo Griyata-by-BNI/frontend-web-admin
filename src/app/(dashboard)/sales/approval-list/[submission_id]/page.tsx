@@ -3,10 +3,11 @@
 import "@ant-design/v5-patch-for-react-19";
 import { useSubmissionDetail } from "@/services/approvalListServices";
 import { Breadcrumb, Card, Col, Descriptions, Row, Skeleton, Tag } from "antd";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import PropertyInformation from "./_components/PropertyInformation";
 import interestRateData from "@/data/interest-rate.json";
 import ApproveRejectButton from "./_components/ApproveRejectButton";
+import { useReducer } from "react";
 
 type InterestItem = { id: number; title: string };
 
@@ -49,6 +50,7 @@ export default function SubmissionDetailPage() {
         )?.title ?? "-"
       : "-";
 
+  const router = useRouter();
   const descCols = { xs: 1, sm: 1, md: 1, lg: 2, xl: 2 };
 
   return (
@@ -60,7 +62,10 @@ export default function SubmissionDetailPage() {
         <Breadcrumb
           items={[
             { title: "Dashboard" },
-            { title: "Submissions", path: "/sales/approval-list" },
+            {
+              title: "Submissions",
+              onClick: () => router.push(`/sales/approval-list`),
+            },
             { title: `ID ${submissionId}` },
           ]}
         />

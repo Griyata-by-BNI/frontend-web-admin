@@ -21,6 +21,7 @@ import { useParams } from "next/navigation";
 import { NearbyPlaceTypeLabel } from "../constants";
 import { useQueryClient } from "@tanstack/react-query";
 import { useImageStore } from "@/stores"; // ⬅️ pakai store gambar yang sama
+import { createBeforeUploadImage } from "@/utils/uploadValidators";
 
 const MapSelector = dynamic(() => import("./MapSelector"), { ssr: false });
 
@@ -106,6 +107,11 @@ export default function CreateClusterModal() {
       message.error("Gagal membuat cluster, silakan coba lagi.");
     }
   };
+
+  const beforeUpload = createBeforeUploadImage({
+    maxMB: 10,
+    onInvalid: (m) => message.error(m),
+  });
 
   return (
     <>
@@ -262,7 +268,8 @@ export default function CreateClusterModal() {
             <Upload
               multiple
               showUploadList={false}
-              beforeUpload={() => false}
+              accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+              beforeUpload={beforeUpload}
               fileList={fileList}
               onChange={async ({ fileList: fl }) => {
                 setFileList(fl);

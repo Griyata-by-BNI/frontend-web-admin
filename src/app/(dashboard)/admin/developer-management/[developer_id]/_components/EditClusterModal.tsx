@@ -22,6 +22,7 @@ import { useNearbyPlaces } from "../_hooks/useNearbyPlaces";
 import { NearbyPlaceTypeLabel } from "../constants";
 import { useQueryClient } from "@tanstack/react-query";
 import { useImageStore } from "@/stores"; // ⬅️ gunakan store gambar (Zustand)
+import { createBeforeUploadImage } from "@/utils/uploadValidators";
 
 const MapSelector = dynamic(() => import("./MapSelector"), { ssr: false });
 
@@ -137,10 +138,14 @@ export default function EditClusterModal({ clusterId }: { clusterId: string }) {
     }
   };
 
+  const beforeUpload = createBeforeUploadImage({
+    maxMB: 10,
+    onInvalid: (m) => message.error(m),
+  });
+
   return (
     <>
       <Modal
-        zIndex={999}
         destroyOnHidden
         centered
         title={
@@ -292,7 +297,8 @@ export default function EditClusterModal({ clusterId }: { clusterId: string }) {
             <Upload
               multiple
               showUploadList={false}
-              beforeUpload={() => false}
+              accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+              beforeUpload={beforeUpload}
               fileList={fileList}
               onChange={async ({ fileList: fl }) => {
                 setFileList(fl);

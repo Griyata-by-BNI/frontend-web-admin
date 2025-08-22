@@ -50,7 +50,6 @@ export default function DeleteClusterModal({
   return (
     <>
       <Modal
-        zIndex={9999999}
         title={
           <Typography.Title level={5} className="!text-red-500">
             Hapus Data Cluster

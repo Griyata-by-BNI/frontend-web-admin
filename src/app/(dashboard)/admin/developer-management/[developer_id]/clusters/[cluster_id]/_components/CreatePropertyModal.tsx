@@ -17,6 +17,7 @@ import { useCreateProperty } from "@/services/propertyServices";
 import type { CreatePropertyPayload } from "@/types/property";
 import { bniRegions, initialSpecOptions } from "../../../constants";
 import { useImageStore } from "@/stores";
+import { createBeforeUploadImage } from "@/utils/uploadValidators";
 
 interface CreatePropertyModalProps {
   clusterTypeId: number;
@@ -103,6 +104,11 @@ export default function CreatePropertyModal({
       message.error("Gagal membuat properti");
     }
   };
+
+  const beforeUpload = createBeforeUploadImage({
+    maxMB: 10,
+    onInvalid: (m) => message.error(m),
+  });
 
   return (
     <>
@@ -306,7 +312,8 @@ export default function CreatePropertyModal({
             <Upload
               multiple
               showUploadList={false}
-              beforeUpload={() => false}
+              accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+              beforeUpload={beforeUpload}
               fileList={fileList}
               onChange={async ({ fileList: fl }) => {
                 setFileList(fl);

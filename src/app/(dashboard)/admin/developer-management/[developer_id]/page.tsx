@@ -2,10 +2,9 @@
 
 import { useDetailDeveloper } from "@/services/developerServices";
 import "@ant-design/v5-patch-for-react-19";
-import { useQueryClient } from "@tanstack/react-query";
 import { Breadcrumb, Col, Row } from "antd";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import DeleteDeveloperModal from "../_components/DeleteDeveloperModal";
 import EditDeveloperModal from "../_components/EditDeveloperModal";
 import SkeletonDetailDeveloper from "./_components/SkeletonDetailDeveloper";
@@ -15,7 +14,7 @@ export default function DeveloperDetailPage() {
   const params = useParams();
   const developerId = parseInt(params.developer_id as string);
 
-  const queryClient = useQueryClient();
+  const router = useRouter();
 
   const { data, status } = useDetailDeveloper(developerId);
   const developer = data?.data?.developer;
@@ -40,7 +39,7 @@ export default function DeveloperDetailPage() {
             { title: "Dashboard" },
             {
               title: "Developer Management",
-              path: "/admin/developer-management",
+              onClick: () => router.push("/admin/developer-management"),
             },
             {
               title: (

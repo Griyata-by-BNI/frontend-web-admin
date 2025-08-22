@@ -114,7 +114,6 @@ export default function ImageGallery({ images, name }: ImageGalleryProps) {
         footer={null}
         width={800}
         centered
-        zIndex={9999999}
       >
         <div className="grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
           {imgs.map((image, index) => (
