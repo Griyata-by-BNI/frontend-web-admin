@@ -88,7 +88,7 @@ export default function SubmissionDetailPage() {
                 <Descriptions.Item label="Status">
                   {s?.status ? (
                     <Tag color="processing" className="capitalize">
-                      {s.status}
+                      {s.status.replace("_", " ")}
                     </Tag>
                   ) : (
                     "-"
