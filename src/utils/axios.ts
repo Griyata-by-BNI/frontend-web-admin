@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 
 // ===== Client instance =====
 const axiosInstance = axios.create({
-  baseURL: "/api",
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   headers: { "ngrok-skip-browser-warning": "true" },
 });
 
