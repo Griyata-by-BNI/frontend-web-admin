@@ -316,13 +316,16 @@ async function getClusterPageData(
   try {
     const [clusterRes, typesRes, developerRes] = await Promise.all([
       axiosServer.get<{ data: { clusters: ApiClusterDetail[] } }>(
-        `/clusters/${clusterId}`
+        `/clusters/${clusterId}`,
+        { timeout: 10000 }
       ),
       axiosServer.get<{ data: { clusterTypes: ApiPropertyType[] } }>(
-        `/clusters/type/cluster/${clusterId}`
+        `/clusters/type/cluster/${clusterId}`,
+        { timeout: 10000 }
       ),
       axiosServer.get<{ data: { developer: ApiDeveloper } }>(
-        `/developers/${developerId}`
+        `/developers/${developerId}`,
+        { timeout: 10000 }
       ),
     ]);
 
@@ -335,8 +338,9 @@ async function getClusterPageData(
     if (propertyTypesData && propertyTypesData.length > 0) {
       const propertyPromises = propertyTypesData.map((type) =>
         axiosServer.get<{ data: ApiProperty[] }>(
-          `/properties/cluster-type/${type.id}`
-        )
+          `/properties/cluster-type/${type.id}`,
+          { timeout: 10000 }
+        ).catch(() => ({ data: { data: [] } }))
       );
       const propertyResults = await Promise.all(propertyPromises);
 
@@ -345,7 +349,7 @@ async function getClusterPageData(
         const properties = propertyResults[i].data.data || [];
         const detailPromises = properties.map((prop) =>
           axiosServer
-            .get<{ data: ApiPropertyDetail }>(`/properties/${prop.propertyId}`)
+            .get<{ data: ApiPropertyDetail }>(`/properties/${prop.propertyId}`, { timeout: 8000 })
             .catch(() => ({ data: { data: null } }))
         );
         const detailResults = await Promise.all(detailPromises);
@@ -528,7 +532,7 @@ export default async function HousingDetailPage({
               <MapWithNearbyPlaces
                 center={[Number(cluster.latitude), Number(cluster.longitude)]}
                 popupText={`Lokasi ${cluster.name}`}
-                nearbyPlaces={cluster.nearbyPlaces || []}
+                nearbyPlaces={Array.isArray(cluster.nearbyPlaces) ? cluster.nearbyPlaces : []}
               />
             ) : (
               <p className="text-gray-500">Peta lokasi tidak tersedia.</p>

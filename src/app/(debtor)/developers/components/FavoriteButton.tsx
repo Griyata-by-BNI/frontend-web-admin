@@ -19,14 +19,14 @@ export default function FavoriteButton({
   const [isLoading, setIsLoading] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteId, setFavoriteId] = useState<number | null>(null);
-  const currentUserId = userId || user?.userId;
+  const currentUserId = userId || (user?.userId ? Number(user.userId) : undefined);
 
   useEffect(() => {
     const checkFavoriteStatus = async () => {
       if (!currentUserId) return;
       
       try {
-        const favorites = await getFavoriteProperties(currentUserId);
+        const favorites = await getFavoriteProperties(Number(currentUserId));
         const favorite = favorites.find(fav => fav.propertyId === propertyId);
         if (favorite) {
           setIsFavorited(true);
@@ -49,14 +49,14 @@ export default function FavoriteButton({
     setIsLoading(true);
     try {
       if (isFavorited && favoriteId) {
-        await removeFromFavorites(favoriteId, currentUserId);
+        await removeFromFavorites(favoriteId, Number(currentUserId));
         setIsFavorited(false);
         setFavoriteId(null);
       } else {
-        await addToFavorites({ userId: currentUserId, propertyId });
+        await addToFavorites({ userId: Number(currentUserId), propertyId });
         setIsFavorited(true);
         // Refresh to get the new favoriteId
-        const favorites = await getFavoriteProperties(currentUserId);
+        const favorites = await getFavoriteProperties(Number(currentUserId));
         const favorite = favorites.find(fav => fav.propertyId === propertyId);
         if (favorite) setFavoriteId(favorite.favoriteId);
       }

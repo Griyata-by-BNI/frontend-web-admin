@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -8,6 +10,7 @@ import { MapWithNearbyPlaces } from "@/app/(debtor)/developers/components/Map";
 import StickyCard from "@/app/(debtor)/developers/components/StickyCard";
 import ImageSlider from "@/app/(debtor)/developers/components/ImageSlider";
 import FavoriteButton from "@/app/(debtor)/developers/components/FavoriteButton";
+import { useAuth } from "@/contexts/authContext";
 
 // 1. Import Font Awesome components and icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -220,17 +223,36 @@ async function getPropertyPageData(
 // 5. MAIN PAGE COMPONENT
 // =================================================================
 
-export default async function PropertyDetailPage({
+export default function PropertyDetailPage({
   params,
 }: {
-  params: { property_id: string; developer_id: string; cluster_id: string };
+  params: Promise<{ property_id: string; developer_id: string; cluster_id: string }>;
 }) {
-  const data = await getPropertyPageData(
-    params.property_id,
-    params.developer_id,
-    params.cluster_id
-  );
+  const { user } = useAuth();
+  const resolvedParams = use(params);
+  const [data, setData] = useState<{
+    property: ApiPropertyDetail;
+    developer: ApiDeveloper;
+    cluster: ApiCluster;
+    processed: {
+      specifications: Specification[];
+      installment: string;
+    };
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    getPropertyPageData(
+      resolvedParams.property_id,
+      resolvedParams.developer_id,
+      resolvedParams.cluster_id
+    ).then((result) => {
+      setData(result);
+      setLoading(false);
+    });
+  }, [resolvedParams.property_id, resolvedParams.developer_id, resolvedParams.cluster_id]);
+
+  if (loading) return <div>Loading...</div>;
   if (!data) {
     notFound();
   }
@@ -270,7 +292,7 @@ export default async function PropertyDetailPage({
             </h2>
             <div className="bg-white/70 border-2 border-teal-200 rounded-2xl p-6 mb-8 shadow-sm backdrop-blur-sm">
               <div className="grid grid-cols-2 gap-x-8 gap-y-5">
-                {processed.specifications.map((spec, index) => (
+                {processed.specifications.map((spec: Specification, index: number) => (
                   <div key={index} className="flex items-center">
                     <FontAwesomeIcon
                       icon={spec.icon}
@@ -325,7 +347,9 @@ export default async function PropertyDetailPage({
                     Ajukan KPR
                   </button>
                 </Link>
-                <FavoriteButton propertyId={property.id} />
+                {user?.userId && (
+                  <FavoriteButton propertyId={property.id} userId={Number(user.userId)} />
+                )}
               </div>
             </div>
           </div>
