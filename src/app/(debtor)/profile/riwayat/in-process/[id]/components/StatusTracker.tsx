@@ -70,9 +70,8 @@ export const StatusTracker = ({
         const isLineCompleted = stepNumber < currentProgress;
 
         return (
-          <>
+          <div key={step.title} className="flex items-start">
             <Step
-              key={step.title}
               title={step.title}
               date={step.date}
               isCompleted={isCompleted}
@@ -86,7 +85,7 @@ export const StatusTracker = ({
                 }`}
               />
             )}
-          </>
+          </div>
         );
       })}
     </div>

@@ -68,7 +68,7 @@ export const PengajuanKPRView = ({ submissionData, propertyData }: PengajuanKPRV
     { label: "Developer", value: propertyData.developerName },
     { label: "Cluster", value: propertyData.clusterName },
     { label: "Tipe", value: propertyData.clusterTypeName },
-    { label: "Harga", value: `Rp ${parseInt(propertyData.price).toLocaleString("id-ID")}` },
+    { label: "Harga", value: `Rp ${Number(propertyData.price).toLocaleString("id-ID")}` },
     { label: "Lokasi", value: propertyData.location },
     { label: "Kamar Tidur", value: propertyData.jumlahKamarTidur.toString() },
     { label: "Kamar Mandi", value: propertyData.jumlahKamarMandi.toString() },
@@ -80,7 +80,7 @@ export const PengajuanKPRView = ({ submissionData, propertyData }: PengajuanKPRV
   ] : [];
 
   const dataPinjaman = [
-    { label: "Nilai Pinjaman", value: `Rp ${parseInt(loan_information.loan_value).toLocaleString("id-ID")}` },
+    { label: "Nilai Pinjaman", value: `Rp ${Number(loan_information.loan_value).toLocaleString("id-ID")}` },
     { label: "Jangka Waktu", value: `${loan_information.monthly_period} bulan` },
   ];
 

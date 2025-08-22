@@ -1,3 +1,7 @@
+import { useMemo } from "react";
+import { generateApplicationCode } from "@/utils/constants";
+import { clsx } from "clsx";
+
 interface HasilPengajuanViewProps {
   status: "selesai" | "dalam_proses";
   submissionId: number;
@@ -8,14 +12,16 @@ const Illustration = ({ status }: { status: "selesai" | "dalam_proses" }) => {
   const isCompleted = status === "selesai";
   return (
     <div
-      className={`mx-auto w-full max-w-sm h-64 rounded-lg flex items-center justify-center ${
+      className={clsx(
+        "mx-auto w-full max-w-sm h-64 rounded-lg flex items-center justify-center",
         isCompleted ? "bg-green-50" : "bg-blue-50"
-      }`}
+      )}
     >
       <svg
-        className={`w-24 h-24 ${
+        className={clsx(
+          "w-24 h-24",
           isCompleted ? "text-green-400" : "text-blue-400"
-        }`}
+        )}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -39,7 +45,7 @@ const Illustration = ({ status }: { status: "selesai" | "dalam_proses" }) => {
   );
 };
 
-const content = {
+const CONTENT = {
   selesai: {
     title: "telah selesai diproses",
     message:
@@ -50,22 +56,20 @@ const content = {
     message:
       "Pengajuan KPR Anda masih dalam tahap pemrosesan. Mohon tunggu untuk informasi selanjutnya.",
   },
-};
+} as const;
 
 export const HasilPengajuanView = ({
   status,
   submissionId,
   verificationNotes,
 }: HasilPengajuanViewProps) => {
-  const { title, message } = content[status];
+  const { title, message } = CONTENT[status];
 
-  const generateApplicationCode = (submissionId: number): string => {
+  const applicationCode = useMemo(() => {
     const today = new Date();
     const dateStr = today.toISOString().slice(0, 10).replace(/-/g, "");
     return `${dateStr}${submissionId.toString().padStart(3, "0")}`;
-  };
-
-  const applicationCode = generateApplicationCode(submissionId);
+  }, [submissionId]);
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-8 text-center">

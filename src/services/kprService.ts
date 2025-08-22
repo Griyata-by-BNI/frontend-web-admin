@@ -1,10 +1,12 @@
+import { useAuth } from "@/contexts/authContext";
 import {
   SubmissionSummary,
   SubmissionDetail,
   PropertyDetail,
   ApiStatus,
 } from "@/types/riwayat";
-import axiosInstance from "@/utils/axios";
+import { axiosInstance } from "@/utils/axios";
+import { useQuery } from "@tanstack/react-query";
 
 const getAuthToken = (): string | null => {
   if (typeof document !== "undefined") {
@@ -106,4 +108,36 @@ export const getPropertyById = async (
     console.error(`Failed to fetch property ${id}:`, error);
     return null;
   }
+};
+
+export const useSubmissionsByStatus = (status: ApiStatus) => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ["submissions", user?.userId, status],
+    queryFn: () => {
+      if (!user?.userId) throw new Error("User ID not found");
+      return getSubmissionsByUserId(parseInt(user.userId), status);
+    },
+    enabled: !!user?.userId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+
+export const useSubmissionDetail = (id: number) => {
+  return useQuery({
+    queryKey: ["submission", id],
+    queryFn: () => getSubmissionById(id),
+    enabled: !!id && !isNaN(id),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const usePropertyDetail = (propertyId: number | undefined) => {
+  return useQuery({
+    queryKey: ["property", propertyId],
+    queryFn: () => getPropertyById(propertyId!),
+    enabled: !!propertyId,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+  });
 };

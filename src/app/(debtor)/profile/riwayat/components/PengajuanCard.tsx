@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SubmissionSummary, ApiStatus } from "@/types/riwayat";
+import { generateApplicationCode } from "@/utils/constants";
 import StatusBadge from "./StatusBadge";
 
 interface PengajuanCardProps {
@@ -11,12 +12,6 @@ const getLinkHref = (id: number, status: ApiStatus): string => {
     return `/profile/riwayat/in-process/${id}`;
   }
   return `/profile/riwayat/completed/${id}`;
-};
-
-const generateApplicationCode = (submittedAt: string, submissionId: number): string => {
-  const date = new Date(submittedAt);
-  const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
-  return `${dateStr}${submissionId.toString().padStart(3, '0')}`;
 };
 
 export default function PengajuanCard({ submission }: PengajuanCardProps) {

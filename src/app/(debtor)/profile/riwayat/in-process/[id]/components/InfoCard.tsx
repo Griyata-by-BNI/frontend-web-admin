@@ -20,7 +20,7 @@ export const InfoCard = ({ title, details, icon }: InfoCardProps) => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
         {details.map((item, index) => (
-          <div key={index}>
+          <div key={`${item.label}-${index}`}>
             <p className="text-sm text-gray-500">{item.label}</p>
             <p className="font-semibold text-gray-800">{item.value}</p>
           </div>
