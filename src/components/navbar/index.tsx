@@ -8,6 +8,8 @@ import { LogOut, User2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { axiosInstance } from "@/utils/axios";
 import { kprItems, navItems } from "./constants";
 import { NavItem } from "./types";
 
@@ -41,7 +43,28 @@ const NavLink = ({
 
 const LoginButton = ({ className = "" }: { className?: string }) => {
   const { modal } = App.useApp();
-  const { user, loading, logout } = useAuth();
+  const { user, token, loading, logout } = useAuth();
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProfilePicture = async () => {
+      if (!user?.userId || !token) return;
+      
+      try {
+        const res = await axiosInstance.get(`/profiles/${user.userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const photoUrl = res.data?.data?.profile?.photoUrl;
+        if (photoUrl) {
+          setProfilePicture(photoUrl);
+        }
+      } catch (err) {
+        console.error('Failed to fetch profile picture:', err);
+      }
+    };
+
+    fetchProfilePicture();
+  }, [user?.userId, token]);
 
   const menuItems = [
     {
@@ -81,6 +104,7 @@ const LoginButton = ({ className = "" }: { className?: string }) => {
         >
           <Avatar
             size="small"
+            src={profilePicture}
             icon={<UserOutlined />}
             style={{ backgroundColor: "#30a5a2" }}
           />
