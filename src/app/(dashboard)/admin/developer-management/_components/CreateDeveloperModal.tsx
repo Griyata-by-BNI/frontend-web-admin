@@ -95,7 +95,11 @@ export default function CreateDeveloperModal() {
             className="!mb-3"
             rules={[{ required: true, message: "Mohon masukkan nama!" }]}
           >
-            <Input placeholder="Masukkan nama developer" />
+            <Input
+              placeholder="Masukkan nama developer"
+              maxLength={100}
+              showCount
+            />
           </Form.Item>
 
           <Form.Item
@@ -155,7 +159,12 @@ export default function CreateDeveloperModal() {
             className="!mb-3"
             rules={[{ required: true, message: "Mohon masukkan deskripsi!" }]}
           >
-            <Input.TextArea placeholder="Masukkan deskripsi" rows={3} />
+            <Input.TextArea
+              placeholder="Masukkan deskripsi"
+              rows={3}
+              maxLength={1000}
+              showCount
+            />
           </Form.Item>
         </Form>
       </Modal>

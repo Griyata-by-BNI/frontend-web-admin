@@ -130,7 +130,11 @@ export default function EditDeveloperModal({
             className="!mb-3"
             rules={[{ required: true, message: "Mohon masukkan nama!" }]}
           >
-            <Input />
+            <Input
+              placeholder="Masukkan nama developer"
+              maxLength={100}
+              showCount
+            />
           </Form.Item>
 
           <Form.Item

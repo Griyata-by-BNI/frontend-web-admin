@@ -16,7 +16,7 @@ import { useClusterById, useUpdateCluster } from "@/services/clusterServices";
 import { Edit, MapPin, Upload as UploadIcon, X } from "lucide-react";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FacitiliesData } from "../../_constants";
 import { useNearbyPlaces } from "../_hooks/useNearbyPlaces";
 import { NearbyPlaceTypeLabel } from "../constants";
@@ -39,8 +39,8 @@ export default function EditClusterModal({ clusterId }: { clusterId: string }) {
   const isDetailPage = pathname.includes("/clusters");
   const queryClient = useQueryClient();
   const { mutate, status } = useUpdateCluster();
+  const initialPhotoUrlsRef = useRef<string[]>([]);
 
-  // ⬇️ Ambil state & actions dari image store
   const {
     fileList,
     setFileList,
@@ -59,29 +59,26 @@ export default function EditClusterModal({ clusterId }: { clusterId: string }) {
     resetPlaces,
   } = useNearbyPlaces();
 
-  // seed form + gambar saat modal dibuka
   useEffect(() => {
     if (!modalOpen || !clusterData?.data?.clusters?.[0]) return;
 
     const cluster = clusterData.data.clusters[0];
 
-    // Set nilai form (tanpa images)
     form.setFieldsValue({
       ...cluster,
       facilities: cluster.facilities ? cluster.facilities.split(",") : [],
     });
 
-    // Seed fileList dari URL lama
-    const urls: string[] = cluster.cluster_photo_urls || [];
-    setFromUrls(urls); // url sudah cukup untuk preview (tidak perlu ensurePreviews)
+    initialPhotoUrlsRef.current = cluster.cluster_photo_urls || [];
 
+    const urls: string[] = cluster.cluster_photo_urls || [];
+    setFromUrls(urls);
     const lat = cluster.latitude ? Number(cluster.latitude) : undefined;
     const lng = cluster.longitude ? Number(cluster.longitude) : undefined;
     setCoordinates({ lat, lng });
     if (lat != null && lng != null) {
       handleLocationSelect(lat, lng);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modalOpen, clusterData]);
 
   const handleCancel = () => {
@@ -100,10 +97,17 @@ export default function EditClusterModal({ clusterId }: { clusterId: string }) {
 
   const handleSubmit = (values: any) => {
     try {
-      // Ambil hanya file BARU (yang punya originFileObj)
       const images: File[] = fileList
         .map((f) => f.originFileObj)
         .filter(Boolean) as File[];
+
+      const keepPhotoUrls: string[] = fileList
+        .filter((f) => !f.originFileObj && !!f.url)
+        .map((f) => f.url!) as string[];
+
+      const deletePhotoUrls: string[] = initialPhotoUrlsRef.current.filter(
+        (url) => !keepPhotoUrls.includes(url)
+      );
 
       mutate(
         {
@@ -119,6 +123,7 @@ export default function EditClusterModal({ clusterId }: { clusterId: string }) {
             facilities: (values.facilities || []).join(", "),
             nearbyPlaces,
           },
+          deletePhotoUrls,
         },
         {
           onSuccess: () => {
@@ -177,7 +182,11 @@ export default function EditClusterModal({ clusterId }: { clusterId: string }) {
             className="!mb-3"
             rules={[{ required: true, message: "Mohon masukkan nama!" }]}
           >
-            <Input placeholder="Masukkan nama cluster" />
+            <Input
+              placeholder="Masukkan nama cluster"
+              maxLength={100}
+              showCount
+            />
           </Form.Item>
 
           <Form.Item
@@ -189,7 +198,7 @@ export default function EditClusterModal({ clusterId }: { clusterId: string }) {
               { min: 10, message: "Nomor telepon minimal 10 digit!" },
             ]}
           >
-            <Input placeholder="081234567890" />
+            <Input placeholder="081234567890" maxLength={15} showCount />
           </Form.Item>
 
           <Form.Item
@@ -198,7 +207,12 @@ export default function EditClusterModal({ clusterId }: { clusterId: string }) {
             className="!mb-3"
             rules={[{ required: true, message: "Mohon masukkan alamat!" }]}
           >
-            <Input.TextArea placeholder="Masukkan alamat lengkap" rows={2} />
+            <Input.TextArea
+              placeholder="Masukkan alamat lengkap"
+              rows={2}
+              maxLength={1000}
+              showCount
+            />
           </Form.Item>
 
           <div className="grid grid-cols-2 gap-3">
@@ -273,7 +287,12 @@ export default function EditClusterModal({ clusterId }: { clusterId: string }) {
             className="!mb-3"
             rules={[{ required: true, message: "Mohon masukkan deskripsi!" }]}
           >
-            <Input.TextArea placeholder="Masukkan deskripsi" rows={3} />
+            <Input.TextArea
+              placeholder="Masukkan deskripsi"
+              rows={3}
+              maxLength={1000}
+              showCount
+            />
           </Form.Item>
 
           <Form.Item
@@ -292,7 +311,6 @@ export default function EditClusterModal({ clusterId }: { clusterId: string }) {
             />
           </Form.Item>
 
-          {/* 🔹 Upload dikontrol oleh image store (tidak terikat Form) */}
           <Form.Item label="Gambar" className="!mb-3">
             <Upload
               multiple
@@ -304,6 +322,7 @@ export default function EditClusterModal({ clusterId }: { clusterId: string }) {
                 setFileList(fl);
                 await ensurePreviews(); // isi thumbUrl untuk file baru
               }}
+              maxCount={15}
             >
               <Button icon={<UploadIcon className="w-4 h-4" />}>
                 Upload Gambar

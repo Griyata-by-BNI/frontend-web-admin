@@ -82,7 +82,7 @@ export default function TableCluster({}) {
 
   return (
     <>
-      <Row gutter={16} className="mb-4">
+      {/* <Row gutter={16} className="mb-4">
         <Col span={6}>
           <Input.Search
             placeholder="Cari berdasarkan nama"
@@ -96,7 +96,7 @@ export default function TableCluster({}) {
             <CreateClusterModal />
           </div>
         </Col>
-      </Row>
+      </Row> */}
 
       <Table
         bordered

@@ -148,7 +148,11 @@ export default function CreateClusterModal() {
             className="!mb-3"
             rules={[{ required: true, message: "Mohon masukkan nama!" }]}
           >
-            <Input placeholder="Masukkan nama cluster" />
+            <Input
+              placeholder="Masukkan nama cluster"
+              maxLength={100}
+              showCount
+            />
           </Form.Item>
 
           <Form.Item
@@ -160,7 +164,7 @@ export default function CreateClusterModal() {
               { min: 10, message: "Nomor telepon minimal 10 digit!" },
             ]}
           >
-            <Input placeholder="081234567890" />
+            <Input placeholder="081234567890" maxLength={15} showCount />
           </Form.Item>
 
           <Form.Item
@@ -169,7 +173,12 @@ export default function CreateClusterModal() {
             className="!mb-3"
             rules={[{ required: true, message: "Mohon masukkan alamat!" }]}
           >
-            <Input.TextArea placeholder="Masukkan alamat lengkap" rows={2} />
+            <Input.TextArea
+              placeholder="Masukkan alamat lengkap"
+              rows={2}
+              maxLength={1000}
+              showCount
+            />
           </Form.Item>
 
           <div className="grid grid-cols-2 gap-3">
@@ -244,7 +253,12 @@ export default function CreateClusterModal() {
             className="!mb-3"
             rules={[{ required: true, message: "Mohon masukkan deskripsi!" }]}
           >
-            <Input.TextArea placeholder="Masukkan deskripsi" rows={3} />
+            <Input.TextArea
+              placeholder="Masukkan deskripsi"
+              rows={3}
+              maxLength={1000}
+              showCount
+            />
           </Form.Item>
 
           <Form.Item
@@ -275,6 +289,7 @@ export default function CreateClusterModal() {
                 setFileList(fl);
                 await ensurePreviews(); // set thumbUrl untuk file baru
               }}
+              maxCount={15}
             >
               <Button icon={<UploadIcon className="w-4 h-4" />}>
                 Upload Gambar
