@@ -363,11 +363,15 @@ export default function PropertyDetailPage({
                 stock={property.stock}
               />
               <div className="flex gap-3">
-                <Link href="/kpr-apply" className="flex-1">
+                <Link
+                  href={`/kpr-apply?property_id=${resolvedParams.property_id}`}
+                  className="flex-1"
+                >
                   <button className="w-full py-3 px-6 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold rounded-full hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-lg">
                     Ajukan KPR
                   </button>
                 </Link>
+
                 {user?.userId && (
                   <FavoriteButton
                     propertyId={property.id}
