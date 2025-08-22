@@ -5,12 +5,14 @@ import { KPRSimulator } from "@/app/(debtor)/kpr-simulator/_components/KPRSimula
 import { CTASection } from "@/app/(debtor)/kpr-information/detail/components/CTASection";
 import { axiosInstance, axiosServer } from "@/utils/axios";
 import HeroSearch from "@/app/(debtor)/developers/components/HeroSearch";
+import RecentlyViewedProperties from "@/components/home/RecentlyViewedProperties";
 
 // --- TYPE DEFINITION ---
 interface Property {
   id: number;
   developerId: number;
   clusterId: number;
+  clusterName: string;
   propertyName: string;
   location: string;
   price: string;
@@ -63,7 +65,10 @@ const PropertyCard: React.FC<{ property: Property }> = ({ property }) => (
   </Link>
 );
 
-// --- MAIN PAGE COMPONENT ---
+interface RecentlyViewedProperty extends Property {
+  lastViewed: string;
+}
+
 export default async function HomePage() {
   const latestProperties = await getLatestProperties();
 
@@ -99,6 +104,95 @@ export default async function HomePage() {
           className="w-full -mt-5"
         />
         <div className="container mx-auto px-4">
+          {/* START AI AGENT */}
+          {/* Agent Bot Griyata Introduction Section dengan Kombinasi Fitur */}
+          <div className="mb-10">
+            <div className="flex items-center bg-cyan-50 rounded-2xl shadow p-6 gap-4 relative">
+              {/* Online Status Indicator dengan Animasi */}
+              <div className="absolute top-4 right-4 flex items-center">
+                <span className="relative flex h-3 w-3 mr-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                </span>
+                <span className="text-xs text-gray-500">Online</span>
+              </div>
+
+              <div className="flex-shrink-0">
+                <div className="relative">
+                  <Image
+                    src="/logo-griyata.png"
+                    alt="Griyata Bot"
+                    width={64}
+                    height={64}
+                    className="rounded-full border border-cyan-200 bg-white"
+                  />
+                  {/* Animated Pulse Effect */}
+                  <span className="absolute -bottom-1 -right-1 flex h-5 w-5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-5 w-5 bg-cyan-500"></span>
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex-grow">
+                <h3 className="text-xl font-bold text-cyan-700 mb-1">
+                  Hai, saya Griyata Bot!
+                </h3>
+                <p className="text-gray-700 mb-3">
+                  Saya adalah asisten virtual Griyata yang siap membantu Anda
+                  menemukan rumah impian, simulasi KPR, dan menjawab pertanyaan
+                  seputar properti.
+                  <br />
+                  Jangan ragu untuk bertanya atau meminta bantuan kapan saja.
+                  Saya siap membantu perjalanan properti Anda menjadi lebih
+                  mudah dan menyenangkan!
+                </p>
+
+                {/* Quick Action Buttons */}
+                <div className="flex flex-wrap gap-2 mt-4 mb-4">
+                  <button className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg text-sm transition-colors flex items-center">
+                    <span className="mr-1">🏠</span> Cari Rumah
+                  </button>
+                  <button className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg text-sm transition-colors flex items-center">
+                    <span className="mr-1">📊</span> Simulasi KPR
+                  </button>
+                  <button className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg text-sm transition-colors flex items-center">
+                    <span className="mr-1">💬</span> Tanya Tips
+                  </button>
+                </div>
+
+                {/* Contoh Pertanyaan */}
+                <div className="bg-cyan-100 p-3 rounded-lg mt-2">
+                  <h4 className="font-semibold text-cyan-800 mb-2 text-sm">
+                    Coba tanyakan:
+                  </h4>
+                  <ul className="text-sm space-y-2">
+                    <li className="flex">
+                      <span className="text-cyan-600 mr-2">•</span>
+                      <span className="text-gray-700">
+                        "Rumah dengan 3 kamar di Jakarta Selatan dengan budget
+                        2M"
+                      </span>
+                    </li>
+                    <li className="flex">
+                      <span className="text-cyan-600 mr-2">•</span>
+                      <span className="text-gray-700">
+                        "Simulasi KPR untuk rumah senilai 1.5M dengan DP 20%"
+                      </span>
+                    </li>
+                    <li className="flex">
+                      <span className="text-cyan-600 mr-2">•</span>
+                      <span className="text-gray-700">
+                        "Tips memilih rumah pertama untuk keluarga muda"
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* END AI AGENT */}
+
           <div className="mb-16">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-2xl font-bold text-gray-800">
@@ -117,6 +211,10 @@ export default async function HomePage() {
               ))}
             </div>
           </div>
+
+          {/* START SECTION TERAKHIR DILIHAT */}
+          <RecentlyViewedProperties />
+          {/* END SECTION TERAKHIR DILIHAT */}
         </div>
       </div>
 
