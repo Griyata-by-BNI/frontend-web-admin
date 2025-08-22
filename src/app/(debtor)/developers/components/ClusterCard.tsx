@@ -89,18 +89,18 @@ const ClusterCard: React.FC<ClusterCardProps> = ({ cluster, developerId }) => {
     <Link href={href} className="flex">
       {/* ✨ Mengubah rounded-lg menjadi rounded-2xl */}
       <div className="bg-white rounded-2xl shadow-xl shadow-gray-500/10 overflow-hidden hover:shadow-primary-tosca/30 flex flex-col w-full">
-        {/* GAMBAR: ✨ Mengubah tinggi dari h-40 menjadi h-48 */}
-        <div className="relative w-full h-48 bg-gray-100">
+        {/* GAMBAR: Slightly reduced height */}
+        <div className="relative w-full h-44 bg-gray-100">
           {cluster.cluster_photo_urls &&
           cluster.cluster_photo_urls.length > 0 ? (
             <div className="h-full relative z-10">
-              <Carousel 
-                dots 
-                arrows 
+              <Carousel
+                autoplay
+                dots
                 className="h-full [&_.slick-prev]:left-2 [&_.slick-next]:right-2 [&_.slick-prev]:z-20 [&_.slick-next]:z-20 [&_.slick-prev]:bg-black/50 [&_.slick-next]:bg-black/50 [&_.slick-prev]:rounded-full [&_.slick-next]:rounded-full [&_.slick-prev]:w-8 [&_.slick-next]:w-8 [&_.slick-prev]:h-8 [&_.slick-next]:h-8 [&_.slick-dots]:z-20"
               >
                 {cluster.cluster_photo_urls.map((src, idx) => (
-                  <div key={idx} className="relative w-full h-48">
+                  <div key={idx} className="relative w-full h-44">
                     <Image
                       src={src}
                       alt={`cluster-photo-${idx + 1}`}
@@ -122,36 +122,36 @@ const ClusterCard: React.FC<ClusterCardProps> = ({ cluster, developerId }) => {
           )}
         </div>
 
-        {/* KONTEN: ✨ Mengubah padding dari p-4 menjadi p-5 */}
+        {/* KONTEN: Slightly reduced padding */}
         <div className="p-5 flex-grow flex flex-col">
-          {/* ✨ Judul: Mengubah warna (text-teal-700) & ukuran (text-xl) */}
-          <h3 className="text-xl font-bold text-teal-700">{cluster.name}</h3>
+          {/* Judul: Smaller font */}
+          <h3 className="text-lg font-bold text-teal-700">{cluster.name}</h3>
 
-          {/* ✨ Alamat: Mengubah warna (text-teal-600/90), ukuran (text-base), & margin (mb-5) */}
-          <p className="text-base text-teal-600/90 mt-1 mb-5">
+          {/* Alamat: Increased font size and margin */}
+          <p className="text-base text-teal-600/90 mt-2 mb-4">
             {cluster.address || "Lokasi tidak tersedia"}
           </p>
 
-          {/* HARGA & ANGSURAN: ✨ Mengubah padding atas (pt-4) */}
+          {/* HARGA & ANGSURAN: Increased padding */}
           <div className="mt-auto flex items-center pt-4">
             <div className="flex-1">
-              <p className="text-xs text-gray-500">Harga mulai dari</p>
-              {/* ✨ Mengubah ukuran font harga (text-lg) & 'Rp' (text-sm) */}
-              <p className="text-lg font-bold text-gray-800 mt-1">
+              <p className="text-sm text-gray-500">Harga mulai dari</p>
+              {/* Smaller price font size */}
+              <p className="text-base font-bold text-gray-800 mt-1">
                 <span className="font-normal text-sm">Rp</span>{" "}
                 {formatPrice(cluster.minPrice)}
               </p>
             </div>
 
-            {/* ✨ Mengubah margin divider (mx-4) */}
-            <div className="h-10 w-px bg-gray-200 mx-4"></div>
+            {/* Slightly smaller divider */}
+            <div className="h-10 w-px bg-gray-200 mx-3"></div>
 
             <div className="flex-1">
-              <p className="text-xs text-gray-500">Angsuran mulai dari</p>
-              {/* ✨ Mengubah ukuran font angsuran (text-lg) */}
-              <p className="text-lg font-bold text-gray-800 mt-1">
+              <p className="text-sm text-gray-500">Angsuran mulai dari</p>
+              {/* Smaller installment font size */}
+              <p className="text-base font-bold text-gray-800 mt-1">
                 {installment}
-                <span className="text-xs text-gray-500 font-normal">
+                <span className="text-sm text-gray-500 font-normal">
                   {" "}
                   /bulan
                 </span>

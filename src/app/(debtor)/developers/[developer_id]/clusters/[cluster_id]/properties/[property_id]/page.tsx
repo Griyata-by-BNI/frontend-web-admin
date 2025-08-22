@@ -4,7 +4,7 @@ import React, { useEffect, useState, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { axiosServer } from "@/utils/axios";
+import { axiosInstance, axiosServer } from "@/utils/axios";
 import { KPRSimulator } from "@/app/(debtor)/kpr-simulator";
 import { MapWithNearbyPlaces } from "@/app/(debtor)/developers/components/Map";
 import StickyCard from "@/app/(debtor)/developers/components/StickyCard";
@@ -226,9 +226,13 @@ async function getPropertyPageData(
 export default function PropertyDetailPage({
   params,
 }: {
-  params: Promise<{ property_id: string; developer_id: string; cluster_id: string }>;
+  params: Promise<{
+    property_id: string;
+    developer_id: string;
+    cluster_id: string;
+  }>;
 }) {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const resolvedParams = use(params);
   const [data, setData] = useState<{
     property: ApiPropertyDetail;
@@ -250,7 +254,22 @@ export default function PropertyDetailPage({
       setData(result);
       setLoading(false);
     });
-  }, [resolvedParams.property_id, resolvedParams.developer_id, resolvedParams.cluster_id]);
+
+    // log user activity
+    console.log("log user activity");
+    if (user) {
+      (async function () {
+        await axiosInstance.post("/properties/recently-viewed-properties", {
+          userId: parseInt(user.userId),
+          propertyId: parseInt(resolvedParams.property_id),
+        });
+      })();
+    }
+  }, [
+    resolvedParams.property_id,
+    resolvedParams.developer_id,
+    resolvedParams.cluster_id,
+  ]);
 
   if (loading) return <div>Loading...</div>;
   if (!data) {
@@ -292,17 +311,19 @@ export default function PropertyDetailPage({
             </h2>
             <div className="bg-white/70 border-2 border-teal-200 rounded-2xl p-6 mb-8 shadow-sm backdrop-blur-sm">
               <div className="grid grid-cols-2 gap-x-8 gap-y-5">
-                {processed.specifications.map((spec: Specification, index: number) => (
-                  <div key={index} className="flex items-center">
-                    <FontAwesomeIcon
-                      icon={spec.icon}
-                      className="text-teal-600 w-6 h-6"
-                    />
-                    <span className="ml-4 text-gray-800 font-medium">
-                      {spec.text}
-                    </span>
-                  </div>
-                ))}
+                {processed.specifications.map(
+                  (spec: Specification, index: number) => (
+                    <div key={index} className="flex items-center">
+                      <FontAwesomeIcon
+                        icon={spec.icon}
+                        className="text-teal-600 w-6 h-6"
+                      />
+                      <span className="ml-4 text-gray-800 font-medium">
+                        {spec.text}
+                      </span>
+                    </div>
+                  )
+                )}
               </div>
             </div>
 
@@ -348,7 +369,10 @@ export default function PropertyDetailPage({
                   </button>
                 </Link>
                 {user?.userId && (
-                  <FavoriteButton propertyId={property.id} userId={Number(user.userId)} />
+                  <FavoriteButton
+                    propertyId={property.id}
+                    userId={Number(user.userId)}
+                  />
                 )}
               </div>
             </div>

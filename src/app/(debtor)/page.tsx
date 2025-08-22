@@ -6,71 +6,37 @@ import { CTASection } from "@/app/(debtor)/kpr-information/detail/components/CTA
 import { axiosInstance, axiosServer } from "@/utils/axios";
 import HeroSearch from "@/app/(debtor)/developers/components/HeroSearch";
 import RecentlyViewedProperties from "@/components/home/RecentlyViewedProperties";
+import ClusterCard from "@/app/(debtor)/developers/components/ClusterCard";
 
 // --- TYPE DEFINITION ---
-interface Property {
+interface Cluster {
   id: number;
-  developerId: number;
-  clusterId: number;
-  clusterName: string;
-  propertyName: string;
-  location: string;
-  price: string;
-  photoUrl: string | null;
+  maxPrice: string | null;
+  minPrice: string | null;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  address: string;
+  cluster_photo_urls: string[];
 }
 
 // --- API FETCHING ---
-async function getLatestProperties(): Promise<Property[]> {
+async function getLatestClusters(): Promise<Cluster[]> {
   try {
-    const response = await axiosServer.get("/properties/explore", {
-      params: {
-        sortBy: "updatedAt",
-        sortDir: "DESC",
-        pageSize: 4,
-      },
-    });
-    return response.data?.data?.properties || [];
+    const response = await axiosServer.get("/clusters/latest/clusters");
+    return response.data?.data?.clusters || [];
   } catch (error) {
-    console.error("Failed to fetch latest properties:", error);
+    console.error("Failed to fetch latest clusters:", error);
     return [];
   }
 }
 
-// --- CHILD COMPONENT ---
-const PropertyCard: React.FC<{ property: Property }> = ({ property }) => (
-  <Link
-    href={`/developers/${property.developerId}/clusters/${property.clusterId}/properties/${property.id}`}
-    className="block bg-white rounded-2xl shadow-md overflow-hidden transition-transform duration-300 hover:scale-105 hover:shadow-lg h-full"
-  >
-    <div className="relative w-full h-48 bg-gray-200">
-      <Image
-        src={
-          property.photoUrl ||
-          "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800"
-        }
-        alt={property.propertyName}
-        layout="fill"
-        objectFit="cover"
-      />
-    </div>
-    <div className="p-4">
-      <h4 className="font-bold text-gray-800 truncate">
-        {property.propertyName}
-      </h4>
-      <p className="text-sm text-gray-500 mt-1">{property.location}</p>
-      <p className="text-lg font-bold text-teal-600 mt-3">
-        Rp {Number(property.price).toLocaleString("id-ID")}
-      </p>
-    </div>
-  </Link>
-);
 
-interface RecentlyViewedProperty extends Property {
-  lastViewed: string;
-}
+
+
 
 export default async function HomePage() {
-  const latestProperties = await getLatestProperties();
+  const latestClusters = await getLatestClusters();
 
   return (
     <div className="bg-gray-50 font-sans">
@@ -121,9 +87,11 @@ export default async function HomePage() {
                 Lihat Semua
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {latestProperties.map((prop) => (
-                <PropertyCard key={prop.id} property={prop} />
+            <div className="flex gap-4 max-w-full overflow-x-auto overflow-y-hidden pb-4">
+              {latestClusters.map((cluster) => (
+                <div key={cluster.id} className="flex-shrink-0 w-80">
+                  <ClusterCard cluster={{...cluster, developerId: 1}} developerId={1} />
+                </div>
               ))}
             </div>
           </div>
