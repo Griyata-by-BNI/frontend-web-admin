@@ -196,7 +196,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     if (onNavigateToHistory) {
       onNavigateToHistory();
     } else {
-      router.push("/profile/history");
+      router.push("/profile/riwayat");
     }
   }, [onNavigateToHistory, router]);
 
