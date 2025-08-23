@@ -49,10 +49,10 @@ const LoginButton = ({ className = "" }: { className?: string }) => {
 
   const fetchProfileData = async () => {
     if (!user?.userId || !token) return;
-    
+
     try {
       const res = await axiosInstance.get(`/profiles/${user.userId}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       const profile = res.data?.data?.profile;
       if (profile) {
@@ -62,7 +62,7 @@ const LoginButton = ({ className = "" }: { className?: string }) => {
         setDisplayName(user.fullName);
       }
     } catch (err) {
-      console.error('Failed to fetch profile data:', err);
+      console.error("Failed to fetch profile data:", err);
       setDisplayName(user.fullName);
     }
   };
@@ -75,9 +75,10 @@ const LoginButton = ({ className = "" }: { className?: string }) => {
     const handleProfileUpdate = () => {
       fetchProfileData();
     };
-    
-    window.addEventListener('profileUpdated', handleProfileUpdate);
-    return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
+
+    window.addEventListener("profileUpdated", handleProfileUpdate);
+    return () =>
+      window.removeEventListener("profileUpdated", handleProfileUpdate);
   }, [user?.userId, token]);
 
   const menuItems = [
@@ -177,8 +178,8 @@ const Navbar = () => {
   ];
 
   return (
-    <header className="bg-white shadow-md shadow-dark-tosca/5 sticky top-0 z-50">
-      <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
+    <header className="custom-container !p-0 bg-white shadow-md shadow-dark-tosca/5 sticky top-0 z-50">
+      <nav className="container mx-auto px-6 py-3 md:px-0 md:py-5 flex justify-between items-center">
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <Image

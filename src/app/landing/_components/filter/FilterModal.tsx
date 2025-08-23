@@ -1,0 +1,74 @@
+import "@ant-design/v5-patch-for-react-19";
+import { Button, Form, Modal } from "antd";
+import { SlidersHorizontal } from "lucide-react";
+import { useState } from "react";
+import { FilterForm } from "./components/FilterForm";
+import { FilterFormData } from "./types";
+
+export function FilterModal() {
+  const [form] = Form.useForm();
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleFinish = async (values: FilterFormData) => {
+    setIsLoading(true);
+
+    try {
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReset = () => {
+    form.resetFields();
+  };
+
+  const onClose = () => {
+    setIsOpen(false);
+  };
+
+  return (
+    <>
+      <button
+        onClick={() => setIsOpen(true)}
+        className="w-full lg:w-auto px-6 flex items-center justify-center rounded-xl cursor-pointer
+          border-2 border-primary-tosca gap-2 font-semibold text-primary-tosca bg-white
+          transition-all duration-300 shadow-lg hover:text-dark-tosca hover:border-dark-tosca h-[52px] text-lg"
+      >
+        <SlidersHorizontal className="h-6 w-6" />
+
+        <span>Filter</span>
+      </button>
+
+      <Modal
+        centered
+        title="Filter Properti"
+        open={isOpen}
+        onCancel={onClose}
+        maskClosable={false}
+        keyboard={false}
+        width={800}
+        footer={[
+          <Button key="reset" size="large" onClick={handleReset}>
+            Reset
+          </Button>,
+          <Button
+            key="apply"
+            size="large"
+            type="primary"
+            loading={isLoading}
+            onClick={() => form.submit()}
+          >
+            Terapkan Filter
+          </Button>,
+        ]}
+      >
+        <div className="max-h-[70vh] overflow-y-auto overflow-x-hidden px-1">
+          <Form form={form} onFinish={handleFinish}>
+            <FilterForm onReset={handleReset} />
+          </Form>
+        </div>
+      </Modal>
+    </>
+  );
+}

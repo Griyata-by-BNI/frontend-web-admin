@@ -28,6 +28,40 @@
   z-index: 2 !important;
 }
 
-/* .ant-table-tbody > tr:nth-child(even) > td {
-  background-color: #f0f0f0;
-} */
+.custom-container {
+  display: flex;
+  flex-direction: column;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+/* Tablet (≥640px) */
+@media (min-width: 640px) {
+  .custom-container {
+    max-width: 640px;
+  }
+}
+
+/* Medium screen (≥768px) */
+@media (min-width: 768px) {
+  .custom-container {
+    max-width: 768px;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+}
+
+/* Large screen (≥1024px) */
+@media (min-width: 1024px) {
+  .custom-container {
+    max-width: 1024px;
+  }
+}
+
+/* Extra large screen (≥1280px) */
+@media (min-width: 1280px) {
+  .custom-container {
+    max-width: 1280px;
+  }
+}
