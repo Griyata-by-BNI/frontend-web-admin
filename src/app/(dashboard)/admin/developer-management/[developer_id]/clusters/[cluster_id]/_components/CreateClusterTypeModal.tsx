@@ -68,7 +68,11 @@ export default function CreateClusterTypeModal() {
               { required: true, message: "Nama cluster type wajib diisi" },
             ]}
           >
-            <Input placeholder="Masukkan nama cluster type" />
+            <Input
+              maxLength={100}
+              showCount
+              placeholder="Masukkan nama cluster type"
+            />
           </Form.Item>
         </Form>
       </Modal>

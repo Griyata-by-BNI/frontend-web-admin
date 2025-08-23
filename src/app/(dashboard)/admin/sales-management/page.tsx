@@ -165,7 +165,6 @@ export default function SalesManagementPage() {
                   Sales Management
                 </p>
               ),
-              path: "/admin/sales-management",
             },
           ]}
         />

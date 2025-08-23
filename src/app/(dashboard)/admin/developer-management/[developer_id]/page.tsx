@@ -2,20 +2,20 @@
 
 import { useDetailDeveloper } from "@/services/developerServices";
 import "@ant-design/v5-patch-for-react-19";
-import { useQueryClient } from "@tanstack/react-query";
 import { Breadcrumb, Col, Row } from "antd";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import DeleteDeveloperModal from "../_components/DeleteDeveloperModal";
 import EditDeveloperModal from "../_components/EditDeveloperModal";
 import SkeletonDetailDeveloper from "./_components/SkeletonDetailDeveloper";
 import TableCluster from "./_components/TableCluster";
+import CreateClusterModal from "./_components/CreateClusterModal";
 
 export default function DeveloperDetailPage() {
   const params = useParams();
   const developerId = parseInt(params.developer_id as string);
 
-  const queryClient = useQueryClient();
+  const router = useRouter();
 
   const { data, status } = useDetailDeveloper(developerId);
   const developer = data?.data?.developer;
@@ -31,26 +31,36 @@ export default function DeveloperDetailPage() {
   return (
     <>
       <div className="mb-4 flex flex-col gap-1">
-        <p className="text-2xl text-primary-black font-bold">
-          {developer.name}
-        </p>
+        <div className="flex w-full justify-between items-end">
+          <div className="flex flex-col gap-1">
+            <p className="text-2xl text-primary-black font-bold">
+              {developer.name}
+            </p>
 
-        <Breadcrumb
-          items={[
-            { title: "Dashboard" },
-            {
-              title: "Developer Management",
-              path: "/admin/developer-management",
-            },
-            {
-              title: (
-                <p className="text-dark-tosca font-semibold">
-                  {developer.name}
-                </p>
-              ),
-            },
-          ]}
-        />
+            <Breadcrumb
+              items={[
+                { title: "Dashboard" },
+                {
+                  title: "Developer Management",
+                  onClick: () => router.push("/admin/developer-management"),
+                },
+                {
+                  title: (
+                    <p className="text-dark-tosca font-semibold">
+                      {developer.name}
+                    </p>
+                  ),
+                },
+              ]}
+            />
+          </div>
+
+          <div className="flex gap-2 justify-end">
+            <EditDeveloperModal developerData={developer} />
+
+            <DeleteDeveloperModal developerData={developer} />
+          </div>
+        </div>
 
         <div className="mt-4 overflow-hidden">
           <Row gutter={[24, 24]}>
@@ -64,18 +74,12 @@ export default function DeveloperDetailPage() {
                   width={200}
                   height={200}
                   alt={developer.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover rounded-lg"
                 />
               </div>
             </Col>
 
             <Col xs={24} md={16}>
-              <div className="flex gap-2 justify-end">
-                <EditDeveloperModal developerData={developer} />
-
-                <DeleteDeveloperModal developerData={developer} />
-              </div>
-
               <div className="flex flex-col gap-2">
                 <p className="text-lg font-bold text-primary-black">
                   Deskripsi
@@ -88,9 +92,13 @@ export default function DeveloperDetailPage() {
             </Col>
 
             <Col span={24}>
-              <p className="text-lg font-bold text-primary-black mb-1">
-                Daftar Cluster
-              </p>
+              <div className="flex justify-between w-full mb-2 items-center">
+                <p className="text-lg font-bold text-primary-black mb-1">
+                  Daftar Cluster
+                </p>
+
+                <CreateClusterModal />
+              </div>
 
               <TableCluster />
             </Col>

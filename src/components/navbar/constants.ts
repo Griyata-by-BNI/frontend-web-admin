@@ -3,6 +3,7 @@ import { NavItem } from "./types";
 export const navItems: NavItem[] = [
   { label: "Beranda", href: "/" },
   { label: "Partner Developer", href: "/developers" },
+  { label: "Peta", href: "/map" },
   { label: "Info KPR", href: "/kpr-information" },
 ];
 

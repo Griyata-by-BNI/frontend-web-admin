@@ -17,6 +17,7 @@ import { useCreateProperty } from "@/services/propertyServices";
 import type { CreatePropertyPayload } from "@/types/property";
 import { bniRegions, initialSpecOptions } from "../../../constants";
 import { useImageStore } from "@/stores";
+import { createBeforeUploadImage } from "@/utils/uploadValidators";
 
 interface CreatePropertyModalProps {
   clusterTypeId: number;
@@ -104,6 +105,11 @@ export default function CreatePropertyModal({
     }
   };
 
+  const beforeUpload = createBeforeUploadImage({
+    maxMB: 10,
+    onInvalid: (m) => message.error(m),
+  });
+
   return (
     <>
       <Button
@@ -144,7 +150,11 @@ export default function CreatePropertyModal({
               { required: true, message: "Mohon masukkan nama properti!" },
             ]}
           >
-            <Input placeholder="Masukkan nama properti" />
+            <Input
+              maxLength={100}
+              showCount
+              placeholder="Masukkan nama properti"
+            />
           </Form.Item>
 
           <Form.Item
@@ -153,14 +163,33 @@ export default function CreatePropertyModal({
             className="!mb-3"
             rules={[{ required: true, message: "Mohon masukkan deskripsi!" }]}
           >
-            <Input.TextArea placeholder="Masukkan deskripsi" rows={3} />
+            <Input.TextArea
+              maxLength={1000}
+              showCount
+              placeholder="Masukkan deskripsi"
+              rows={3}
+            />
           </Form.Item>
 
           <Form.Item
             name="price"
             label="Harga"
             className="!mb-3"
-            rules={[{ required: true, message: "Mohon masukkan harga!" }]}
+            rules={[
+              { required: true, message: "Mohon masukkan harga!" },
+              {
+                validator: (_, value) => {
+                  if (value === undefined || value === null)
+                    return Promise.resolve(); // ditangani oleh required
+                  const n = Number(value);
+                  if (Number.isNaN(n))
+                    return Promise.reject(new Error("Harga tidak valid."));
+                  if (n < 100_000_000)
+                    return Promise.reject(new Error("Minimal Rp 100.000.000"));
+                  return Promise.resolve();
+                },
+              },
+            ]}
           >
             <InputNumber
               placeholder="Masukkan harga"
@@ -306,7 +335,8 @@ export default function CreatePropertyModal({
             <Upload
               multiple
               showUploadList={false}
-              beforeUpload={() => false}
+              accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+              beforeUpload={beforeUpload}
               fileList={fileList}
               onChange={async ({ fileList: fl }) => {
                 setFileList(fl);

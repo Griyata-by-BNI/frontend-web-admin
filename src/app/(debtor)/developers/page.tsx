@@ -7,7 +7,6 @@ import Link from "next/link";
 // 1. TYPE DEFINITIONS (DISESUAIKAN DENGAN PAYLOAD)
 // =================================================================
 
-// ✨ Interface ini sekarang cocok dengan struktur data dari API Anda
 interface ApiDeveloper {
   id: number;
   name: string;
@@ -32,8 +31,6 @@ interface ApiCluster {
 interface DeveloperWithClusters extends ApiDeveloper {
   clusters: ApiCluster[];
 }
-
-
 
 // =================================================================
 // 3. API FETCHING LOGIC (Tidak ada perubahan)

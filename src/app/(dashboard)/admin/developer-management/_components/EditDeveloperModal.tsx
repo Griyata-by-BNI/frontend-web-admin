@@ -2,6 +2,7 @@
 
 import { useUpdateDeveloper } from "@/services/developerServices";
 import { Developer } from "@/types/developer";
+import { createBeforeUploadImage } from "@/utils/uploadValidators";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   App,
@@ -90,6 +91,11 @@ export default function EditDeveloperModal({
     setModalOpen(false);
   };
 
+  const beforeUpload = createBeforeUploadImage({
+    maxMB: 10,
+    onInvalid: (m) => message.error(m),
+  });
+
   return (
     <>
       <Modal
@@ -124,7 +130,11 @@ export default function EditDeveloperModal({
             className="!mb-3"
             rules={[{ required: true, message: "Mohon masukkan nama!" }]}
           >
-            <Input />
+            <Input
+              placeholder="Masukkan nama developer"
+              maxLength={100}
+              showCount
+            />
           </Form.Item>
 
           <Form.Item
@@ -137,7 +147,8 @@ export default function EditDeveloperModal({
           >
             <Upload.Dragger
               maxCount={1}
-              beforeUpload={() => false}
+              accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+              beforeUpload={beforeUpload}
               onChange={(info) => {
                 const file = info.fileList[0]?.originFileObj;
                 if (file) {

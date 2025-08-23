@@ -19,8 +19,9 @@ import {
   Upload,
 } from "antd";
 import { Edit, Upload as UploadIcon, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { bniRegions, initialSpecOptions } from "../../../constants";
+import { createBeforeUploadImage } from "@/utils/uploadValidators";
 
 interface EditPropertyModalProps {
   propertyId: number;
@@ -35,6 +36,7 @@ export default function EditPropertyModal({
   const { message } = App.useApp();
 
   const [modalOpen, setModalOpen] = useState(false);
+  const initialPhotoUrlsRef = useRef<string[]>([]);
   const [specOptions, setSpecOptions] = useState(initialSpecOptions);
 
   const {
@@ -88,6 +90,7 @@ export default function EditPropertyModal({
 
         const urls: string[] = d.property_photo_urls || [];
         setFromUrls(urls);
+        initialPhotoUrlsRef.current = urls;
       },
       onError: () => {
         message.error("Gagal memuat data properti");
@@ -111,7 +114,13 @@ export default function EditPropertyModal({
       .map((f) => f.originFileObj)
       .filter(Boolean) as File[];
 
-    const includePhotos = newFiles.length > 0;
+    const keepPhotoUrls: string[] = fileList
+      .filter((f) => !f.originFileObj && !!f.url)
+      .map((f) => f.url!) as string[];
+
+    const deletePhotoUrls: string[] = initialPhotoUrlsRef.current.filter(
+      (url) => !keepPhotoUrls.includes(url)
+    );
 
     const payload: CreatePropertyPayload = {
       clusterTypeId,
@@ -145,7 +154,7 @@ export default function EditPropertyModal({
       await updateMutation.mutateAsync({
         id: propertyId,
         payload,
-        includePhotos,
+        deletePhotoUrls,
       });
       message.success("Properti berhasil diperbarui");
       handleCancel();
@@ -153,6 +162,11 @@ export default function EditPropertyModal({
       message.error("Gagal memperbarui properti");
     }
   };
+
+  const beforeUpload = createBeforeUploadImage({
+    maxMB: 10,
+    onInvalid: (m) => message.error(m),
+  });
 
   return (
     <>
@@ -357,7 +371,8 @@ export default function EditPropertyModal({
             <Upload
               multiple
               showUploadList={false}
-              beforeUpload={() => false}
+              accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+              beforeUpload={beforeUpload}
               fileList={fileList}
               onChange={async ({ fileList: fl }) => {
                 setFileList(fl);

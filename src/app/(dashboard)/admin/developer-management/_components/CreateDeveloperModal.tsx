@@ -1,14 +1,16 @@
 "use client";
 
-import { Button, Form, Input, Modal, Typography, Upload, message } from "antd";
+import { App, Button, Form, Input, Modal, Typography, Upload } from "antd";
 import { Plus, UploadCloud } from "lucide-react";
 import { useState } from "react";
 import { PayloadDeveloper } from "@/types/developer";
 import { useCreateDeveloper } from "@/services/developerServices";
 import { useQueryClient } from "@tanstack/react-query";
+import { createBeforeUploadImage } from "@/utils/uploadValidators";
 
 export default function CreateDeveloperModal() {
   const [form] = Form.useForm();
+  const { message } = App.useApp();
   const { mutateAsync, status } = useCreateDeveloper();
 
   const queryClient = useQueryClient();
@@ -43,6 +45,11 @@ export default function CreateDeveloperModal() {
     setPreviewImage("");
     setModalOpen(false);
   };
+
+  const beforeUpload = createBeforeUploadImage({
+    maxMB: 10,
+    onInvalid: (m) => message.error(m),
+  });
 
   return (
     <>
@@ -88,7 +95,11 @@ export default function CreateDeveloperModal() {
             className="!mb-3"
             rules={[{ required: true, message: "Mohon masukkan nama!" }]}
           >
-            <Input placeholder="Masukkan nama developer" />
+            <Input
+              placeholder="Masukkan nama developer"
+              maxLength={100}
+              showCount
+            />
           </Form.Item>
 
           <Form.Item
@@ -101,7 +112,8 @@ export default function CreateDeveloperModal() {
           >
             <Upload.Dragger
               maxCount={1}
-              beforeUpload={() => false}
+              accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+              beforeUpload={beforeUpload}
               onChange={(info) => {
                 const file = info.fileList[0]?.originFileObj;
                 if (file) {
@@ -147,7 +159,12 @@ export default function CreateDeveloperModal() {
             className="!mb-3"
             rules={[{ required: true, message: "Mohon masukkan deskripsi!" }]}
           >
-            <Input.TextArea placeholder="Masukkan deskripsi" rows={3} />
+            <Input.TextArea
+              placeholder="Masukkan deskripsi"
+              rows={3}
+              maxLength={1000}
+              showCount
+            />
           </Form.Item>
         </Form>
       </Modal>

@@ -85,27 +85,43 @@ export const useCreateProperty = () => {
   });
 };
 
-// ---------- UPDATE ----------
 export type UpdatePropertyVariables = {
   id: number;
   payload: CreatePropertyPayload;
-  /**
-   * Jika true (default): selalu override foto (hanya jika payload.photos.length > 0).
-   * Jika false: abaikan field photos (berguna kalau tidak ingin mengubah foto).
-   */
-  includePhotos?: boolean;
+  deletePhotoUrls?: string[];
 };
 
-export const updateProperty = async ({
-  id,
+// ==== form-data builder khusus UPDATE ====
+const buildUpdatePropertyFormData = ({
   payload,
-  includePhotos = true,
+  deletePhotoUrls,
 }: UpdatePropertyVariables) => {
-  const payloadForForm = includePhotos ? payload : { ...payload, photos: [] };
+  const fd = new FormData();
 
-  const formData = buildCreatePropertyFormData(payloadForForm);
+  const { photos, ...rest } = payload as Record<string, any>;
 
-  const { data } = await axiosInstance.put(`/properties/${id}`, formData, {
+  Object.entries(rest).forEach(([k, v]) => {
+    if (v === undefined || v === null) return;
+    fd.append(k, String(v));
+  });
+
+  if (Array.isArray(photos)) {
+    photos.forEach((file) => {
+      if (file instanceof File) fd.append("photos", file);
+    });
+  }
+
+  (deletePhotoUrls ?? []).forEach((url) => {
+    if (url) fd.append("deletePhotoUrls", url);
+  });
+
+  return fd;
+};
+
+export const updateProperty = async (vars: UpdatePropertyVariables) => {
+  const formData = buildUpdatePropertyFormData(vars);
+
+  const { data } = await axiosInstance.put(`/properties/${vars.id}`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 

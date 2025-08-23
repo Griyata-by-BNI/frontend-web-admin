@@ -1,12 +1,11 @@
-import React from "react";
+import ClusterCard from "@/app/(debtor)/developers/components/ClusterCard";
+import HeroSearch from "@/app/(debtor)/developers/components/HeroSearch";
+import { CTASection } from "@/app/(debtor)/kpr-information/detail/components/CTASection";
+import { KPRSimulator } from "@/app/(debtor)/kpr-simulator/_components/KPRSimulator";
+import RecentlyViewedProperties from "@/components/home/RecentlyViewedProperties";
+import { axiosServer } from "@/utils/axios";
 import Image from "next/image";
 import Link from "next/link";
-import { KPRSimulator } from "@/app/(debtor)/kpr-simulator/_components/KPRSimulator";
-import { CTASection } from "@/app/(debtor)/kpr-information/detail/components/CTASection";
-import { axiosInstance, axiosServer } from "@/utils/axios";
-import HeroSearch from "@/app/(debtor)/developers/components/HeroSearch";
-import RecentlyViewedProperties from "@/components/home/RecentlyViewedProperties";
-import ClusterCard from "@/app/(debtor)/developers/components/ClusterCard";
 
 // --- TYPE DEFINITION ---
 interface Cluster {
@@ -30,10 +29,6 @@ async function getLatestClusters(): Promise<Cluster[]> {
     return [];
   }
 }
-
-
-
-
 
 export default async function HomePage() {
   const latestClusters = await getLatestClusters();
@@ -90,15 +85,16 @@ export default async function HomePage() {
             <div className="flex gap-4 max-w-full overflow-x-auto overflow-y-hidden pb-4">
               {latestClusters.map((cluster) => (
                 <div key={cluster.id} className="flex-shrink-0 w-80">
-                  <ClusterCard cluster={{...cluster, developerId: 1}} developerId={1} />
+                  <ClusterCard
+                    cluster={{ ...cluster, developerId: 1 }}
+                    developerId={1}
+                  />
                 </div>
               ))}
             </div>
           </div>
 
-          {/* START SECTION TERAKHIR DILIHAT */}
           <RecentlyViewedProperties />
-          {/* END SECTION TERAKHIR DILIHAT */}
         </div>
       </div>
 

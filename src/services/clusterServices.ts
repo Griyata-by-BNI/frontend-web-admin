@@ -95,13 +95,17 @@ export const useCreateCluster = () => {
   });
 };
 
+type UpdateClusterVariables = {
+  id: string;
+  payload: PayloadCluster;
+  deletePhotoUrls?: string[];
+};
+
 const updateCluster = async ({
   id,
   payload,
-}: {
-  id: string;
-  payload: PayloadCluster;
-}) => {
+  deletePhotoUrls,
+}: UpdateClusterVariables) => {
   const formData = new FormData();
 
   formData.append("name", payload.name);
@@ -116,14 +120,16 @@ const updateCluster = async ({
   formData.append("latitude", payload.latitude.toString());
   formData.append("nearbyPlaces", JSON.stringify(payload.nearbyPlaces));
 
-  payload.photos.forEach((file) => {
-    formData.append("photos", file);
+  (payload.photos ?? []).forEach((file) => {
+    if (file instanceof File) formData.append("photos", file);
+  });
+
+  (deletePhotoUrls ?? []).forEach((url) => {
+    if (url) formData.append("deletePhotoUrls[]", url);
   });
 
   const { data } = await axiosInstance.put(`/clusters/${id}`, formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
+    headers: { "Content-Type": "multipart/form-data" },
   });
 
   return data;
@@ -131,7 +137,7 @@ const updateCluster = async ({
 
 export const useUpdateCluster = () => {
   return useMutation({
-    mutationFn: updateCluster,
+    mutationFn: (vars: UpdateClusterVariables) => updateCluster(vars),
   });
 };
 
