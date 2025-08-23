@@ -4,6 +4,7 @@ import {
   FetchClustersOptions,
   GetClustersResponse,
   GetDetailClusterResponse,
+  LatestClustersResponse,
   PayloadCluster,
 } from "@/types/cluster";
 
@@ -159,3 +160,18 @@ export const useDeleteCluster = () => {
     mutationFn: deleteCluster,
   });
 };
+
+export const fetchLatestClusters =
+  async (): Promise<LatestClustersResponse> => {
+    const { data } = await axiosInstance.get<LatestClustersResponse>(
+      "/clusters/latest/clusters"
+    );
+    return data;
+  };
+
+export const useLatestClusters = () =>
+  useQuery<LatestClustersResponse>({
+    queryKey: ["latest-clusters"],
+    queryFn: fetchLatestClusters,
+    staleTime: 5 * 60 * 1000,
+  });

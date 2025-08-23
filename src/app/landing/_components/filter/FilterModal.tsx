@@ -32,10 +32,10 @@ export function FilterModal() {
       <button
         onClick={() => setIsOpen(true)}
         className="w-full lg:w-auto px-6 flex items-center justify-center rounded-xl cursor-pointer
-          border-2 border-primary-tosca gap-2 font-semibold text-primary-tosca bg-white
-          transition-all duration-300 shadow-lg hover:text-dark-tosca hover:border-dark-tosca h-[52px] text-lg"
+          border-2 border-primary-tosca gap-2 font-semibold text-primary-tosca bg-white transition-all
+          duration-300 shadow-lg hover:text-dark-tosca hover:border-dark-tosca h-11 sm:h-12 md:h-[52px] text-md md:text-lg"
       >
-        <SlidersHorizontal className="h-6 w-6" />
+        <SlidersHorizontal className="h-5 w-5 md:h-6 md:w-6" />
 
         <span>Filter</span>
       </button>
