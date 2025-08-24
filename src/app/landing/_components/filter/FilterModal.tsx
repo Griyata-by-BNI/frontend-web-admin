@@ -4,20 +4,14 @@ import { SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 import { FilterForm } from "./components/FilterForm";
 import { FilterFormData } from "./types";
+import { useFilterContext } from "@/contexts/filterContext";
 
 export function FilterModal() {
-  const [form] = Form.useForm();
+  const { form } = useFilterContext();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleFinish = async (values: FilterFormData) => {
-    setIsLoading(true);
-
-    try {
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const handleFinish = async (values: FilterFormData) => {};
 
   const handleReset = () => {
     form.resetFields();
@@ -32,7 +26,7 @@ export function FilterModal() {
       <button
         onClick={() => setIsOpen(true)}
         className="w-full lg:w-auto px-6 flex items-center justify-center rounded-xl cursor-pointer
-          border-2 border-primary-tosca gap-2 font-semibold text-primary-tosca bg-white transition-all
+          border-3 border-primary-tosca gap-2 font-semibold text-primary-tosca bg-white transition-all
           duration-300 shadow-lg hover:text-dark-tosca hover:border-dark-tosca h-11 sm:h-12 md:h-[52px] text-md md:text-lg"
       >
         <SlidersHorizontal className="h-5 w-5 md:h-6 md:w-6" />
@@ -64,9 +58,7 @@ export function FilterModal() {
         ]}
       >
         <div className="max-h-[70vh] overflow-y-auto overflow-x-hidden px-1">
-          <Form form={form} onFinish={handleFinish}>
-            <FilterForm onReset={handleReset} />
-          </Form>
+          <FilterForm />
         </div>
       </Modal>
     </>

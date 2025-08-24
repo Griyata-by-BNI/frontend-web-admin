@@ -22,7 +22,10 @@ export interface FilterFormData {
   floors?: number;
   landArea?: [number, number];
   buildingArea?: [number, number];
-  sort?: SortBy;
+  sortBy?: SortBy;
+  search?: string;
+  lat?: number;
+  lng?: number;
 }
 
 export interface FilterModalProps {

@@ -1,3 +1,5 @@
+"use client";
+
 import {
   faBed,
   faChartArea,
@@ -8,21 +10,61 @@ import {
   faArrowDownWideShort,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Form, Radio, Row, Col } from "antd";
+import { Form, Radio, Row, Col, App } from "antd";
 import { formatRupiah } from "../utils/filterUtils";
 import { CounterItem } from "./CounterItem";
 import { FilterSection } from "./FilterSection";
 import { RangeSlider } from "./RangeSlider";
+import { useEffect } from "react";
 
-interface FilterFormProps {
-  onReset: () => void;
-}
-
-export function FilterForm({ onReset }: FilterFormProps) {
+export function FilterForm() {
+  const { message } = App.useApp();
   const form = Form.useFormInstance();
+  const sort = Form.useWatch("sort", form) ?? Form.useWatch("sortBy", form);
+
+  useEffect(() => {
+    if (sort !== "closestDistance") {
+      form.setFieldsValue({ lat: undefined, lng: undefined });
+      return;
+    }
+
+    // Ambil posisi user saat ini
+    if (typeof window === "undefined" || !("geolocation" in navigator)) {
+      // Tidak didukung
+      form.setFieldsValue({ lat: undefined, lng: undefined });
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        form.setFieldsValue({ lat: latitude, lng: longitude });
+      },
+      () => {
+        // Ditolak / gagal
+        form.setFieldsValue({
+          lat: undefined,
+          lng: undefined,
+          sortBy: "latestUpdated",
+        });
+
+        message.error(
+          "Mohon izinkan akses lokasi untuk memilih filter jarak terdekat!"
+        );
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  }, [sort, form]);
 
   return (
     <div className="flex flex-col gap-2">
+      <Form.Item name="lat" hidden>
+        <input type="hidden" />
+      </Form.Item>
+      <Form.Item name="lng" hidden>
+        <input type="hidden" />
+      </Form.Item>
+
       {/* Sort By */}
       <FilterSection
         icon={
@@ -37,8 +79,8 @@ export function FilterForm({ onReset }: FilterFormProps) {
           <Radio.Group optionType="button" buttonStyle="solid">
             <Radio.Button value="latestUpdated">Terbaru</Radio.Button>
             <Radio.Button value="lowestPrice">Harga Terendah</Radio.Button>
-            <Radio.Button value="closestDistance">Jarak Terdekat</Radio.Button>
             <Radio.Button value="highestPrice">Harga Tertinggi</Radio.Button>
+            <Radio.Button value="closestDistance">Jarak Terdekat</Radio.Button>
           </Radio.Group>
         </Form.Item>
       </FilterSection>
