@@ -31,18 +31,21 @@ export const useClusters = (pageNumber = 1, pageSize = 10) => {
 };
 
 export const fetchClustersByDeveloper = async (
-  id: string
+  id: string,
+  search?: string
 ): Promise<GetClustersResponse> => {
+  const params = search ? { search } : {};
   const { data } = await axiosInstance.get<GetClustersResponse>(
-    `/clusters/developer/${id}`
+    `/clusters/developer/${id}`,
+    { params }
   );
   return data;
 };
 
-export const useClustersByDeveloper = (developerId: string) => {
+export const useClustersByDeveloper = (developerId: string, search?: string) => {
   return useQuery({
-    queryKey: ["clusters", "developer", developerId],
-    queryFn: () => fetchClustersByDeveloper(developerId),
+    queryKey: ["clusters", "developer", developerId, search],
+    queryFn: () => fetchClustersByDeveloper(developerId, search),
     enabled: !!developerId,
   });
 };

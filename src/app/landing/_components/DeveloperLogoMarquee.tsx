@@ -62,20 +62,16 @@ export default function DeveloperLogoMarquee({
 
   return (
     <section className="space-y-3 sm:space-y-4">
-      <div className="px-4 sm:px-0 flex items-start sm:items-center justify-between gap-3">
+      <div className="sm:px-0 flex flex-col sm:flex-row items-start sm:items-center justify-between">
         <div className="flex flex-col">
           <h2 className="text-lg sm:text-xl md:text-2xl font-extrabold text-primary-black">
             {title}
           </h2>
-
-          {/* {subtitle ? (
-            <p className="text-xs sm:text-sm text-gray-500 leading-snug">{subtitle}</p>
-          ) : null} */}
         </div>
 
         <Link
           href={moreHref}
-          className="inline-flex items-center gap-1 text-sm sm:text-base font-semibold !text-primary-tosca hover:!text-dark-tosca transition"
+          className="mt-1 sm:mt-0 self-start sm:self-auto inline-flex items-center gap-1 text-sm sm:text-base font-semibold !text-primary-tosca hover:!text-dark-tosca transition"
         >
           Lihat Selengkapnya
           <ChevronRight className="w-4 h-4" />
@@ -85,7 +81,7 @@ export default function DeveloperLogoMarquee({
       <div
         ref={containerRef}
         aria-label="Logo developer bergerak"
-        className="relative w-full overflow-hidden rounded-2xl bg-white border border-gray-100 px-2 sm:px-0"
+        className="relative w-full overflow-hidden rounded-2xl bg-white px-2 sm:px-0"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >

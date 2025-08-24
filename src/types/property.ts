@@ -5,24 +5,29 @@ export interface StatusResponse {
 
 export interface Property {
   id: number;
-  propertyId: number;
   cluster_type_id: number;
   name: string;
   description: string;
-  price: string;
+  price: string; // angka dalam string
   location: string;
   is_deleted: boolean;
   facility: string;
-  spesification: string;
-  selling_price: string | null;
-  landArea: string | null;
-  buildingArea: string | null;
+  spesification: string; // ejaan mengikuti API
   collateral_address: string;
   region_id: number;
-  created_at: string; // ISO Date string
-  updated_at: string; // ISO Date string
+  created_at: string; // ISO datetime
+  updated_at: string; // ISO datetime
   stock: number;
+  propertyId: number;
+  landArea: number;
+  buildingArea: number;
+  jumlahLantai: number;
+  jumlahKamarTidur: number;
+  jumlahKamarMandi: number;
+  garasi: boolean;
+  kolamRenang: boolean;
   developerId: number;
+  property_photo_urls: string[];
 }
 
 export interface PropertyResponse {
