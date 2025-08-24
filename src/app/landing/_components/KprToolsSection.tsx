@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Calculator, Wallet2, Info } from "lucide-react";
+import Image from "next/image";
 
 type ToolItem = {
   title: string;
   desc: string;
   cta: string;
   href: string;
-  Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  imgSrc: string; // path di /public
 };
 
 const items: ToolItem[] = [
@@ -17,21 +17,21 @@ const items: ToolItem[] = [
     desc: "Hitung estimasi cicilan per bulan berdasarkan harga, DP, tenor, dan bunga.",
     cta: "Cek Sekarang",
     href: "/kpr-simulator",
-    Icon: Calculator,
+    imgSrc: "/images/angsuran.png",
   },
   {
     title: "Cek Kemampuan KPR",
     desc: "Estimasi plafon pinjaman sesuai penghasilan dan komitmen finansialmu.",
     cta: "Mulai Hitung",
     href: "/kpr-affordability",
-    Icon: Wallet2,
+    imgSrc: "/images/loan-home.png",
   },
   {
     title: "Info KPR",
     desc: "Pelajari persyaratan, biaya, dan tips mengajukan KPR dengan benar.",
     cta: "Pelajari",
     href: "/kpr-information",
-    Icon: Info,
+    imgSrc: "/images/info.png",
   },
 ];
 
@@ -59,34 +59,39 @@ export default function KprToolsSection() {
   );
 }
 
-function Card({ title, desc, cta, href, Icon }: ToolItem) {
+function Card({ title, desc, cta, href, imgSrc }: ToolItem) {
   return (
     <div className="relative overflow-hidden rounded-2xl bg-white shadow-lg shadow-gray-500/10 ring-1 ring-gray-700/5 p-5 sm:p-6 md:p-7 pb-12 sm:pb-14">
-      {/* isi card: teks kiri, ikon kanan (mobile & desktop) */}
-      <div className="relative z-10 flex flex-row items-center sm:items-center justify-between gap-4 sm:gap-5">
-        <div className="flex-1">
-          <h3 className="text-lg sm:text-xl font-semibold text-primary-black">
-            {title}
-          </h3>
+      {/* isi card: teks kiri, gambar kanan */}
 
+      <h3 className="text-lg sm:text-xl font-semibold text-primary-black">
+        {title}
+      </h3>
+
+      <div className="relative z-10 flex flex-row items-end justify-between gap-4 sm:gap-5 mb-4">
+        <div className="flex-1">
           <p className="mt-1 text-xs md:text-sm text-gray-600 leading-relaxed">
             {desc}
           </p>
 
           <Link
             href={href}
-            className="mt-4 inline-flex items-center justify-center rounded-md !bg-primary-tosca
-            px-4 py-2 text-sm font-semibold !text-white transition hover:!bg-dark-tosca md:mb-4"
+            className="mt-4 inline-flex items-center justify-center rounded-md !bg-primary-tosca px-4 py-2 text-sm font-semibold !text-white transition hover:!bg-dark-tosca md:mb-4"
           >
             {cta}
           </Link>
         </div>
 
-        {/* ikon selalu tampil di kanan */}
+        {/* gambar selalu di kanan */}
         <div className="shrink-0">
-          <div className="inline-flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-2xl bg-light-tosca">
-            <Icon className="h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 text-primary-tosca" />
-          </div>
+          <Image
+            src={imgSrc}
+            alt={title}
+            width={40}
+            height={40}
+            className="h-24 w-24 md:h-28 md:w-28 object-contain"
+            priority={false}
+          />
         </div>
       </div>
 

@@ -83,6 +83,8 @@ export type FetchClustersOptions = {
   pageNumber?: number;
   pageSize?: number;
   signal?: AbortSignal;
+  sortBy?: string;
+  sortDir?: string;
 };
 
 export interface LatestCluster {

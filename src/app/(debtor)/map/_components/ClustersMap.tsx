@@ -86,8 +86,12 @@ export default function ClustersMap() {
   }, [map, userPos]);
 
   return (
-    <div className="w-full space-y-3">
-      <div className="flex items-center justify-between gap-2">
+    <div className="w-full space-y-6">
+      <div className="flex flex-col">
+        <h2 className="text-lg sm:text-xl md:text-2xl font-extrabold text-primary-black">
+          Temukan Cluster Perumahan di Sekitar Anda
+        </h2>
+
         <div className="text-sm text-gray-600">
           {isPending
             ? "Memuat cluster…"
@@ -108,7 +112,7 @@ export default function ClustersMap() {
           center={defaultCenter}
           zoom={12}
           scrollWheelZoom
-          className="h-[70vh] w-full rounded-lg"
+          className="h-[70vh] [&_.leaflet-pane]:!z-48 w-full rounded-lg [&_.leaflet-top]:!z-[49] [&_.leaflet-bottom]:!z-[49]"
           ref={setMap}
           whenReady={() => {
             if (userPos) map?.setView(userPos, 14);
@@ -165,7 +169,7 @@ export default function ClustersMap() {
           )}
         </MapContainer>
 
-        <div className="absolute right-3 top-3 z-[1000]">
+        <div className="absolute right-3 top-3 z-[49]">
           <button
             className="px-3 py-1.5 rounded-md border bg-white shadow"
             onClick={() => userPos && map?.setView(userPos, 14)}

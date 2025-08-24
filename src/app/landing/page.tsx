@@ -5,6 +5,14 @@ import DeveloperLogoMarquee from "./_components/DeveloperLogoMarquee";
 import HeroSection from "./_components/HeroSection";
 import KprToolsSection from "./_components/KprToolsSection";
 import { LatestClusterSection } from "./_components/latestCluster";
+import dynamic from "next/dynamic";
+
+const ClustersMap = dynamic(
+  () => import("@/app/(debtor)/map/_components/ClustersMap"),
+  {
+    ssr: false,
+  }
+);
 
 export default function LandingPage() {
   return (
@@ -20,6 +28,8 @@ export default function LandingPage() {
       <DeveloperLogoMarquee />
 
       <KprToolsSection />
+
+      <ClustersMap />
     </main>
   );
 }

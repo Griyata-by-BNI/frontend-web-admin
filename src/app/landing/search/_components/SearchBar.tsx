@@ -9,11 +9,6 @@ import { useEffect } from "react";
 export default function SearchBar() {
   const { form, handleSearch, initialValues } = useFilterContext();
 
-  useEffect(() => {
-    form.submit();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <Form form={form} onFinish={handleSearch} initialValues={initialValues}>
       <div className="bg-light-tosca p-4 sm:p-5 md:p-6 rounded-2xl border border-white/20">

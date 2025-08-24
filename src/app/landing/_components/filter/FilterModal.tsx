@@ -1,17 +1,13 @@
+import { useFilterContext } from "@/contexts/filterContext";
 import "@ant-design/v5-patch-for-react-19";
 import { Button, Form, Modal } from "antd";
 import { SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 import { FilterForm } from "./components/FilterForm";
-import { FilterFormData } from "./types";
-import { useFilterContext } from "@/contexts/filterContext";
 
 export function FilterModal() {
-  const { form } = useFilterContext();
+  const { form, router, pathname, buildSearchParams } = useFilterContext();
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleFinish = async (values: FilterFormData) => {};
 
   const handleReset = () => {
     form.resetFields();
@@ -21,9 +17,24 @@ export function FilterModal() {
     setIsOpen(false);
   };
 
+  const handleApplyFilter = async () => {
+    try {
+      const values = await form.validateFields();
+      const searchParams = buildSearchParams(values);
+      const url = `${
+        !pathname.includes("search") ? pathname + "/search" : pathname
+      }?${searchParams.toString()}`;
+      router.push(url, { disableSameURL: false });
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Form validation failed:", error);
+    }
+  };
+
   return (
     <>
       <button
+        type="button"
         onClick={() => setIsOpen(true)}
         className="w-full lg:w-auto px-6 flex items-center justify-center rounded-xl cursor-pointer
           border-3 border-primary-tosca gap-2 font-semibold text-primary-tosca bg-white transition-all
@@ -50,8 +61,7 @@ export function FilterModal() {
             key="apply"
             size="large"
             type="primary"
-            loading={isLoading}
-            onClick={() => form.submit()}
+            onClick={handleApplyFilter}
           >
             Terapkan Filter
           </Button>,

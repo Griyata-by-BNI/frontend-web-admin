@@ -20,18 +20,14 @@ import { useEffect } from "react";
 export function FilterForm() {
   const { message } = App.useApp();
   const form = Form.useFormInstance();
-  const sort = Form.useWatch("sort", form) ?? Form.useWatch("sortBy", form);
+  const sortBy = Form.useWatch("sortBy", form);
 
   useEffect(() => {
-    if (sort !== "closestDistance") {
-      form.setFieldsValue({ lat: undefined, lng: undefined });
+    if (sortBy !== "closestDistance") {
       return;
     }
 
-    // Ambil posisi user saat ini
     if (typeof window === "undefined" || !("geolocation" in navigator)) {
-      // Tidak didukung
-      form.setFieldsValue({ lat: undefined, lng: undefined });
       return;
     }
 
@@ -41,7 +37,6 @@ export function FilterForm() {
         form.setFieldsValue({ lat: latitude, lng: longitude });
       },
       () => {
-        // Ditolak / gagal
         form.setFieldsValue({
           lat: undefined,
           lng: undefined,
@@ -54,7 +49,7 @@ export function FilterForm() {
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
-  }, [sort, form]);
+  }, [sortBy, form, message]);
 
   return (
     <div className="flex flex-col gap-2">

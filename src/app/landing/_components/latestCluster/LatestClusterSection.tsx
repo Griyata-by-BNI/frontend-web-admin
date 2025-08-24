@@ -7,16 +7,19 @@ import { useMemo, useRef } from "react";
 import LatestClusterCard from "./LatestClusterCard";
 import LatestClusterCardSkeleton from "./LatestClusterCardSkeleton";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 const { useBreakpoint } = Grid;
 
 export default function LatestClusterSection() {
+  const queryClient = useQueryClient();
   const { data, isLoading } = useLatestClusters();
+
   const screens = useBreakpoint();
   const isMobile = !screens.md; // < md = mobile
 
   const latestClusterData = useMemo(() => {
-    return data?.data?.clusters ?? [];
+    return data?.data?.clusters?.slice(0, 4) ?? [];
   }, [data]);
 
   const SKELETON_COUNT = 4;

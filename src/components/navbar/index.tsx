@@ -149,6 +149,16 @@ const Navbar = () => {
   const pathname = usePathname();
   const isActive = useIsActive(pathname);
 
+  // NEW: deteksi scroll
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 8); // threshold kecil
+    onScroll(); // cek saat pertama render
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   const kprMenuItems: MenuProps["items"] = kprItems.map((item) => ({
     key: item.href,
     label: (
@@ -178,8 +188,16 @@ const Navbar = () => {
   ];
 
   return (
-    <header className="custom-container !p-0 bg-white shadow-md shadow-dark-tosca/5 sticky top-0 z-50">
-      <nav className="container mx-auto px-6 py-3 md:px-0 md:py-5 flex justify-between items-center">
+    <header
+      className={clsx(
+        "!p-0 sticky top-0 z-50 transition-colors duration-300",
+        "bg-white",
+        {
+          "border-b border-gray-200 shadow-lg shadow-gray-500/10": isScrolled,
+        }
+      )}
+    >
+      <nav className="custom-container px-6 !py-4 md:px-0 md:py-5 flex !flex-row justify-between items-center">
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <Image

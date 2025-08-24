@@ -1,13 +1,27 @@
 import { Search } from "lucide-react";
-import { FilterModal } from "./filter";
+import { FilterFormData, FilterModal } from "./filter";
 import { Form } from "antd";
 import { useFilterContext } from "@/contexts/filterContext";
 
 export default function HeroSection() {
-  const { form, handleSearch, initialValues } = useFilterContext();
+  const { form, router, pathname, buildSearchParams, initialValues } =
+    useFilterContext();
+
+  const handleFinish = async () => {
+    try {
+      const values = await form.validateFields();
+      const searchParams = buildSearchParams(values);
+      const url = `${
+        !pathname.includes("search") ? pathname + "/search" : pathname
+      }?${searchParams.toString()}`;
+      router.push(url, { disableSameURL: false });
+    } catch (error) {
+      console.error("Form validation failed:", error);
+    }
+  };
 
   return (
-    <Form form={form} onFinish={handleSearch} initialValues={initialValues}>
+    <Form form={form} onFinish={handleFinish} initialValues={initialValues}>
       <section
         style={{
           backgroundImage:

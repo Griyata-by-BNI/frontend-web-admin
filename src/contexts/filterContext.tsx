@@ -24,6 +24,7 @@ type FilterContextValue = {
   searchParams: ReturnType<typeof useSearchParams>;
 
   handleSearch: (values: FilterFormData) => Promise<void>;
+  buildSearchParams: (values: FilterFormData) => URLSearchParams;
   handleReset: () => void;
   initialValues: FilterFormData;
 };
@@ -74,40 +75,78 @@ export const FilterProvider: React.FC<React.PropsWithChildren> = ({
     [setIf]
   );
 
+  const FILTER_KEYS_TO_CHECK = [
+    "search",
+    "location",
+    "propertyType",
+    "bedrooms",
+    "bathrooms",
+    "floors",
+    "sortBy",
+    "lat",
+    "lng",
+    "priceMin",
+    "priceMax",
+    "landAreaMin",
+    "landAreaMax",
+    "buildingAreaMin",
+    "buildingAreaMax",
+    "pageSize", // kalau size berubah, reset page juga
+  ];
+
+  const buildSearchParams = useCallback(
+    (values: FilterFormData) => {
+      const curr = searchParams;
+      const next = new URLSearchParams(curr.toString());
+
+      // simple fields
+      setIf(next, "location", values.location);
+      setIf(next, "propertyType", values.propertyType);
+      setIf(next, "bedrooms", values.bedrooms);
+      setIf(next, "bathrooms", values.bathrooms);
+      setIf(next, "floors", values.floors);
+      setIf(next, "sortBy", values.sortBy);
+      setIf(next, "search", values.search);
+      setIf(next, "lat", values.lat);
+      setIf(next, "lng", values.lng);
+
+      // ranges
+      setRange(next, "price", values.price);
+      setRange(next, "landArea", values.landArea);
+      setRange(next, "buildingArea", values.buildingArea);
+
+      // 🔑 reset pageNumber ke 1 HANYA jika ada perubahan filter non-page
+      const shouldResetPage = FILTER_KEYS_TO_CHECK.some((k) => {
+        const beforeVal = curr.get(k) ?? "";
+        const afterVal = next.get(k) ?? "";
+        return beforeVal !== afterVal;
+      });
+      if (shouldResetPage) {
+        next.set("pageNumber", "1");
+      } else {
+        // biarkan pageNumber sekarang (jangan disentuh)
+        // (next sudah clone dari curr, jadi value-nya tetap)
+      }
+
+      return next;
+    },
+    [searchParams, setIf, setRange]
+  );
+
   const handleSearch = useCallback(
     async (values: FilterFormData) => {
       setIsLoading(true);
-
       try {
-        const next = new URLSearchParams(searchParams.toString());
-
-        // simple fields
-        setIf(next, "location", values.location);
-        setIf(next, "propertyType", values.propertyType);
-        setIf(next, "bedrooms", values.bedrooms);
-        setIf(next, "bathrooms", values.bathrooms);
-        setIf(next, "floors", values.floors);
-        setIf(next, "sortBy", values.sortBy);
-        setIf(next, "search", values.search);
-        setIf(next, "lat", values.lat);
-        setIf(next, "lng", values.lng);
-
-        // ranges
-        setRange(next, "price", values.price);
-        setRange(next, "landArea", values.landArea);
-        setRange(next, "buildingArea", values.buildingArea);
-        next.set("pageNumber", "1");
-
+        const next = buildSearchParams(values);
         const url = `${
           !pathname.includes("search") ? pathname + "/search" : pathname
         }?${next.toString()}`;
-
         router.push(url, { disableSameURL: false });
       } finally {
         setIsLoading(false);
       }
     },
-    [pathname, router, searchParams, setIf, setRange]
+    [pathname, router, buildSearchParams]
   );
 
   const handleReset = useCallback(() => {
@@ -149,9 +188,9 @@ export const FilterProvider: React.FC<React.PropsWithChildren> = ({
       search: searchParams.get("search") ?? "",
       location: getStr("location"),
       propertyType: getStr("propertyType"),
-      sort: isSort(searchParams.get("sort"))
-        ? (searchParams.get("sort") as SortBy)
-        : undefined,
+      sortBy: isSort(searchParams.get("sortBy"))
+        ? (searchParams.get("sortBy") as SortBy)
+        : "latestUpdated",
 
       bedrooms: getNum("bedrooms"),
       bathrooms: getNum("bathrooms"),
@@ -174,6 +213,7 @@ export const FilterProvider: React.FC<React.PropsWithChildren> = ({
     pathname,
     searchParams,
     handleSearch,
+    buildSearchParams,
     handleReset,
     initialValues,
   };

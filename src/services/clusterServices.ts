@@ -11,10 +11,12 @@ import {
 export const fetchClusters = async ({
   pageNumber = 1,
   pageSize = 10,
+  sortBy = "createdAt",
+  sortDir = "DESC",
   signal,
 }: FetchClustersOptions): Promise<GetClustersResponse> => {
   const { data } = await axiosInstance.get<GetClustersResponse>("/clusters", {
-    params: { pageNumber, pageSize },
+    params: { pageNumber, pageSize, sortBy, sortDir },
     signal,
   });
   return data;
