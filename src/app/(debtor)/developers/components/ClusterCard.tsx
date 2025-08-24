@@ -109,6 +109,9 @@ const ClusterCard: React.FC<ClusterCardProps> = ({ cluster, developerId }) => {
                       src={src}
                       alt={`cluster-photo-${idx + 1}`}
                       objectFit="cover"
+                      width={100}
+                      height={100}
+                      className="w-full h-full"
                       priority={idx === 0}
                     />
                   </div>
@@ -116,7 +119,14 @@ const ClusterCard: React.FC<ClusterCardProps> = ({ cluster, developerId }) => {
               </Carousel>
             </div>
           ) : (
-            <Image src={imageUrl} alt={cluster.name} objectFit="cover" />
+            <Image
+              src={imageUrl}
+              alt={cluster.name}
+              objectFit="cover"
+              width={100}
+              height={100}
+              className="w-full h-full"
+            />
           )}
         </div>
 

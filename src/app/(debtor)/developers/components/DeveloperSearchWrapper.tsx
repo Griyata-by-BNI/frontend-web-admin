@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import ClusterCard from './ClusterCard';
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import ClusterCard from "./ClusterCard";
 
 interface Developer {
   id: number;
@@ -34,10 +34,12 @@ const SearchIcon = () => (
   </svg>
 );
 
-export default function DeveloperSearchWrapper({ developers }: DeveloperSearchWrapperProps) {
-  const [searchTerm, setSearchTerm] = useState('');
+export default function DeveloperSearchWrapper({
+  developers,
+}: DeveloperSearchWrapperProps) {
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredDevelopers = developers.filter(dev =>
+  const filteredDevelopers = developers.filter((dev) =>
     dev.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
