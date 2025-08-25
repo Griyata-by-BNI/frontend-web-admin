@@ -45,25 +45,39 @@ const LoginButton = ({ className = "" }: { className?: string }) => {
   const { modal } = App.useApp();
   const { user, token, loading, logout } = useAuth();
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState<string>("");
+
+  const fetchProfileData = async () => {
+    if (!user?.userId || !token) return;
+    
+    try {
+      const res = await axiosInstance.get(`/profiles/${user.userId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const profile = res.data?.data?.profile;
+      if (profile) {
+        setProfilePicture(profile.photoUrl || null);
+        setDisplayName(profile.name || user.fullName);
+      } else {
+        setDisplayName(user.fullName);
+      }
+    } catch (err) {
+      console.error('Failed to fetch profile data:', err);
+      setDisplayName(user.fullName);
+    }
+  };
 
   useEffect(() => {
-    const fetchProfilePicture = async () => {
-      if (!user?.userId || !token) return;
-      
-      try {
-        const res = await axiosInstance.get(`/profiles/${user.userId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const photoUrl = res.data?.data?.profile?.photoUrl;
-        if (photoUrl) {
-          setProfilePicture(photoUrl);
-        }
-      } catch (err) {
-        console.error('Failed to fetch profile picture:', err);
-      }
-    };
+    fetchProfileData();
+  }, [user?.userId, token]);
 
-    fetchProfilePicture();
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      fetchProfileData();
+    };
+    
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
   }, [user?.userId, token]);
 
   const menuItems = [
@@ -110,7 +124,7 @@ const LoginButton = ({ className = "" }: { className?: string }) => {
           />
 
           <Typography.Text className="font-medium text-primary-black">
-            {user.fullName}
+            {displayName || user.fullName}
           </Typography.Text>
 
           <DownOutlined />

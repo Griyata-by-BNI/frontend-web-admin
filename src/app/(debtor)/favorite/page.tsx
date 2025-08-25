@@ -1,18 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { message, Modal, App } from "antd";
+import { message, App } from "antd";
 import { useAuth } from "@/contexts/authContext";
+import { useRouter } from "next/navigation";
 import {
   getFavoriteProperties,
   removeFromFavorites,
 } from "@/services/favoriteService";
 import { FavoriteProperty } from "@/types/favorite";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
-import Pagination from "@/app/(debtor)/developers/components/Pagination";
 import Image from "next/image";
 
-// --- Ikon SVG sebagai Komponen React ---
 const StarIconLarge = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -37,8 +36,8 @@ const StarIconLarge = () => (
 const StarIconFilled = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
+    width="20"
+    height="20"
     viewBox="0 0 24 24"
     fill="#14b8a6"
     stroke="#fff"
@@ -50,11 +49,11 @@ const StarIconFilled = () => (
   </svg>
 );
 
-const BedIcon = () => (
+const LocationIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
+    width="16"
+    height="16"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -63,22 +62,41 @@ const BedIcon = () => (
     strokeLinejoin="round"
     className="text-teal-600"
   >
-    <path d="M2 4v16h20V4Z" />
-    <path d="M2 10h20" />
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+    <circle cx="12" cy="10" r="3" />
   </svg>
 );
-const BathIcon = () => (
+
+const BedIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
+    width="16"
+    height="16"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className="text-teal-600"
+    className="text-gray-500"
+  >
+    <path d="M2 4v16h20V4Z" />
+    <path d="M2 10h20" />
+  </svg>
+);
+
+const BathIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="text-gray-500"
   >
     <path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-2.12 0L2 6" />
     <path d="m2 16 6 6" />
@@ -91,46 +109,51 @@ const BathIcon = () => (
     <path d="M22 8a6 6 0 0 0-8.49-8.49" />
   </svg>
 );
+
 const BuildingAreaIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
+    width="16"
+    height="16"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className="text-teal-600"
+    className="text-gray-500"
   >
-    <path d="M16 12a4 4 0 1 0-8 0 4 4 0 0 0 8 0Z" />
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <path d="M9 9h6v6H9z" />
   </svg>
 );
+
 const LandAreaIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
+    width="16"
+    height="16"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className="text-teal-600"
+    className="text-gray-500"
   >
-    <path d="M21.2,12.3H20V9.8c0-1.1-0.9-2-2-2h-2.5V5.8c0-1.1-0.9-2-2-2h-5c-1.1,0-2,0.9-2,2v2H3.8c-1.1,0-2,0.9-2,2v10c0,1.1,0.9,2,2,2h15c1.1,0,2-0.9,2-2v-2.5h1.2c0.7,0,1.2-0.5,1.2-1.2V13.5C22.5,12.8,21.9,12.3,21.2,12.3z M18.8,20H3.8c-0.6,0-1-0.4-1-1v-9.2c0-0.6,0.4-1,1-1h15c0.6,0,1,0.4,1,1V20z" />
-    <path d="M11.5,15.3h-5c-0.3,0-0.5-0.2-0.5-0.5v-5c0-0.3,0.2-0.5,0.5-0.5h5c0.3,0,0.5,0.2,0.5,0.5v5C12,15.1,11.8,15.3,11.5,15.3z" />
+    <path d="M3 12h18l-3-3m0 6l3-3" />
+    <path d="M3 5v14" />
+    <path d="M21 5v14" />
   </svg>
 );
 
 const PropertyCard: React.FC<{
   property: FavoriteProperty;
   onRemove: (favoriteId: number) => void;
-}> = ({ property, onRemove }) => {
-  const handleRemove = async () => {
+  onClick: () => void;
+}> = ({ property, onRemove, onClick }) => {
+  const handleRemove = (e: React.MouseEvent) => {
+    e.stopPropagation();
     onRemove(property.favoriteId);
   };
 
@@ -144,37 +167,80 @@ const PropertyCard: React.FC<{
     return price;
   };
 
+  const formatInstallment = (price: string) => {
+    const numPrice = parseFloat(price);
+    const installment = numPrice / 240; // 20 years
+    if (installment >= 1000000) {
+      return `${(installment / 1000000).toFixed(1)} JT`;
+    }
+    return `${(installment / 1000).toFixed(0)} RB`;
+  };
+
   return (
-    <div className="bg-white rounded-2xl shadow-md overflow-hidden transition-transform duration-300 hover:scale-105 hover:shadow-xl flex flex-col relative">
-      <div
-        className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm p-2 rounded-full z-10 cursor-pointer"
-        onClick={handleRemove}
-      >
-        <StarIconFilled />
-      </div>
+    <div
+      className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer relative"
+      onClick={onClick}
+    >
+      {/* Image Section */}
       <div className="relative w-full h-48">
         <Image
           src={property.propertyPhoto || "/placeholder-property.jpg"}
           alt={property.name}
-          layout="fill"
-          objectFit="cover"
-          className="w-full h-full"
+          fill
+          className="object-cover"
         />
+        {/* Favorite Button */}
+        <button
+          className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-sm hover:bg-white transition-colors z-10"
+          onClick={handleRemove}
+        >
+          <StarIconFilled />
+        </button>
+        {/* Status Badge */}
+        <div className="absolute top-3 left-3">
+          <span className="bg-teal-500 text-white text-xs font-medium px-3 py-1 rounded-full">
+            5 hari lalu
+          </span>
+        </div>
       </div>
-      <div className="p-5 flex-grow flex flex-col">
-        <h3 className="text-xl font-bold text-teal-700">{property.name}</h3>
-        <p className="text-sm text-gray-600 mb-2">{property.developer}</p>
-        <p className="text-sm text-gray-500 mb-4">{property.location}</p>
 
-        {/* Price */}
-        <div className="my-4">
-          <p className="text-xs text-gray-500">Harga</p>
-          <p className="text-2xl font-bold text-gray-800 mt-1">
-            Rp {formatPrice(property.price)}
-          </p>
+      {/* Content Section */}
+      <div className="p-4">
+        {/* Location */}
+        <div className="flex items-center gap-1 mb-2">
+          <LocationIcon />
+          <span className="text-sm text-teal-600 font-medium">
+            {property.location}
+          </span>
         </div>
 
-        <div className="mt-auto grid grid-cols-2 gap-x-4 gap-y-3 text-sm text-gray-700">
+        {/* Property Name */}
+        <h3 className="text-lg font-bold text-gray-900 mb-1">
+          {property.name}
+        </h3>
+
+        {/* Developer */}
+        <p className="text-sm text-gray-500 mb-4">{property.developer}</p>
+
+        {/* Price Section */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <p className="text-xs text-gray-500 mb-1">Harga</p>
+            <p className="text-lg font-bold text-gray-900">
+              Rp {formatPrice(property.price)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 mb-1">Angsuran mulai dari</p>
+            <p className="text-lg font-bold text-gray-900">
+              Rp {formatInstallment(property.price)}{" "}
+              <span className="text-sm font-normal text-gray-500">/bulan</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Property Details */}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-gray-600">
           <div className="flex items-center gap-2">
             <BedIcon />
             <span>KT: {property.kamarTidur}</span>
@@ -200,10 +266,11 @@ const PropertyCard: React.FC<{
 function FavoritePage() {
   const { user } = useAuth();
   const { modal } = App.useApp();
+  const router = useRouter();
   const [favorites, setFavorites] = useState<FavoriteProperty[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const itemsPerPage = 3;
 
   useEffect(() => {
     const fetchFavorites = async () => {
@@ -251,8 +318,16 @@ function FavoritePage() {
           console.error("Error removing favorite:", error);
           message.error("Terjadi kesalahan saat menghapus favorit");
         }
-      }
+      },
     });
+  };
+
+  const handlePropertyClick = (property: FavoriteProperty) => {
+    // Navigate to property detail page
+    // Format: /developers/{developerId}/clusters/{clusterId}/properties/{propertyId}
+    router.push(
+      `/developers/${property.developerId}/clusters/${property.clusterId}/properties/${property.propertyId}`
+    );
   };
 
   // Pagination logic
@@ -268,7 +343,7 @@ function FavoritePage() {
   if (isLoading) {
     return (
       <ProtectedRoute>
-        <div className="bg-light-tosca min-h-screen font-sans flex items-center justify-center">
+        <div className="min-h-screen font-sans flex items-center justify-center">
           <div className="text-gray-600">Memuat data favorit...</div>
         </div>
       </ProtectedRoute>
@@ -277,10 +352,10 @@ function FavoritePage() {
 
   return (
     <ProtectedRoute>
-      <div className="bg-light-tosca min-h-screen font-sans">
+      <div className="min-h-screen font-sans">
         <main className="flex flex-col items-center justify-center max-w-[1200px] mx-8 lg:mx-auto py-12">
           <div className="text-center mb-10">
-            <div className="flex justify-center items-center mb-4">
+            <div className="flex justify-center items-center mb-4 mt-[-48px]">
               <div className="relative">
                 <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg">
                   <StarIconLarge />
@@ -327,12 +402,13 @@ function FavoritePage() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {currentFavorites.map((property) => (
                   <PropertyCard
                     key={property.favoriteId}
                     property={property}
                     onRemove={handleRemoveFavorite}
+                    onClick={() => handlePropertyClick(property)}
                   />
                 ))}
               </div>
@@ -340,27 +416,29 @@ function FavoritePage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1 || totalPages <= 1}
+                    disabled={currentPage === 1}
                     className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     &lt;
                   </button>
-                  {Array.from({ length: Math.max(1, totalPages) }, (_, i) => i + 1).map((page) => (
-                    <button
-                      key={page}
-                      onClick={() => handlePageChange(page)}
-                      className={`px-3 py-2 text-sm font-medium rounded-md ${
-                        currentPage === page
-                          ? "bg-teal-600 text-white"
-                          : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`px-3 py-2 text-sm font-medium rounded-md ${
+                          currentPage === page
+                            ? "bg-teal-600 text-white"
+                            : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages || totalPages <= 1}
+                    disabled={currentPage === totalPages}
                     className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     &gt;

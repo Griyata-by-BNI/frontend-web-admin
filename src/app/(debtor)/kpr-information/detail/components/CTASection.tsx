@@ -1,4 +1,17 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+
 export const CTASection = () => {
+  const router = useRouter();
+
+  const handleCheckAffordability = () => {
+    router.push("/kpr-affordability");
+  };
+
+  const handleApplyKPR = () => {
+    router.push("/kpr-apply");
+  };
   return (
     <section>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -21,12 +34,12 @@ export const CTASection = () => {
               langkah awal untuk wujudkan rumah impianmu bersama BNI.
             </p>
 
-            <a
-              href="#"
-              className="block w-full bg-[#27C5B8] text-white py-3 px-6 rounded-lg no-underline font-bold text-base transition-all duration-200 ease-in-out hover:bg-[#21b3a6] hover:scale-105 mt-auto"
+            <button
+              onClick={handleCheckAffordability}
+              className="block w-full bg-[#27C5B8] text-white py-3 px-6 rounded-lg font-bold text-base transition-all duration-200 ease-in-out hover:bg-[#21b3a6] hover:scale-105 mt-auto cursor-pointer border-none"
             >
               Cek Sekarang!
-            </a>
+            </button>
           </div>
         </div>
 
@@ -48,12 +61,12 @@ export const CTASection = () => {
               Ajukan KPRmu dengan mudah di manapun dan kapanpun.
             </p>
 
-            <a
-              href="#"
-              className="block w-full bg-[#27C5B8] text-white py-3 px-6 rounded-lg no-underline font-bold text-base transition-all duration-200 ease-in-out hover:bg-[#21b3a6] hover:scale-105 mt-auto"
+            <button
+              onClick={handleApplyKPR}
+              className="block w-full bg-[#27C5B8] text-white py-3 px-6 rounded-lg font-bold text-base transition-all duration-200 ease-in-out hover:bg-[#21b3a6] hover:scale-105 mt-auto cursor-pointer border-none"
             >
               Ajukan KPR
-            </a>
+            </button>
           </div>
         </div>
       </div>

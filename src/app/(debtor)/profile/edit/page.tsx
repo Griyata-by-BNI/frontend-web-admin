@@ -227,6 +227,18 @@ const EditProfilePage: React.FC = () => {
         }
         setInitialProfile(updatedProfile);
         setSelectedFile(null);
+
+        // Notify navbar to refresh profile data
+        window.dispatchEvent(
+          new CustomEvent("profileUpdated", {
+            detail: {
+              fullName: profile.fullName,
+              profilePicture:
+                response.data?.data?.profile?.photoUrl ||
+                updatedProfile.profilePicture,
+            },
+          })
+        );
       } else {
         throw new Error("Gagal memperbarui profil");
       }
@@ -254,7 +266,7 @@ const EditProfilePage: React.FC = () => {
   if (loading) {
     return (
       <ProtectedRoute>
-        <main className="bg-gray-50 w-full flex items-center justify-center p-4 min-h-screen mt-[-48px] mb-[-48px]">
+        <main className="w-full flex items-center justify-center p-4 min-h-screen mt-[-48px] mb-[-48px]">
           <div className="text-gray-600">Memuat data profil...</div>
         </main>
       </ProtectedRoute>
@@ -263,7 +275,7 @@ const EditProfilePage: React.FC = () => {
 
   return (
     <ProtectedRoute>
-      <main className="bg-gray-50 w-full flex items-center justify-center p-4 min-h-screen mt-[-48px] mb-[-48px]">
+      <main className="w-full flex items-center justify-center p-4 min-h-screen mt-[-48px] mb-[-48px]">
         <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg p-6">
           <h1 className="text-xl font-bold text-gray-800 text-center mb-5">
             Edit Profile
