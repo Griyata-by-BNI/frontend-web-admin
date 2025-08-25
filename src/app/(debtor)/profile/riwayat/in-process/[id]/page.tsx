@@ -7,6 +7,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { StatusTracker } from "./components/StatusTracker";
 import { PengajuanKPRView } from "./components/PengajuanKPRView";
 import { VerifikasiView } from "./components/VerifikasiView";
+import { StatusResultView } from "./components/StatusResultView";
 import { usePropertyDetail, useSubmissionDetail } from "@/services/kprService";
 
 export default function InProcessDetailPage() {
@@ -71,9 +72,9 @@ export default function InProcessDetailPage() {
   const stepsData = [
     {
       title: "Pengajuan KPR",
-      date: new Date(submission.submission.submitted_at).toLocaleDateString(
-        "id-ID"
-      ),
+      date: submission.submission.created_at
+        ? new Date(submission.submission.created_at).toLocaleDateString("id-ID")
+        : "",
     },
     {
       title: "Verifikasi Pengajuan",
@@ -86,38 +87,65 @@ export default function InProcessDetailPage() {
     { title: "Hasil Pengajuan", date: "" },
   ];
 
+  const status = submission?.submission.status === "under_review" ? "Sedang Diproses" : "Diajukan";
+
   return (
     <ProtectedRoute>
-      <div className="bg-gray-100 min-h-screen p-4 sm:p-6 lg:p-8">
+      <div className="bg-gradient-to-t from-white to-light-tosca min-h-screen p-4 sm:p-6 lg:p-8">
         <div className="max-w-4xl mx-auto">
-          <header className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-800">
-              Detail Pengajuan
-            </h1>
-          </header>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-8 py-6 border-b border-gray-100">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h1 className="text-2xl font-semibold text-gray-900 mb-1">Detail Pengajuan</h1>
+                  <p className="text-sm text-gray-600">Lacak status pengajuan KPR Anda</p>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium ${
+                    submission?.submission.status === "under_review"
+                      ? "bg-yellow-100 text-yellow-700 border border-yellow-200"
+                      : "bg-blue-100 text-blue-700 border border-blue-200"
+                  }`}>
+                    <div className={`w-2 h-2 rounded-full mr-2 ${
+                      submission?.submission.status === "under_review" ? "bg-yellow-500" : "bg-blue-500"
+                    }`}></div>
+                    {status}
+                  </div>
+                </div>
+              </div>
+            </div>
 
-          <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
-            <StatusTracker
-              steps={stepsData}
-              currentProgress={currentProgress}
-              viewedStep={viewedStep}
-              onStepClick={(step: number) =>
-                setViewedStep(step as typeof currentProgress)
-              }
-            />
+            <div className="px-8 py-8">
+              <StatusTracker
+                steps={stepsData}
+                currentProgress={currentProgress}
+                viewedStep={viewedStep}
+                onStepClickAction={(step: number) =>
+                  setViewedStep(step as typeof currentProgress)
+                }
+              />
+            </div>
           </div>
 
           <main className="mt-8">
-            {viewedStep === SUBMISSION_STEPS.PENGAJUAN && (
-              <PengajuanKPRView
-                submissionData={submission}
-                propertyData={property ?? null}
+            <div className="space-y-8">
+              <StatusResultView
+                status={status}
+                submissionId={submission.submission?.id || id}
+                submittedAt={submission.submission.created_at}
               />
-            )}
+              
+              {viewedStep === SUBMISSION_STEPS.PENGAJUAN && (
+                <PengajuanKPRView
+                  submissionData={submission}
+                  propertyData={property ?? null}
+                />
+              )}
 
-            {viewedStep === SUBMISSION_STEPS.VERIFIKASI && (
-              <VerifikasiView submissionData={submission} />
-            )}
+              {viewedStep === SUBMISSION_STEPS.VERIFIKASI && (
+                <VerifikasiView submissionData={submission} />
+              )}
+            </div>
           </main>
         </div>
       </div>

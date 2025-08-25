@@ -8,12 +8,14 @@ export const STATUS_COLORS = {
   verified: "bg-green-500",
   submitted: "bg-blue-500",
   under_review: "bg-yellow-500",
+  rejected: "bg-red-500",
 } as const;
 
 export const STATUS_LABELS = {
   verified: "Selesai",
   submitted: "Diajukan",
-  under_review: "Direview",
+  under_review: "Sedang Diproses",
+  rejected: "Ditolak",
 } as const;
 
 export const generateApplicationCode = (
@@ -33,8 +35,9 @@ export const generateApplicationCode = (
   const day = String(date.getDate()).padStart(2, "0");
   const dateStr = `${year}${month}${day}`;
 
-  // Submission ID minimal 3 digit (001, 002, dst.)
-  const idStr = String(submissionId).padStart(3, "0");
+  // Submission ID without padding
+  const idStr = String(submissionId);
+  // const idStr = String(submissionId).padStart(3, "0");
 
   return `${dateStr}${idStr}`;
 };

@@ -25,7 +25,11 @@ function CompletedPageContent() {
 
   const isLoading = submissionLoading || propertyLoading;
   const status =
-    submission?.submission.status === "verified" ? "selesai" : "dalam_proses";
+    submission?.submission.status === "verified"
+      ? "selesai"
+      : submission?.submission.status === "rejected"
+      ? "ditolak"
+      : "dalam_proses";
   const currentProgress = SUBMISSION_STEPS.HASIL;
   const [viewedStep, setViewedStep] = useState<number>(currentProgress);
 
@@ -56,7 +60,7 @@ function CompletedPageContent() {
   const stepsData = [
     {
       title: "Pengajuan KPR",
-      date: new Date(submission.submission.submitted_at).toLocaleDateString(
+      date: new Date(submission.submission.created_at).toLocaleDateString(
         "id-ID"
       ),
     },
@@ -79,34 +83,49 @@ function CompletedPageContent() {
   ];
 
   return (
-    <div className="bg-gray-100 min-h-screen p-4 sm:p-6 lg:p-8">
+    <div className="bg-gradient-to-t from-white to-light-tosca min-h-screen p-4 sm:p-6 lg:p-8">
       <div className="max-w-4xl mx-auto">
-        <header className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Detail Pengajuan</h1>
-        </header>
-
-        <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-xl font-bold text-gray-700">
-              Status Pengajuan
-            </h2>
-            <span
-              className={`text-sm font-semibold px-4 py-1.5 rounded-full ${
-                status === "selesai"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-blue-100 text-blue-800"
-              }`}
-            >
-              {status === "selesai" ? "Selesai" : "Dalam Proses"}
-            </span>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-8 py-6 border-b border-gray-100">
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-2xl font-semibold text-gray-900 mb-1">Detail Pengajuan</h1>
+                <p className="text-sm text-gray-600">Lacak status pengajuan KPR Anda</p>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium ${
+                  status === "selesai"
+                    ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                    : status === "ditolak"
+                    ? "bg-red-100 text-red-700 border border-red-200"
+                    : "bg-blue-100 text-blue-700 border border-blue-200"
+                }`}>
+                  <div className={`w-2 h-2 rounded-full mr-2 ${
+                    status === "selesai"
+                      ? "bg-emerald-500"
+                      : status === "ditolak"
+                      ? "bg-red-500"
+                      : "bg-blue-500"
+                  }`}></div>
+                  {status === "selesai"
+                    ? "Selesai"
+                    : status === "ditolak"
+                    ? "Ditolak"
+                    : "Dalam Proses"}
+                </div>
+              </div>
+            </div>
           </div>
 
-          <StatusTracker
-            steps={stepsData}
-            currentProgress={currentProgress}
-            viewedStep={viewedStep}
-            onStepClick={setViewedStep}
-          />
+          <div className="px-8 py-8">
+            <StatusTracker
+              steps={stepsData}
+              currentProgress={currentProgress}
+              viewedStep={viewedStep}
+              onStepClickAction={setViewedStep}
+              status={status}
+            />
+          </div>
         </div>
 
         <main className="mt-8">
@@ -120,11 +139,18 @@ function CompletedPageContent() {
             <VerifikasiView submissionData={submission} />
           )}
           {viewedStep === SUBMISSION_STEPS.HASIL && (
-            <HasilPengajuanView
-              status={status}
-              submissionId={submission.submission.id}
-              verificationNotes={submission.submission.verification_notes}
-            />
+            <div className="space-y-8">
+              <HasilPengajuanView
+                status={status}
+                submissionId={submission.submission?.id || id}
+                submittedAt={submission.submission.created_at}
+                verificationNotes={submission.submission.verification_notes}
+              />
+              <PengajuanKPRView
+                submissionData={submission}
+                propertyData={property ?? null}
+              />
+            </div>
           )}
         </main>
       </div>

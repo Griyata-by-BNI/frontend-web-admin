@@ -1,46 +1,31 @@
 import { useMemo } from "react";
 import { generateApplicationCode } from "@/utils/constants";
-import { clsx } from "clsx";
+import Image from "next/image";
 
-interface HasilPengajuanViewProps {
-  status: "selesai" | "dalam_proses";
-  submissionId: number;
-  verificationNotes?: string;
-}
 
-const Illustration = ({ status }: { status: "selesai" | "dalam_proses" }) => {
-  const isCompleted = status === "selesai";
+
+const Illustration = ({ status }: { status: "selesai" | "dalam_proses" | "ditolak" }) => {
+  const getImageSrc = () => {
+    switch (status) {
+      case "selesai":
+        return "/images/Approved.png";
+      case "ditolak":
+        return "/images/Rejected.png";
+      case "dalam_proses":
+      default:
+        return "/images/Under_Review.png";
+    }
+  };
+
   return (
-    <div
-      className={clsx(
-        "mx-auto w-full max-w-sm h-64 rounded-lg flex items-center justify-center",
-        isCompleted ? "bg-green-50" : "bg-blue-50"
-      )}
-    >
-      <svg
-        className={clsx(
-          "w-24 h-24",
-          isCompleted ? "text-green-400" : "text-blue-400"
-        )}
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      >
-        {isCompleted ? (
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        ) : (
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        )}
-      </svg>
+    <div className="mx-auto w-full max-w-sm h-64 flex items-center justify-center">
+      <Image
+        src={getImageSrc()}
+        alt={`Status ${status}`}
+        width={200}
+        height={200}
+        className="object-contain"
+      />
     </div>
   );
 };
@@ -56,20 +41,32 @@ const CONTENT = {
     message:
       "Pengajuan KPR Anda masih dalam tahap pemrosesan. Mohon tunggu untuk informasi selanjutnya.",
   },
+  ditolak: {
+    title: "telah ditolak",
+    message:
+      "Pengajuan KPR Anda telah ditolak. Silakan hubungi customer service untuk informasi lebih lanjut.",
+  },
 } as const;
+
+interface HasilPengajuanViewProps {
+  status: "selesai" | "dalam_proses" | "ditolak";
+  submissionId: number;
+  submittedAt?: string;
+  verificationNotes?: string;
+}
 
 export const HasilPengajuanView = ({
   status,
   submissionId,
+  submittedAt,
   verificationNotes,
 }: HasilPengajuanViewProps) => {
   const { title, message } = CONTENT[status];
 
   const applicationCode = useMemo(() => {
-    const today = new Date();
-    const dateStr = today.toISOString().slice(0, 10).replace(/-/g, "");
-    return `${dateStr}${submissionId.toString().padStart(3, "0")}`;
-  }, [submissionId]);
+    if (!submissionId) return "";
+    return generateApplicationCode(submittedAt || null, submissionId);
+  }, [submissionId, submittedAt]);
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-8 text-center">
@@ -77,9 +74,9 @@ export const HasilPengajuanView = ({
       <h3 className="text-xl font-semibold text-gray-800 mt-8">
         Pengajuan dengan Kode Aplikasi{" "}
         <span
-          className={status === "selesai" ? "text-green-600" : "text-blue-600"}
+          className={status === "selesai" ? "text-green-600" : status === "ditolak" ? "text-red-600" : "text-blue-600"}
         >
-          {applicationCode}
+          {applicationCode || `APP${submissionId || 'UNKNOWN'}`}
         </span>{" "}
         {title}
       </h3>
