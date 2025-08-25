@@ -28,8 +28,8 @@ const StickyCard: React.FC<StickyCardProps> = ({
   }, [minPrice]);
 
   return (
-    <div className="sticky top-20 bg-white rounded-xl shadow-lg overflow-hidden h-fit border border-gray-200">
-      <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-teal-400 to-dark-tosca"></div>
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden h-fit border border-gray-200">
+      <div className="h-4 bg-gradient-to-r from-teal-400 to-dark-tosca"></div>
 
       <div className="p-6 py-10">
         <div className="flex justify-between items-center">
@@ -78,7 +78,8 @@ const StickyCard: React.FC<StickyCardProps> = ({
           </div>
         </div>
       </div>
-      <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-r from-teal-400 to-dark-tosca"></div>
+
+      <div className="h-4 bg-gradient-to-r from-teal-400 to-dark-tosca"></div>
     </div>
   );
 };

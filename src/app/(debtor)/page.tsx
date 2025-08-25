@@ -24,7 +24,7 @@ export default function LandingPage() {
 
       <DeveloperLogoMarquee />
 
-      <KprToolsSection />
+      <KprToolsSection className="bg-primary-tosca/20" />
 
       <ClustersMap />
     </main>
