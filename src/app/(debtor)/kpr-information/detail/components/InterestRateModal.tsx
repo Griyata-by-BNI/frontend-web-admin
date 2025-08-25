@@ -11,11 +11,11 @@ export const InterestRateModal = ({
 
   return (
     <div
-      className="fixed inset-0 bg-white/20 backdrop-blur-sm flex items-center justify-center z-[1000]"
+      className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[1000]"
       onClick={onClose}
     >
       <div
-        className="bg-white p-8 rounded-2xl max-w-2xl w-[90%] relative shadow-2xl"
+        className="bg-white p-8 rounded-2xl max-w-2xl w-[90%] relative"
         onClick={(e) => e.stopPropagation()}
       >
         <button

@@ -1,386 +1,122 @@
 "use client";
 
-import React, { useEffect, useState, use } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { axiosInstance, axiosServer } from "@/utils/axios";
-import { KPRSimulator } from "@/app/(debtor)/kpr-simulator";
-import { MapWithNearbyPlaces } from "@/app/(debtor)/developers/components/Map";
-import StickyCard from "@/app/(debtor)/developers/components/StickyCard";
-import ImageSlider from "@/app/(debtor)/developers/components/ImageSlider";
-import FavoriteButton from "@/app/(debtor)/developers/components/FavoriteButton";
 import { useAuth } from "@/contexts/authContext";
+import { usePropertyById } from "@/services/propertyServices";
+import { axiosInstance } from "@/utils/axios";
+import { useParams } from "next/navigation";
+import { useEffect, useMemo } from "react";
 
-// 1. Import Font Awesome components and icons
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// ✨ Import the IconDefinition type
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import {
-  faBed,
-  faShower,
-  faHouse,
-  faChartArea,
-  faStairs,
-  faLocationDot,
-  faSwimmingPool,
-  faWarehouse,
-} from "@fortawesome/free-solid-svg-icons";
+import { useClusterById } from "@/services";
+import { useDetailDeveloper } from "@/services/developerServices";
+import PropertyDetailSkeleton from "../_components/PropertyDetailSkeleton";
+import PropertyHero from "../_components/PropertyHero";
+import PropertyImageSlider from "../_components/PropertyImageSlider";
+import PropertyDescription from "../_components/PropertyDescription";
+import PropertySpecifications from "../_components/PropertySpecifications";
+import PropertyKPRSimulator from "../_components/PropertyKPRSimulator";
+import PropertyLocation from "../_components/PropertyLocation";
+import PropertySidebar from "../_components/PropertySidebar";
 
-// =================================================================
-// 2. API & LOCAL TYPE DEFINITIONS
-// =================================================================
+export default function DetailPropertyPage() {
+  const { user } = useAuth();
+  const params = useParams();
+  const propertyId = Number(params.property_id);
+  const clusterId = String(params.cluster_id);
+  const developerId = Number(params.developer_id);
 
-interface ApiPropertyDetail {
-  id: number;
-  developerId: number;
-  developerName: string;
-  name: string;
-  description: string;
-  price: string;
-  location: string;
-  latitude: string;
-  longitude: string;
-  stock: number;
-  spesifications: string;
-  landArea: string;
-  buildingArea: string;
-  property_photo_urls: string[];
-  clusterTypeName?: string;
-  facilities: {
-    name: string;
-    value: number | boolean;
-  }[];
-}
+  const { data, isLoading, error } = usePropertyById(propertyId);
+  const {
+    data: dataCluster,
+    isLoading: clusterLoading,
+    error: clusterError,
+  } = useClusterById(clusterId, true);
 
-interface ApiDeveloper {
-  developerPhotoUrl: string;
-}
+  const {
+    data: dataDeveloper,
+    isLoading: developerLoading,
+    error: developerError,
+  } = useDetailDeveloper(developerId);
 
-interface ApiCluster {
-  id: number;
-  name: string;
-  latitude: string;
-  longitude: string;
-  nearbyPlaces?: {
-    type: string;
-    places: {
-      name: string;
-      distance: number;
-    }[];
-  }[];
-}
+  const cluster = useMemo(() => {
+    return dataCluster?.data?.clusters?.[0];
+  }, [dataCluster]);
 
-// ✨ Define the type for a single specification item
-interface Specification {
-  text: string;
-  icon: IconDefinition;
-}
+  const developer = useMemo(() => {
+    return dataDeveloper?.data?.developer;
+  }, [dataDeveloper]);
 
-// =================================================================
-// 3. HELPER FUNCTIONS for Data Processing
-// =================================================================
-
-const parseSpecifications = (
-  facilities: { name: string; value: number | boolean }[]
-): Specification[] => {
-  const specs: Specification[] = [];
-  if (!facilities) return specs;
-
-  facilities.forEach((facility) => {
-    switch (facility.name) {
-      case "KT":
-        specs.push({ text: `${facility.value} Kamar Tidur`, icon: faBed });
-        break;
-      case "KM":
-        specs.push({ text: `${facility.value} Kamar Mandi`, icon: faShower });
-        break;
-      case "LT":
-        specs.push({
-          text: `Luas Tanah ${facility.value} m²`,
-          icon: faChartArea,
-        });
-        break;
-      case "LB":
-        specs.push({
-          text: `Luas Bangunan ${facility.value} m²`,
-          icon: faHouse,
-        });
-        break;
-      case "jumlahLantai":
-        specs.push({ text: `${facility.value} Lantai`, icon: faStairs });
-        break;
-      case "garasi":
-        if (facility.value) {
-          specs.push({ text: "Garasi", icon: faWarehouse });
-        }
-        break;
-      case "kolamRenang":
-        if (facility.value) {
-          specs.push({ text: "Kolam Renang", icon: faSwimmingPool });
-        }
-        break;
-    }
-  });
-
-  return specs;
-};
-
-const formatPrice = (priceString: string | null): string => {
-  if (!priceString) return "N/A";
-  const price = Number(priceString);
-  if (isNaN(price)) return "N/A";
-  if (price >= 1_000_000_000)
-    return `${(price / 1_000_000_000).toFixed(1).replace(".0", "")} M`;
-  if (price >= 1_000_000)
-    return `${(price / 1_000_000).toFixed(1).replace(".0", "")} JT`;
-  return price.toLocaleString("id-ID");
-};
-
-const calculateInstallment = (
-  price?: string | null,
-  tenor: number = 180,
-  dpPercent: number = 10,
-  annualInterest: number = 3.25
-) => {
-  if (!price) return "N/A";
-  const priceNum = parseFloat(price);
-  if (isNaN(priceNum) || priceNum === 0) return "-";
-
-  const dp = priceNum * (dpPercent / 100);
-  const loanPrincipal = priceNum - dp;
-  const monthlyInterest = annualInterest / 12 / 100;
-
-  const n = tenor;
-  const r = monthlyInterest;
-
-  const installment = loanPrincipal * (r / (1 - Math.pow(1 + r, -n)));
-
-  if (installment >= 1_000_000) {
-    const million = installment / 1_000_000;
-    return (
-      "Rp " +
-      (million % 1 === 0 ? `${million}` : `${million.toFixed(1)}`) +
-      " JT"
-    );
-  } else if (installment >= 1_000) {
-    const thousand = installment / 1_000;
-    return (
-      "Rp " +
-      (thousand % 1 === 0 ? `${thousand}` : `${thousand.toFixed(1)}`) +
-      " RB"
-    );
-  }
-  return "Rp " + Math.round(installment).toLocaleString("id-ID");
-};
-
-// =================================================================
-// 4. API FETCHING LOGIC
-// =================================================================
-
-async function getPropertyPageData(
-  propertyId: string,
-  developerId: string,
-  clusterId: string
-) {
-  try {
-    const [propertyRes, developerRes, clusterRes] = await Promise.all([
-      axiosServer.get<{ data: ApiPropertyDetail }>(`/properties/${propertyId}`),
-      axiosServer.get<{ data: { developer: ApiDeveloper } }>(
-        `/developers/${developerId}`
-      ),
-      axiosServer.get<{ data: { clusters: ApiCluster[] } }>(
-        `/clusters/${clusterId}`
-      ),
-    ]);
-
-    const property = propertyRes.data.data;
-    const developer = developerRes.data.data.developer;
-    const cluster = clusterRes.data.data.clusters[0];
-
-    if (!property || !developer || !cluster) return null;
-
-    // Process the raw API data to fit the UI
-    const specifications = parseSpecifications(property.facilities);
-    const installment = calculateInstallment(property.price);
-
-    return {
-      property,
-      developer,
-      cluster,
-      processed: {
-        specifications,
-        installment,
-      },
-    };
-  } catch (error) {
-    console.error("Failed to fetch property page data:", error);
-    return null;
-  }
-}
-
-// =================================================================
-// 5. MAIN PAGE COMPONENT
-// =================================================================
-
-export default function PropertyDetailPage({
-  params,
-}: {
-  params: Promise<{
-    property_id: string;
-    developer_id: string;
-    cluster_id: string;
-  }>;
-}) {
-  const { user, token } = useAuth();
-  const resolvedParams = use(params);
-  const [data, setData] = useState<{
-    property: ApiPropertyDetail;
-    developer: ApiDeveloper;
-    cluster: ApiCluster;
-    processed: {
-      specifications: Specification[];
-      installment: string;
-    };
-  } | null>(null);
-  const [loading, setLoading] = useState(true);
+  const property = useMemo(() => {
+    return data?.data;
+  }, [data]);
 
   useEffect(() => {
-    getPropertyPageData(
-      resolvedParams.property_id,
-      resolvedParams.developer_id,
-      resolvedParams.cluster_id
-    ).then((result) => {
-      setData(result);
-      setLoading(false);
-    });
-
-    // log user activity
-    console.log("log user activity");
-    if (user) {
-      (async function () {
-        await axiosInstance.post("/properties/recently-viewed-properties", {
+    if (user && propertyId) {
+      axiosInstance
+        .post("/properties/recently-viewed-properties", {
           userId: parseInt(user.userId),
-          propertyId: parseInt(resolvedParams.property_id),
-        });
-      })();
+          propertyId,
+        })
+        .catch(console.error);
     }
-  }, [
-    resolvedParams.property_id,
-    resolvedParams.developer_id,
-    resolvedParams.cluster_id,
-  ]);
+  }, [user, propertyId]);
 
-  if (loading) return <div>Loading...</div>;
-  if (!data) {
-    notFound();
+  if (isLoading || clusterLoading || developerLoading) {
+    return <PropertyDetailSkeleton />;
   }
 
-  const { property, developer, cluster, processed } = data;
+  if (error || !property) {
+    return (
+      <div className="min-h-screen bg-light-tosca flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Properti tidak ditemukan</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 rounded-full bg-teal-600 text-white hover:bg-teal-700 transition"
+          >
+            Coba Lagi
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  const areCoordinatesValid =
-    cluster.latitude &&
-    cluster.longitude &&
-    !isNaN(Number(cluster.latitude)) &&
-    !isNaN(Number(cluster.longitude));
+  const developerLogo =
+    developer?.developerPhotoUrl ||
+    "https://via.placeholder.com/250x125.png?text=Logo";
 
   return (
-    <div className="bg-gradient-to-t from-white to-light-tosca min-h-screen py-8">
-      <main className="container mx-auto px-4">
+    <div className="min-h-screen">
+      <main className="px-4 py-6 md:!px-0 custom-container">
+        <PropertyHero
+          property={property}
+          developer={developer}
+          cluster={cluster}
+          developerId={developerId}
+          clusterId={clusterId}
+        />
+
         <div className="lg:grid lg:grid-cols-3 lg:gap-8">
-          {/* Kolom Kiri */}
           <div className="lg:col-span-2">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              {property.clusterTypeName
-                ? `${property.clusterTypeName} - ${property.name}`
-                : property.name}
-            </h1>
-            <div className="relative w-full h-96 lg:h-[350px] mb-6">
-              <ImageSlider
-                urls={property.property_photo_urls}
-                altText={property.name}
-              />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-3">Deskripsi</h2>
-            <p className="text-gray-600 leading-relaxed mb-8">
-              {property.description}
-            </p>
+            <PropertyImageSlider
+              urls={property.property_photo_urls || []}
+              altText={property.name}
+            />
 
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              Spesifikasi
-            </h2>
-            <div className="bg-white/70 border-2 border-teal-200 rounded-2xl p-6 mb-8 shadow-sm backdrop-blur-sm">
-              <div className="grid grid-cols-2 gap-x-8 gap-y-5">
-                {processed.specifications.map(
-                  (spec: Specification, index: number) => (
-                    <div key={index} className="flex items-center">
-                      <FontAwesomeIcon
-                        icon={spec.icon}
-                        className="text-teal-600 w-6 h-6"
-                      />
-                      <span className="ml-4 text-gray-800 font-medium">
-                        {spec.text}
-                      </span>
-                    </div>
-                  )
-                )}
-              </div>
-            </div>
+            <PropertyDescription description={property.description} />
 
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              Simulasi KPR
-            </h2>
-            <div className="mb-8">
-              <KPRSimulator initialPropertyPrice={Number(property.price)} />
-            </div>
+            <PropertySpecifications property={property} />
 
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              Lokasi & Tempat Terdekat
-            </h2>
-            {areCoordinatesValid ? (
-              <MapWithNearbyPlaces
-                center={[Number(cluster.latitude), Number(cluster.longitude)]}
-                popupText={`Lokasi ${cluster.name}`}
-                nearbyPlaces={cluster.nearbyPlaces || []}
-              />
-            ) : (
-              <p className="text-gray-500">Peta lokasi tidak tersedia.</p>
-            )}
+            <PropertyKPRSimulator propertyPrice={Number(property.price)} />
+
+            <PropertyLocation property={property} cluster={cluster} />
           </div>
 
-          {/* Kolom Kanan */}
-          <div className="lg:col-span-1 mt-8 lg:mt-0">
-            <div className="sticky top-20 space-y-4">
-              <StickyCard
-                priceLabel="Harga"
-                price={`Rp ${new Intl.NumberFormat("id-ID").format(
-                  Number(property.price)
-                )}`}
-                installmentText={`Angsuran mulai dari ${processed.installment}/bulan`}
-                developerName={property.developerName}
-                location={property.location}
-                developerPhotoUrl={developer.developerPhotoUrl}
-                stock={property.stock}
-              />
-              <div className="flex gap-3">
-                <Link
-                  href={`/kpr-apply?property_id=${resolvedParams.property_id}`}
-                  className="flex-1"
-                >
-                  <button className="w-full py-3 px-6 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold rounded-full hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-lg">
-                    Ajukan KPR
-                  </button>
-                </Link>
-
-                {user?.userId && (
-                  <FavoriteButton
-                    propertyId={property.id}
-                    userId={Number(user.userId)}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
+          <PropertySidebar
+            property={property}
+            propertyId={propertyId}
+            userId={user?.userId ? Number(user.userId) : undefined}
+            developerLogo={developerLogo}
+          />
         </div>
       </main>
     </div>

@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { InterestRatesData, TabType, RateTypeId } from "../../_types";
 import { InterestRateTable } from "./InterestRateTable";

@@ -51,13 +51,11 @@ export const KPRSimulator = ({
 }: KPRSimulatorProps) => {
   // ----- size variants
   const isSmall = size === "small";
-  const wrapRadius = isSmall
-    ? "rounded-lg md:rounded-xl"
-    : "rounded-xl md:rounded-2xl";
+  const wrapRadius = "rounded-xl md:rounded-2xl";
   const innerRadius = wrapRadius;
-  const outerPt = isSmall ? "pt-3" : "pt-5";
-  const shadowCls = isSmall ? "shadow-sm" : "shadow";
-  const rowPadding = isSmall ? "p-3 md:p-4" : "p-4 md:p-8";
+  const outerPt = isSmall ? "pt-4" : "pt-5";
+  const shadowCls = "shadow";
+  const rowPadding = "p-4 md:p-8";
   const gutterH = isSmall ? 24 : 48;
   const gutterV = isSmall ? 16 : 24;
   const modalWidth = isSmall ? 720 : 1000;
@@ -99,7 +97,6 @@ export const KPRSimulator = ({
 
   const tableData = useMemo(() => detailedSchedule, [detailedSchedule]);
 
-  // ----- grid span: small => 8/16, default => 12/12
   const leftColProps = isSmall
     ? { xs: 24, sm: 24, md: 10, lg: 10, xl: 10, xxl: 10 }
     : { xs: 24, sm: 24, md: 12, lg: 12, xl: 12, xxl: 12 };
@@ -110,7 +107,8 @@ export const KPRSimulator = ({
 
   return (
     <div
-      className={`w-full bg-gradient-to-r ${outerPt} from-primary-tosca to-primary-purple h-max ${wrapRadius} ${shadowCls} ${className}`}
+      className={`w-full bg-gradient-to-r ${outerPt} from-primary-tosca to-dark-tosca
+      h-max ${wrapRadius} ${shadowCls} ${className}`}
     >
       <div className={`overflow-hidden ${innerRadius}`}>
         <Row

@@ -34,42 +34,44 @@ export default function KprApplyForm() {
   const lastStepIndex = items.length - 1;
 
   return (
-    <>
-      <Steps
-        labelPlacement="vertical"
-        items={items}
-        current={currentStep}
-        className="!hidden md:!flex [&_.ant-steps-item-title]:!leading-6"
-        onChange={setCurrentStep}
-      />
-
-      <div className="h-20 p-4 bg-gradient-to-r from-primary-tosca to-dark-tosca rounded-lg md:hidden">
-        <p className="text-white font-bold">{items[currentStep]?.title}</p>
-
-        <Progress
-          percent={((currentStep + 1) / items.length) * 100}
-          strokeColor="#ffffff"
-          className="[&_.ant-progress-text]:!text-white"
+    <div className="bg-light-tosca">
+      <div className="px-4 py-6 md:py-0 md:px-0 custom-container">
+        <Steps
+          labelPlacement="vertical"
+          items={items}
+          current={currentStep}
+          className="!hidden md:!flex [&_.ant-steps-item-title]:!leading-6"
+          onChange={setCurrentStep}
         />
+
+        <div className="h-20 p-4 bg-gradient-to-r from-primary-tosca to-dark-tosca rounded-lg md:hidden">
+          <p className="text-white font-bold">{items[currentStep]?.title}</p>
+
+          <Progress
+            percent={((currentStep + 1) / items.length) * 100}
+            strokeColor="#ffffff"
+            className="[&_.ant-progress-text]:!text-white"
+          />
+        </div>
+
+        {[0, lastStepIndex].includes(currentStep) && <PropertyInformation />}
+
+        <Row className="mt-6">
+          <Col span={24}>
+            {currentStep === 0 && <LoanInformationForm />}
+
+            {currentStep === 1 && <DebtorInformationForm />}
+
+            {currentStep === 2 && <SpouseInformationForm />}
+
+            {currentStep === 3 && <EmploymentInformationForm />}
+
+            {currentStep === 4 && <DocumentUploadForm />}
+
+            {currentStep === 5 && <SummaryForm />}
+          </Col>
+        </Row>
       </div>
-
-      {[0, lastStepIndex].includes(currentStep) && <PropertyInformation />}
-
-      <Row className="mt-6">
-        <Col span={24}>
-          {currentStep === 0 && <LoanInformationForm />}
-
-          {currentStep === 1 && <DebtorInformationForm />}
-
-          {currentStep === 2 && <SpouseInformationForm />}
-
-          {currentStep === 3 && <EmploymentInformationForm />}
-
-          {currentStep === 4 && <DocumentUploadForm />}
-
-          {currentStep === 5 && <SummaryForm />}
-        </Col>
-      </Row>
-    </>
+    </div>
   );
 }

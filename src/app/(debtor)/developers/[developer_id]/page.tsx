@@ -1,134 +1,110 @@
+"use client";
+
 import React from "react";
-import Link from "next/link";
 import Image from "next/image";
-import { notFound } from "next/navigation";
-import { axiosServer } from "@/utils/axios";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { Skeleton } from "antd";
+import { ChevronRight, ArrowLeft, Building2 } from "lucide-react";
+import ClusterSearchWrapper from "./_components/ClusterSearchWrapper";
+import { useDetailDeveloper } from "@/services/developerServices";
+import DeveloperDetailSkeleton from "./_components/DetailDeveloperSkeleton";
+import KprToolsSection from "../../_components/KprToolsSection";
+import { CustomBreadcrumb } from "@/components/CustomBreadcrumb";
 
-// ✨ 1. Mengimpor komponen ClusterCard yang benar dari file terpisah
-import ClusterCard from "@/app/(debtor)/developers/components/ClusterCard";
-import ClusterSearchWrapper from "@/app/(debtor)/developers/components/ClusterSearchWrapper";
+export default function DeveloperDetailPage() {
+  const params = useParams();
+  const developerId = params.developer_id;
+  const { data: developerData, isLoading: isDeveloperLoading } =
+    useDetailDeveloper(Number(developerId));
 
-interface ApiDeveloper {
-  id: number;
-  name: string;
-  description: string;
-  developerPhotoUrl: string;
-}
-interface ApiCluster {
-  id: number;
-  developerId: number;
-  name: string;
-  address: string | null;
-  minPrice: string | null;
-  maxPrice: string | null;
-  cluster_photo_urls: string[];
-}
-interface DeveloperWithClusters extends ApiDeveloper {
-  clusters: ApiCluster[];
-}
-
-
-
-// =================================================================
-// 4. DATA FETCHING LOGIC
-// =================================================================
-const getDeveloperDetails = async (
-  id: string
-): Promise<DeveloperWithClusters | null> => {
-  try {
-    const developerRes = await axiosServer.get<{
-      data: { developer: ApiDeveloper };
-    }>(`/developers/${id}`);
-    const developer = developerRes.data.data.developer;
-    const summaryClustersRes = await axiosServer.get<{
-      data: { clusters: ApiCluster[] };
-    }>(`/clusters/developer/${id}`);
-    const summaryClusters = summaryClustersRes.data.data.clusters;
-    if (!summaryClusters || summaryClusters.length === 0) {
-      return { ...developer, clusters: [] };
-    }
-    const clusterDetailPromises = summaryClusters.map((cluster) =>
-      axiosServer.get<{ data: { clusters: ApiCluster[] } }>(
-        `/clusters/${cluster.id}`
-      )
-    );
-    const clusterDetailResults = await Promise.allSettled(
-      clusterDetailPromises
-    );
-    const detailedClusters = clusterDetailResults
-      .filter(
-        (result) =>
-          result.status === "fulfilled" &&
-          result.value.data?.data?.clusters?.[0]
-      )
-      .map(
-        (result) =>
-          (result as PromiseFulfilledResult<any>).value.data.data.clusters[0]
-      );
-    return { ...developer, clusters: detailedClusters };
-  } catch (error) {
-    console.error(`Failed to fetch details for developer ${id}:`, error);
-    return null;
+  if (isDeveloperLoading) {
+    return <DeveloperDetailSkeleton />;
   }
-};
 
-// =================================================================
-// 5. MAIN PAGE COMPONENT
-// =================================================================
-export default async function DeveloperDetailPage({
-  params,
-}: {
-  params: { developer_id: string };
-}) {
-  const developer = await getDeveloperDetails(params.developer_id);
-
-  if (!developer) {
-    notFound();
+  // ===== Not Found =====
+  if (!developerData?.data?.developer) {
+    return (
+      <div className="custom-container min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Developer tidak ditemukan
+          </h1>
+          <p className="text-gray-600">
+            Developer yang Anda cari tidak tersedia.
+          </p>
+          <Link
+            href="/developers"
+            className="inline-flex items-center gap-2 mt-6 px-4 py-2 rounded-full bg-teal-600 text-white font-medium hover:bg-teal-700 transition"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Kembali ke daftar developer
+          </Link>
+        </div>
+      </div>
+    );
   }
+
+  const developer = developerData.data.developer;
   const logoUrl =
     developer.developerPhotoUrl ||
     "https://via.placeholder.com/250x125.png?text=Developer+Logo";
 
   return (
-    <div className="bg-gradient-to-t from-white to-light-tosca min-h-screen">
-      <main className="container mx-auto px-4">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-          {developer.name}
-        </h1>
-        <section className="mt-8 bg-white p-6 md:p-8 rounded-2xl shadow-sm">
-          <div className="flex flex-col md:flex-row gap-8">
-            <div className="md:w-1/3 flex justify-center items-center">
-              <Image
-                src={logoUrl}
-                alt={`${developer.name} logo`}
-                width={250}
-                height={125}
-                className="object-contain"
-              />
-            </div>
+    <div className="custom-container min-h-screen py-8">
+      <CustomBreadcrumb
+        className="mb-3"
+        items={[
+          { label: " Partner Developer", href: " /developers" },
+          {
+            label: developer.name,
+          },
+        ]}
+      />
 
-            <div className="md:w-2/3">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                Tentang {developer.name}
-              </h2>
+      {/* ===== Hero / Header ===== */}
+      <div
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-br
+      from-teal-50 via-white to-indigo-50 shadow-lg shadow-gray-500/10 border border-gray-200 p-6 md:p-10"
+      >
+        <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
+          {/* Logo card */}
 
-              <p className="text-gray-600 leading-relaxed">
-                {developer.description}
-              </p>
-            </div>
+          <Image
+            src={logoUrl}
+            alt={`${developer.name} logo`}
+            width={250}
+            height={125}
+            className="object-contain"
+          />
+
+          {/* Title + About + CTA */}
+          <div className="w-full md:max-w-2/3">
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900">
+              {developer.name}
+            </h1>
+            <p className="mt-3 text-gray-600 leading-relaxed">
+              {developer.description ||
+                "Belum ada deskripsi untuk developer ini."}
+            </p>
           </div>
-        </section>
+        </div>
 
-        {developer && (
-          <section className="mt-12">
-            <ClusterSearchWrapper 
-              clusters={developer.clusters} 
-              developerName={developer.name}
-              developerId={developer.id}
-            />
-          </section>
-        )}
-      </main>
+        {/* Decorative blob */}
+        <div className="pointer-events-none absolute -top-10 -right-10 h-48 w-48 rounded-full blur-3xl opacity-30 bg-gradient-to-br from-teal-300 to-indigo-300" />
+      </div>
+
+      {/* ===== Projects Section ===== */}
+      <section id="proyek" className="mt-12">
+        <ClusterSearchWrapper
+          developerName={developer.name}
+          developerId={developer.id}
+        />
+      </section>
+
+      <section id="tools" className="mt-12">
+        <KprToolsSection className="bg-primary-tosca/10" />
+      </section>
     </div>
   );
 }

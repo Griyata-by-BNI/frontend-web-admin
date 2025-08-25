@@ -4,7 +4,7 @@ import Navbar from "@/components/navbar";
 import { useAuth } from "@/contexts/authContext";
 import { redirect } from "next/navigation";
 
-export default function DebtorLayout({
+export default function LandingLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -25,10 +25,8 @@ export default function DebtorLayout({
     <div className="flex flex-col min-h-screen relative">
       <Navbar />
 
-      <main className="flex-grow bg-gradient-to-t from-white to-light-tosca">
-        <div className="flex flex-col lg:max-w-6xl mx-8 lg:mx-auto py-4 md:py-8">
-          {children}
-        </div>
+      <main className="flex-grow bg-white">
+        <div className="flex flex-col md:px-0">{children}</div>
       </main>
     </div>
   );

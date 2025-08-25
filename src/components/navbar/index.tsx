@@ -9,7 +9,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { axiosInstance } from "@/utils/axios";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchProfile } from "@/services";
 import { kprItems, navItems } from "./constants";
 import { NavItem } from "./types";
 
@@ -44,42 +45,26 @@ const NavLink = ({
 const LoginButton = ({ className = "" }: { className?: string }) => {
   const { modal } = App.useApp();
   const { user, token, loading, logout } = useAuth();
-  const [profilePicture, setProfilePicture] = useState<string | null>(null);
-  const [displayName, setDisplayName] = useState<string>("");
+  const queryClient = useQueryClient();
 
-  const fetchProfileData = async () => {
-    if (!user?.userId || !token) return;
+  const { data: profile } = useQuery({
+    queryKey: ["profile", user?.userId],
+    queryFn: () => fetchProfile(user!.userId, token!),
+    enabled: !!user?.userId && !!token,
+  });
 
-    try {
-      const res = await axiosInstance.get(`/profiles/${user.userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const profile = res.data?.data?.profile;
-      if (profile) {
-        setProfilePicture(profile.photoUrl || null);
-        setDisplayName(profile.name || user.fullName);
-      } else {
-        setDisplayName(user.fullName);
-      }
-    } catch (err) {
-      console.error("Failed to fetch profile data:", err);
-      setDisplayName(user.fullName);
-    }
-  };
-
-  useEffect(() => {
-    fetchProfileData();
-  }, [user?.userId, token]);
+  const profilePicture = profile?.photoUrl || null;
+  const displayName = profile?.name || user?.fullName || "";
 
   useEffect(() => {
     const handleProfileUpdate = () => {
-      fetchProfileData();
+      queryClient.invalidateQueries({ queryKey: ["profile", user?.userId] });
     };
 
     window.addEventListener("profileUpdated", handleProfileUpdate);
     return () =>
       window.removeEventListener("profileUpdated", handleProfileUpdate);
-  }, [user?.userId, token]);
+  }, [user?.userId, queryClient]);
 
   const menuItems = [
     {

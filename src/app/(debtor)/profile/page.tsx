@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback } from "react";
 import { Clock, Star, Shield, LogOut, Edit } from "lucide-react";
 import { useRouter, redirect } from "next/navigation";
 import { useAuth } from "@/contexts/authContext";
-import { axiosInstance } from "@/utils/axios";
+import { useQuery } from "@tanstack/react-query";
+import { fetchProfile } from "@/services";
 
 // Types
 interface UserData {
@@ -13,14 +14,6 @@ interface UserData {
   email: string;
   phone: string;
   avatar?: string;
-}
-
-interface ProfilePageProps {
-  user?: UserData;
-  onEditProfile?: () => void;
-  onNavigateToHistory?: () => void;
-  onNavigateToPolicy?: () => void;
-  onLogout?: () => void;
 }
 
 // Skeleton Loader Component
@@ -129,55 +122,25 @@ const VersionInfo: React.FC = () => (
 );
 
 // MAIN COMPONENT
-const ProfilePage: React.FC<ProfilePageProps> = ({
-  user,
-  onEditProfile,
-  onNavigateToHistory,
-  onNavigateToPolicy,
-  onLogout,
-}) => {
+const ProfilePage: React.FC = () => {
   const router = useRouter();
-  const { user: savedData, token } = useAuth();
-  const [profile, setProfile] = useState<UserData | undefined>(user);
-  const [loading, setLoading] = useState<boolean>(true);
+  const { user: savedData, token, logout } = useAuth();
 
-  // 🔥 Fetch Profile API
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!savedData?.userId) {
-        setLoading(false);
-        return;
+  const { data: profile, isLoading: loading } = useQuery({
+    queryKey: ["profile", savedData?.userId],
+    queryFn: () => fetchProfile(savedData!.userId, token!),
+    enabled: !!savedData?.userId && !!token,
+  });
+
+  const profileData: UserData | undefined = profile
+    ? {
+        id: profile.id,
+        name: profile.name,
+        email: profile.email,
+        phone: profile.phone,
+        avatar: profile.photoUrl,
       }
-
-      try {
-        const res = await axiosInstance.get(`/profiles/${savedData.userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = res.data?.data?.profile;
-
-        if (data) {
-          setProfile({
-            id: data.userId,
-            name: data.name,
-            email: data.email,
-            phone: data.phone,
-            avatar: data.photoUrl,
-          });
-        } else {
-          setProfile(undefined);
-        }
-      } catch (err) {
-        console.error("Failed to fetch profile:", err);
-        setProfile(undefined);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, [savedData]);
+    : undefined;
 
   if (!savedData) {
     redirect("/");
@@ -185,47 +148,30 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
 
   // Handlers
   const handleEditProfile = useCallback(() => {
-    if (onEditProfile) {
-      onEditProfile();
-    } else {
-      router.push("/profile/edit");
-    }
-  }, [onEditProfile, router]);
+    router.push("/profile/edit");
+  }, [router]);
 
   const handleHistoryClick = useCallback(() => {
-    if (onNavigateToHistory) {
-      onNavigateToHistory();
-    } else {
-      router.push("/profile/riwayat");
-    }
-  }, [onNavigateToHistory, router]);
+    router.push("/profile/riwayat");
+  }, [router]);
 
   const handlePolicyClick = useCallback(() => {
-    if (onNavigateToPolicy) {
-      onNavigateToPolicy();
-    } else {
-      router.push("/profile/policy");
-    }
-  }, [onNavigateToPolicy, router]);
+    router.push("/profile/policy");
+  }, [router]);
 
   const handleFavoriteClick = useCallback(() => {
-    if (onNavigateToPolicy) {
-      onNavigateToPolicy();
-    } else {
-      router.push("/favorite");
-    }
-  }, [onNavigateToPolicy, router]);
+    router.push("/favorite");
+  }, [router]);
 
   const handleLogout = useCallback(() => {
     const confirmed = window.confirm(
       "Apakah Anda yakin ingin keluar dari akun?"
     );
-    if (confirmed && onLogout) {
-      onLogout();
-    } else if (confirmed) {
-      console.log("Logging out...");
+
+    if (confirmed) {
+      logout();
     }
-  }, [onLogout]);
+  }, []);
 
   return (
     <div className="mb-[-90px] ml-[-160px] mr-[-160px] min-h-screen bg-gray-500 flex flex-col justify-between">
@@ -240,7 +186,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
             {loading ? (
               <ProfileSkeleton />
             ) : (
-              <ProfileCard user={profile} onEditProfile={handleEditProfile} />
+              <ProfileCard
+                user={profileData}
+                onEditProfile={handleEditProfile}
+              />
             )}
           </div>
 

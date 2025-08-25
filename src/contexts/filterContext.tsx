@@ -10,8 +10,8 @@ import React, {
 import { Form } from "antd";
 import type { FormInstance } from "antd";
 import { usePathname, useSearchParams } from "next/navigation";
-import { FilterFormData } from "@/app/landing/_components/filter";
-import { SortBy } from "@/app/landing/_components/filter/types";
+import { FilterFormData } from "@/app/(debtor)/_components/filter";
+import { SortBy } from "@/app/(debtor)/_components/filter/types";
 import { useRouter } from "@bprogress/next";
 
 type FilterContextValue = {

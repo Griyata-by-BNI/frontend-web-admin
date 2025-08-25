@@ -33,10 +33,10 @@ const steps = [
 
 export default function KprApplyPage() {
   return (
-    <>
+    <div className="bg-light-tosca">
       <div className="bg-gradient-to-b mt-[-48px] from-[rgb(32,197,181)] to-[#009688] text-white rounded-b-[50px] sm:rounded-b-[80px] pt-12 sm:pt-16 pb-32">
         <div className="max-w-5xl mx-auto px-4">
-          <div className="text-center">
+          <div className="text-center my-8">
             <h1 className="text-3xl sm:text-4xl font-bold">Pengajuan KPR</h1>
             <p className="text-lg mt-2 opacity-90">
               Proses Mudah Dalam 5 Langkah
@@ -45,7 +45,7 @@ export default function KprApplyPage() {
         </div>
       </div>
 
-      <div>
+      <div className="pb-10">
         <div className="max-w-5xl mx-auto px-4 -mt-24 sm:-mt-28 relative z-10">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
             {steps.map((step) => (
@@ -74,6 +74,6 @@ export default function KprApplyPage() {
         </div>
         <div></div>
       </div>
-    </>
+    </div>
   );
 }

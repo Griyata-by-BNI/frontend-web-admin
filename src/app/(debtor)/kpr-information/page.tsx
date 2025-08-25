@@ -54,25 +54,32 @@ const InfoKprPage: React.FC = () => {
   ];
 
   return (
-    <div className="font-sans">
+    <div className="bg-gray-100 font-sans">
       <div className="bg-gradient-to-b from-teal-500 to-teal-600 py-20 text-center mt-[-48px] mb-[-48px]">
         <h1 className="text-4xl font-bold text-white">Griyata by BNI</h1>
       </div>
 
-      <div className="container mx-auto max-w-4xl pb-10">
+      <div className="custom-container">
         <AboutSection />
+      </div>
+
+      <div className="custom-container !py-0 rounded-2xl overflow-clip mb-10 drop-shadow-lg drop-shadow-gray-500/5 border border-gray-200">
         <KeunggulanSection />
+
         <StatsSection />
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+
+        <div className="bg-white p-6">
           <JenisFiturSection items={jenisFitur} />
         </div>
-        <div className="p-0">
-          <FaqSection faqData={FAQS} />
-        </div>
       </div>
-      
-      {/* Footer */}
-      <ContactSection />
+
+      <div className="custom-container !py-0">
+        <FaqSection faqData={FAQS} />
+      </div>
+
+      <div className="custom-container !py-0 mb-10">
+        <ContactSection />
+      </div>
     </div>
   );
 };
