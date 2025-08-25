@@ -28,6 +28,80 @@
   z-index: 2 !important;
 }
 
-/* .ant-table-tbody > tr:nth-child(even) > td {
-  background-color: #f0f0f0;
-} */
+.custom-container {
+  display: flex;
+  flex-direction: column;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+/* Tablet (≥640px) */
+@media (min-width: 640px) {
+  .custom-container {
+    max-width: 640px;
+  }
+}
+
+/* Medium screen (≥768px) */
+@media (min-width: 768px) {
+  .custom-container {
+    max-width: 768px;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+}
+
+/* Large screen (≥1024px) */
+@media (min-width: 1024px) {
+  .custom-container {
+    max-width: 1024px;
+  }
+}
+
+/* Extra large screen (≥1280px) */
+@media (min-width: 1280px) {
+  .custom-container {
+    max-width: 1280px;
+  }
+}
+
+@layer utilities {
+  @keyframes marquee {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    } /* geser tepat sepanjang 1 grup */
+  }
+
+  .marquee-track {
+    display: flex;
+    align-items: center;
+    animation-name: marquee;
+    animation-duration: var(--marquee-duration, 20s);
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    will-change: transform;
+    gap: var(--marquee-gap, 1.5rem);
+  }
+
+  .marquee-paused {
+    animation-play-state: paused;
+  }
+
+  .marquee-group {
+    display: flex;
+    align-items: center;
+    gap: var(--marquee-gap, 1.5rem);
+    flex-shrink: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+      animation: none !important;
+      transform: none !important;
+    }
+  }
+}

@@ -4,16 +4,19 @@ import {
   FetchClustersOptions,
   GetClustersResponse,
   GetDetailClusterResponse,
+  LatestClustersResponse,
   PayloadCluster,
 } from "@/types/cluster";
 
 export const fetchClusters = async ({
   pageNumber = 1,
   pageSize = 10,
+  sortBy = "createdAt",
+  sortDir = "DESC",
   signal,
 }: FetchClustersOptions): Promise<GetClustersResponse> => {
   const { data } = await axiosInstance.get<GetClustersResponse>("/clusters", {
-    params: { pageNumber, pageSize },
+    params: { pageNumber, pageSize, sortBy, sortDir },
     signal,
   });
   return data;
@@ -28,18 +31,21 @@ export const useClusters = (pageNumber = 1, pageSize = 10) => {
 };
 
 export const fetchClustersByDeveloper = async (
-  id: string
+  id: string,
+  search?: string
 ): Promise<GetClustersResponse> => {
+  const params = search ? { search } : {};
   const { data } = await axiosInstance.get<GetClustersResponse>(
-    `/clusters/developer/${id}`
+    `/clusters/developer/${id}`,
+    { params }
   );
   return data;
 };
 
-export const useClustersByDeveloper = (developerId: string) => {
+export const useClustersByDeveloper = (developerId: string, search?: string) => {
   return useQuery({
-    queryKey: ["clusters", "developer", developerId],
-    queryFn: () => fetchClustersByDeveloper(developerId),
+    queryKey: ["clusters", "developer", developerId, search],
+    queryFn: () => fetchClustersByDeveloper(developerId, search),
     enabled: !!developerId,
   });
 };
@@ -159,3 +165,18 @@ export const useDeleteCluster = () => {
     mutationFn: deleteCluster,
   });
 };
+
+export const fetchLatestClusters =
+  async (): Promise<LatestClustersResponse> => {
+    const { data } = await axiosInstance.get<LatestClustersResponse>(
+      "/clusters/latest/clusters"
+    );
+    return data;
+  };
+
+export const useLatestClusters = () =>
+  useQuery<LatestClustersResponse>({
+    queryKey: ["latest-clusters"],
+    queryFn: fetchLatestClusters,
+    staleTime: 5 * 60 * 1000,
+  });

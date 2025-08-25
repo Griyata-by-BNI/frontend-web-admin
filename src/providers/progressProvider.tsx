@@ -9,7 +9,12 @@ export default function ProgressProvider({
 }) {
   return (
     <>
-      <BProgressProvider height="4px" color="#30a5a2">
+      <BProgressProvider
+        height="4px"
+        color="#30a5a2"
+        shallowRouting
+        options={{ showSpinner: false }}
+      >
         {children}
       </BProgressProvider>
     </>

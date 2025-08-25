@@ -20,7 +20,7 @@ export const FaqSection = ({ faqData }: FaqSectionProps) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+    <div className="bg-white rounded-xl shadow-lg shadow-gray-500/5 p-6 mb-6 border border-gray-200">
       <h2 className="text-lg font-bold text-gray-900 mb-2">FAQs</h2>
 
       <div>

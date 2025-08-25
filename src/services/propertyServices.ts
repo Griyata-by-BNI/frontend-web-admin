@@ -166,10 +166,11 @@ export const useFetchPropertyById = () => {
 };
 
 export const usePropertyById = (id?: number) => {
+  const enabled = typeof id === "number" && Number.isFinite(id);
   return useQuery<PropertyDetailResponse>({
     queryKey: ["property", id],
     queryFn: () => fetchPropertyById(id as number),
-    enabled: typeof id === "number" && Number.isFinite(id),
+    enabled: enabled,
   });
 };
 

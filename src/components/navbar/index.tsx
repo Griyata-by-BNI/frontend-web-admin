@@ -9,7 +9,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { axiosInstance } from "@/utils/axios";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchProfile } from "@/services";
 import { kprItems, navItems } from "./constants";
 import { NavItem } from "./types";
 
@@ -44,41 +45,26 @@ const NavLink = ({
 const LoginButton = ({ className = "" }: { className?: string }) => {
   const { modal } = App.useApp();
   const { user, token, loading, logout } = useAuth();
-  const [profilePicture, setProfilePicture] = useState<string | null>(null);
-  const [displayName, setDisplayName] = useState<string>("");
+  const queryClient = useQueryClient();
 
-  const fetchProfileData = async () => {
-    if (!user?.userId || !token) return;
-    
-    try {
-      const res = await axiosInstance.get(`/profiles/${user.userId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const profile = res.data?.data?.profile;
-      if (profile) {
-        setProfilePicture(profile.photoUrl || null);
-        setDisplayName(profile.name || user.fullName);
-      } else {
-        setDisplayName(user.fullName);
-      }
-    } catch (err) {
-      console.error('Failed to fetch profile data:', err);
-      setDisplayName(user.fullName);
-    }
-  };
+  const { data: profile } = useQuery({
+    queryKey: ["profile", user?.userId],
+    queryFn: () => fetchProfile(user!.userId, token!),
+    enabled: !!user?.userId && !!token,
+  });
 
-  useEffect(() => {
-    fetchProfileData();
-  }, [user?.userId, token]);
+  const profilePicture = profile?.photoUrl || null;
+  const displayName = profile?.name || user?.fullName || "";
 
   useEffect(() => {
     const handleProfileUpdate = () => {
-      fetchProfileData();
+      queryClient.invalidateQueries({ queryKey: ["profile", user?.userId] });
     };
-    
-    window.addEventListener('profileUpdated', handleProfileUpdate);
-    return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
-  }, [user?.userId, token]);
+
+    window.addEventListener("profileUpdated", handleProfileUpdate);
+    return () =>
+      window.removeEventListener("profileUpdated", handleProfileUpdate);
+  }, [user?.userId, queryClient]);
 
   const menuItems = [
     {
@@ -148,6 +134,16 @@ const Navbar = () => {
   const pathname = usePathname();
   const isActive = useIsActive(pathname);
 
+  // NEW: deteksi scroll
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 8); // threshold kecil
+    onScroll(); // cek saat pertama render
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   const kprMenuItems: MenuProps["items"] = kprItems.map((item) => ({
     key: item.href,
     label: (
@@ -177,8 +173,16 @@ const Navbar = () => {
   ];
 
   return (
-    <header className="bg-white shadow-md shadow-dark-tosca/5 sticky top-0 z-50">
-      <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
+    <header
+      className={clsx(
+        "!p-0 sticky top-0 z-50 transition-colors duration-300",
+        "bg-white",
+        {
+          "border-b border-gray-200 shadow-lg shadow-gray-500/10": isScrolled,
+        }
+      )}
+    >
+      <nav className="custom-container px-6 !py-4 md:px-0 md:py-5 flex !flex-row justify-between items-center">
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <Image

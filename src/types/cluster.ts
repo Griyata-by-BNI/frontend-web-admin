@@ -83,4 +83,28 @@ export type FetchClustersOptions = {
   pageNumber?: number;
   pageSize?: number;
   signal?: AbortSignal;
+  sortBy?: string;
+  sortDir?: string;
 };
+
+export interface LatestCluster {
+  id: number;
+  developerId: number;
+  maxPrice: string; // datang sebagai string dari API
+  minPrice: string; // datang sebagai string dari API
+  name: string;
+  createdAt: string; // ISO string
+  updatedAt: string; // ISO string
+  address: string;
+  cluster_photo_urls: string[];
+}
+
+export interface LatestClustersResponse {
+  status: {
+    code: number;
+    message: string;
+  };
+  data: {
+    clusters: Cluster[];
+  };
+}

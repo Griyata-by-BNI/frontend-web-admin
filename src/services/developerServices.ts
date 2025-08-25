@@ -100,9 +100,10 @@ const getDeveloperById = async (
 };
 
 export const useDetailDeveloper = (id: number) => {
+  const enabled = typeof id === "number" && Number.isFinite(id);
   return useQuery<ResponseGetDeveloperById>({
     queryKey: ["developer", id],
     queryFn: () => getDeveloperById(id),
-    enabled: !!id,
+    enabled: enabled,
   });
 };
