@@ -7,7 +7,7 @@ import calculateInstallment from "@/utils/calculateInstallment";
 interface StickyCardProps {
   priceLabel: string;
   price: string;
-  minPrice: string;
+  minPrice?: string;
   developerName: string;
   location: string;
   developerPhotoUrl: string;

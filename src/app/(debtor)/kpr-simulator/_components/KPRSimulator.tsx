@@ -1,7 +1,7 @@
 "use client";
 import "@ant-design/v5-patch-for-react-19";
 import { Col, Modal, Row, Table } from "antd";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import interestRateData from "@/data/interest-rate.json";
 import { useKPRCalculation } from "../_hooks/useKPRCalculation";
 import { useDetailedSchedule } from "../_hooks/useDetailedSchedule";
@@ -15,46 +15,63 @@ const detailedColumns = [
     title: "Angsuran",
     dataIndex: "payment",
     key: "payment",
-    render: (value: number) => `Rp ${value.toLocaleString("id-ID")}`,
+    render: (v: number) => `Rp ${v.toLocaleString("id-ID")}`,
   },
   {
     title: "Porsi Pokok",
     dataIndex: "principal",
     key: "principal",
-    render: (value: number) => `Rp ${value.toLocaleString("id-ID")}`,
+    render: (v: number) => `Rp ${v.toLocaleString("id-ID")}`,
   },
   {
     title: "Porsi Bunga",
     dataIndex: "interest",
     key: "interest",
-    render: (value: number) => `Rp ${value.toLocaleString("id-ID")}`,
+    render: (v: number) => `Rp ${v.toLocaleString("id-ID")}`,
   },
   {
     title: "Sisa Pinjaman",
     dataIndex: "remainingBalance",
     key: "remainingBalance",
-    render: (value: number) => `Rp ${value.toLocaleString("id-ID")}`,
+    render: (v: number) => `Rp ${v.toLocaleString("id-ID")}`,
   },
   {
     title: "Bunga",
     dataIndex: "interestRate",
     key: "interestRate",
-    render: (value: number) => `${value}%`,
+    render: (v: number) => `${v}%`,
   },
 ];
 
 export const KPRSimulator = ({
   className = "",
-  initialPropertyPrice = 1000000000,
+  initialPropertyPrice = 1_000_000_000,
   additionalButton = <></>,
+  size = "default",
 }: KPRSimulatorProps) => {
+  // ----- size variants
+  const isSmall = size === "small";
+  const wrapRadius = isSmall
+    ? "rounded-lg md:rounded-xl"
+    : "rounded-xl md:rounded-2xl";
+  const innerRadius = wrapRadius;
+  const outerPt = isSmall ? "pt-3" : "pt-5";
+  const shadowCls = isSmall ? "shadow-sm" : "shadow";
+  const rowPadding = isSmall ? "p-3 md:p-4" : "p-4 md:p-8";
+  const gutterH = isSmall ? 24 : 48;
+  const gutterV = isSmall ? 16 : 24;
+  const modalWidth = isSmall ? 720 : 1000;
+  const tableSize: "small" | "middle" = isSmall ? "small" : "middle";
+
+  // ----- state
   const [propertyPrice, setPropertyPrice] =
     useState<number>(initialPropertyPrice);
-  const [downPayment, setDownPayment] = useState<number>(200000000);
+  const [downPayment, setDownPayment] = useState<number>(200_000_000);
   const [tenor, setTenor] = useState<number>(15);
   const [selectedInterestRate, setSelectedInterestRate] =
     useState<InterestRate | null>(interestRateData[6] as InterestRate);
 
+  // ----- kalkulasi
   const { monthlyPayment, paymentSchedule, isValidTenor } = useKPRCalculation({
     propertyPrice,
     downPayment,
@@ -62,6 +79,7 @@ export const KPRSimulator = ({
     selectedRate: selectedInterestRate,
   });
 
+  // ----- detail schedule modal
   const {
     showDetailedSchedule,
     detailedSchedule,
@@ -79,17 +97,29 @@ export const KPRSimulator = ({
     });
   };
 
+  const tableData = useMemo(() => detailedSchedule, [detailedSchedule]);
+
+  // ----- grid span: small => 8/16, default => 12/12
+  const leftColProps = isSmall
+    ? { xs: 24, sm: 24, md: 10, lg: 10, xl: 10, xxl: 10 }
+    : { xs: 24, sm: 24, md: 12, lg: 12, xl: 12, xxl: 12 };
+
+  const rightColProps = isSmall
+    ? { xs: 24, sm: 24, md: 14, lg: 14, xl: 14, xxl: 14 }
+    : { xs: 24, sm: 24, md: 12, lg: 12, xl: 12, xxl: 12 };
+
   return (
     <div
-      className={`w-full bg-gradient-to-r pt-5 from-primary-tosca to-primary-purple h-max rounded-xl md:rounded-2xl shadow ${className}`}
+      className={`w-full bg-gradient-to-r ${outerPt} from-primary-tosca to-primary-purple h-max ${wrapRadius} ${shadowCls} ${className}`}
     >
-      <div className="overflow-hidden rounded-xl md:rounded-2xl">
+      <div className={`overflow-hidden ${innerRadius}`}>
         <Row
-          className="bg-white rounded-xl h-full p-4 md:p-8"
+          className={`bg-white ${innerRadius} h-full ${rowPadding}`}
           align="stretch"
-          gutter={[48, 24]}
+          gutter={[gutterH, gutterV]}
         >
-          <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
+          {/* Kiri: Form */}
+          <Col {...leftColProps}>
             <KPRForm
               propertyPrice={propertyPrice}
               downPayment={downPayment}
@@ -100,10 +130,12 @@ export const KPRSimulator = ({
               onDownPaymentChange={setDownPayment}
               onTenorChange={setTenor}
               onRateChange={setSelectedInterestRate}
+              // size={size} // ← aktifkan jika ingin KPRForm ikut mengecil
             />
           </Col>
 
-          <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
+          {/* Kanan: Hasil */}
+          <Col {...rightColProps}>
             <KPRResults
               selectedRate={selectedInterestRate}
               propertyPrice={propertyPrice}
@@ -112,10 +144,13 @@ export const KPRSimulator = ({
               paymentSchedule={paymentSchedule}
               onShowDetailedSchedule={handleShowDetailedSchedule}
               additionalButton={additionalButton}
+              tenor={tenor} // ← penting untuk hitung total angsuran, dsb.
+              // size={size} // ← aktifkan jika ingin KPRResults ikut mengecil
             />
           </Col>
         </Row>
 
+        {/* Modal Detail Angsuran */}
         <Modal
           centered
           destroyOnHidden
@@ -123,10 +158,14 @@ export const KPRSimulator = ({
           open={showDetailedSchedule}
           onCancel={() => setShowDetailedSchedule(false)}
           footer={null}
-          width={1000}
+          width={modalWidth}
         >
           {selectedInterestRate?.floating_note && (
-            <p className="text-sm text-gray-500 mb-4">
+            <p
+              className={`text-gray-500 mb-4 ${
+                isSmall ? "text-xs" : "text-sm"
+              }`}
+            >
               Berikut adalah rincian angsuran sampai tahun ke-
               {selectedInterestRate.fixed_duration} :
             </p>
@@ -134,10 +173,10 @@ export const KPRSimulator = ({
 
           <Table
             bordered
-            dataSource={detailedSchedule}
+            dataSource={tableData}
             columns={detailedColumns}
             pagination={{ pageSize: 12 }}
-            size="small"
+            size={tableSize}
             rowKey="key"
             scroll={{ x: 800 }}
           />

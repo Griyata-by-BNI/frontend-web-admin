@@ -1,6 +1,6 @@
 import { Alert, Button, Col, Row, Table, theme } from "antd";
 import { InterestRate } from "../_types";
-import React from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 
 const { useToken } = theme;
@@ -13,6 +13,7 @@ interface KPRResultsProps {
   paymentSchedule: any[];
   onShowDetailedSchedule: () => void;
   additionalButton?: React.ReactNode;
+  tenor: number; // ✅ baru
 }
 
 const columns = [
@@ -34,10 +35,37 @@ export const KPRResults = ({
   paymentSchedule,
   onShowDetailedSchedule,
   additionalButton,
+  tenor, // ✅ baru
 }: KPRResultsProps) => {
   const { token } = useToken();
-
   if (!selectedRate) return null;
+
+  // ======== Perhitungan aman (tidak “tabrakan” nilai) ========
+  const loanAmount = useMemo(
+    () => Math.max(0, Math.round(propertyPrice - downPayment)),
+    [propertyPrice, downPayment]
+  );
+
+  const totalInstallment = useMemo(() => {
+    if (selectedRate.type === "single-fixed") {
+      const months = Math.max(0, Math.floor(tenor * 12));
+      return months > 0 ? Math.round(monthlyPayment * months) : null;
+    }
+
+    // tiered-fixed: coba hitung dari schedule jika ada 'months' / 'duration'
+    if (Array.isArray(paymentSchedule) && paymentSchedule.length > 0) {
+      const sum = paymentSchedule.reduce((acc: number, row: any) => {
+        const m = Number(row?.months ?? row?.duration ?? 0);
+        const mp = Number(row?.monthlyPayment ?? 0);
+        return acc + (m > 0 ? m * mp : 0);
+      }, 0);
+      return sum > 0 ? Math.round(sum) : null;
+    }
+
+    return null;
+  }, [selectedRate.type, tenor, monthlyPayment, paymentSchedule]);
+
+  const fmt = (n: number) => `Rp ${n.toLocaleString("id-ID")}`;
 
   return (
     <div className="p-4 md:p-6 rounded-lg bg-light-tosca h-max w-full">
@@ -48,28 +76,38 @@ export const KPRResults = ({
           <div className="overflow-hidden">
             {monthlyPayment > 0 ? (
               <Row gutter={[4, 4]}>
-                <Col xs={24} sm={12} md={12} lg={12} xl={12} xxl={12}>
+                {/* Jumlah Pinjaman */}
+                <Col xs={24} sm={12} md={12} className="min-w-0">
                   <p className="text-sm text-gray-600">Jumlah Pinjaman</p>
-
-                  <p className="text-primary-tosca text-xl font-bold">
-                    Rp {(propertyPrice - downPayment).toLocaleString("id-ID")}
+                  <p
+                    className="text-primary-tosca text-xl font-bold break-words md:truncate"
+                    title={fmt(loanAmount)}
+                  >
+                    {fmt(loanAmount)}
                   </p>
                 </Col>
 
-                <Col xs={24} sm={12} md={12} lg={12} xl={12} xxl={12}>
+                {/* Angsuran per Bulan (ditaruh penuh 1 baris supaya tidak desak-desakan) */}
+                <Col xs={24} sm={12} md={12} className="min-w-0">
                   <p className="text-sm text-gray-600">Angsuran per Bulan</p>
-
-                  <p className="text-xl font-bold text-primary-tosca">
-                    Rp {monthlyPayment.toLocaleString("id-ID")}
+                  <p
+                    className="text-xl font-bold text-primary-tosca break-words md:truncate"
+                    title={fmt(monthlyPayment)}
+                  >
+                    {fmt(monthlyPayment)}
                   </p>
                 </Col>
 
-                <Col span={24}>
-                  <p className="text-sm text-gray-500 mt-2">
-                    *{selectedRate.floating_note}
-                  </p>
-                </Col>
+                {/* Catatan suku bunga */}
+                {selectedRate.floating_note && (
+                  <Col span={24}>
+                    <p className="text-sm text-gray-500 mt-2">
+                      *{selectedRate.floating_note}
+                    </p>
+                  </Col>
+                )}
 
+                {/* Aksi */}
                 <Col span={24}>
                   <Button
                     type="primary"
@@ -120,9 +158,11 @@ export const KPRResults = ({
                   rowKey="key"
                 />
 
-                <p className="text-sm text-gray-500 mt-2">
-                  *{selectedRate.floating_note}
-                </p>
+                {selectedRate.floating_note && (
+                  <p className="text-sm text-gray-500 mt-2">
+                    *{selectedRate.floating_note}
+                  </p>
+                )}
 
                 <Button
                   type="primary"

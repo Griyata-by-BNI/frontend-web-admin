@@ -12,6 +12,7 @@ export interface KPRSimulatorProps {
   className?: string;
   initialPropertyPrice?: number;
   additionalButton?: React.ReactNode;
+  size?: "small" | "default";
 }
 
 export interface ScheduleItem {
