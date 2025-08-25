@@ -28,10 +28,6 @@ export const getSubmissionsByUserId = async (
     const token = getAuthToken();
     if (!token) throw new Error("No auth token found");
 
-    console.log(
-      `Calling API: /api/v1/kpr/submission/history/${userId}?status=${status}`
-    );
-
     const response = await axiosInstance.get<{
       status: { code: number; message: string };
       data: SubmissionSummary[];

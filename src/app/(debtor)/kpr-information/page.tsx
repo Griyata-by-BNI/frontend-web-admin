@@ -54,7 +54,7 @@ const InfoKprPage: React.FC = () => {
   ];
 
   return (
-    <div className="bg-gray-100 font-sans">
+    <div className="font-sans">
       <div className="bg-gradient-to-b from-teal-500 to-teal-600 py-20 text-center mt-[-48px] mb-[-48px]">
         <h1 className="text-4xl font-bold text-white">Griyata by BNI</h1>
       </div>
@@ -69,10 +69,10 @@ const InfoKprPage: React.FC = () => {
         <div className="p-0">
           <FaqSection faqData={FAQS} />
         </div>
-        <div className="px-0">
-          <ContactSection />
-        </div>
       </div>
+      
+      {/* Footer */}
+      <ContactSection />
     </div>
   );
 };
