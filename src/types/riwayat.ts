@@ -1,4 +1,4 @@
-export type ApiStatus = "submitted" | "under_review" | "verified";
+export type ApiStatus = "submitted" | "under_review" | "verified" | "rejected";
 
 export interface SubmissionSummary {
   submission: {
@@ -7,7 +7,7 @@ export interface SubmissionSummary {
     verified_at: string;
     verified_by: string;
     verification_notes: string;
-    submitted_at: string;
+    created_at: string;
   };
   property_information: {
     propertyId: number;
@@ -17,6 +17,7 @@ export interface SubmissionSummary {
     developerName: string;
     propertyPhotoUrl: string[];
     submissionId: number;
+    createdAt: string;
   };
 }
 
@@ -102,7 +103,7 @@ export interface SubmissionDetail {
     verified_at: string;
     verified_by: string;
     verification_notes: string;
-    submitted_at: string;
+    created_at: string;
   };
   debtor_information: DebtorInformation;
   spouse_information: SpouseInformation;
