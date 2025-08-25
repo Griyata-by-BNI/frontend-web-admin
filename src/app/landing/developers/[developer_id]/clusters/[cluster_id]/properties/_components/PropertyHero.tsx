@@ -1,20 +1,26 @@
-import Link from "next/link";
-import formatPrice from "@/utils/formatPrice";
+"use client";
+
 import { CustomBreadcrumb } from "@/components/CustomBreadcrumb";
 
-interface ClusterHeroProps {
-  clusterDetail: any;
-  propertyTypesCount: number;
-  developerLogo: string;
-  developerId: string;
+interface PropertyHeroProps {
+  property: any;
+  developer: any;
+  cluster: any;
+  developerId: number;
+  clusterId: string;
 }
 
-export default function ClusterHero({
-  clusterDetail,
-  propertyTypesCount,
-  developerLogo,
+export default function PropertyHero({
+  property,
+  developer,
+  cluster,
   developerId,
-}: ClusterHeroProps) {
+  clusterId,
+}: PropertyHeroProps) {
+  const developerLogo =
+    developer?.developerPhotoUrl ||
+    "https://via.placeholder.com/250x125.png?text=Logo";
+
   return (
     <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-teal-50 via-white to-indigo-50 border border-gray-200 shadow-lg shadow-gray-500/10 p-6 md:p-10 mb-8">
       <CustomBreadcrumb
@@ -22,32 +28,38 @@ export default function ClusterHero({
         items={[
           { label: "Partner Developer", href: "/landing/developers" },
           {
-            label: clusterDetail.developerName,
+            label: property.developerName,
             href: `/landing/developers/${developerId}`,
           },
           {
-            label: clusterDetail.name || "Cluster",
+            label: cluster?.name || "Cluster",
+            href: `/landing/developers/${developerId}/clusters/${clusterId}`,
           },
+          { label: property.name },
         ]}
       />
 
       <div className="flex flex-col lg:flex-row gap-8 items-start">
         <div className="flex-1">
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900">
-            {clusterDetail.name}
+            {property.name}
           </h1>
           <p className="mt-2 text-gray-600">
-            {clusterDetail.address || "Alamat tidak tersedia"}
+            {property.location || "Lokasi tidak tersedia"}
+            {"  -  "}
+            {property.collateralAddress || ""}
           </p>
 
           <div className="mt-4 flex flex-wrap gap-2">
             <span className="inline-flex items-center gap-2 rounded-full bg-primary-tosca/20 px-3 py-1 text-sm font-semibold text-dark-tosca border border-primary-tosca">
-              Harga {formatPrice(clusterDetail.minPrice)} –{" "}
-              {formatPrice(clusterDetail.maxPrice)}
+              Rp{" "}
+              {new Intl.NumberFormat("id-ID").format(Number(property.price))}
             </span>
-            <span className="inline-flex items-center gap-2 rounded-full bg-primary-tosca/20 px-3 py-1 text-sm font-semibold text-dark-tosca border border-primary-tosca">
-              {propertyTypesCount} tipe tersedia
-            </span>
+            {property.stock && (
+              <span className="inline-flex items-center gap-2 rounded-full bg-primary-tosca/20 px-3 py-1 text-sm font-semibold text-dark-tosca border border-primary-tosca">
+                Stok: {property.stock} unit
+              </span>
+            )}
           </div>
         </div>
 

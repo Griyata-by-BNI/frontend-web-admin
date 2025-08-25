@@ -10,6 +10,7 @@ import ClusterSearchWrapper from "./_components/ClusterSearchWrapper";
 import { useDetailDeveloper } from "@/services/developerServices";
 import DeveloperDetailSkeleton from "./_components/DetailDeveloperSkeleton";
 import KprToolsSection from "../../_components/KprToolsSection";
+import { CustomBreadcrumb } from "@/components/CustomBreadcrumb";
 
 export default function DeveloperDetailPage() {
   const params = useParams();
@@ -51,18 +52,15 @@ export default function DeveloperDetailPage() {
 
   return (
     <div className="custom-container min-h-screen py-8">
-      <nav className="text-sm text-gray-500 mb-4">
-        <Link
-          href="/landing/developers"
-          className="!text-gray-500 *:hover:!text-gray-700"
-        >
-          Partner Developer
-        </Link>{" "}
-        <span className="mx-2">/</span>
-        <span className="text-primary-tosca font-semibold">
-          {developer.name}
-        </span>
-      </nav>
+      <CustomBreadcrumb
+        className="mb-3"
+        items={[
+          { label: "Parner Developer", href: "/landing/developers" },
+          {
+            label: developer.name,
+          },
+        ]}
+      />
 
       {/* ===== Hero / Header ===== */}
       <div
