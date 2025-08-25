@@ -121,7 +121,7 @@ export default function PropertyDetailSkeleton() {
         <div className="lg:col-span-1 mt-8 lg:mt-0">
           <div className="sticky top-20 space-y-4">
             <div className="bg-white rounded-xl shadow-lg overflow-hidden h-fit border border-gray-200 p-6 relative">
-              <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-teal-400 to-dark-tosca" />
+              <div className="absolute top-0 left-0 right-0 h-4 bg-gray-400" />
               <div className="mt-5 space-y-3">
                 <div className="h-4 w-16 bg-gray-200 rounded" />
                 <div className="h-8 w-40 bg-gray-200 rounded" />
@@ -135,7 +135,7 @@ export default function PropertyDetailSkeleton() {
                   </div>
                 </div>
               </div>
-              <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-r from-teal-400 to-dark-tosca" />
+              <div className="absolute bottom-0 left-0 right-0 h-4 bg-gray-400" />
             </div>
 
             <div className="flex gap-3">

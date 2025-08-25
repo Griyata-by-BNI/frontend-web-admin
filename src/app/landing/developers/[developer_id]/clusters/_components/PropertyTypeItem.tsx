@@ -41,7 +41,7 @@ export default function PropertyTypeItem({
         <div className="h-6 w-48 bg-gray-200 rounded mb-4 animate-pulse" />
         <div className="flex gap-4 overflow-x-auto overflow-y-visible pb-4 -mb-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="w-1/2">
+            <div key={i} className="w-full md:w-1/2">
               <LatestClusterCardSkeleton />
             </div>
           ))}
@@ -53,7 +53,7 @@ export default function PropertyTypeItem({
   if (!properties?.length) return null;
 
   return (
-    <div className="p-6 rounded-xl border border-gray-200 bg-white relative">
+    <div className="md:p-6 rounded-xl md:border border-gray-200 bg-white relative">
       <h3 className="text-lg font-bold text-dark-tosca mb-3">{type.name}</h3>
 
       <div className="flex gap-4 max-w-full overflow-x-auto overflow-y-visible pb-4 -mb-2 relative z-10 no-scrollbar">
@@ -82,7 +82,7 @@ export default function PropertyTypeItem({
           return (
             <div
               key={`${type.id}-${prop.propertyId}`}
-              className="w-1/2 relative z-10"
+              className="w-full md:w-1/2 relative z-10"
             >
               <PropertyCard property={propertyForCard} />
             </div>

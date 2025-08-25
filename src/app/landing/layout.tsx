@@ -26,7 +26,7 @@ export default function LandingLayout({
       <Navbar />
 
       <main className="flex-grow bg-white">
-        <div className="flex flex-col py-2 px-4 md:px-0">{children}</div>
+        <div className="flex flex-col md:px-0">{children}</div>
       </main>
     </div>
   );

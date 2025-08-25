@@ -13,6 +13,7 @@ import PropertyTypesList from "../_components/PropertyTypesList";
 import ClusterFacilities from "../_components/ClusterFacilities";
 import ClusterMap from "../_components/ClusterMap";
 import ClusterDetailSkeleton from "../_components/ClusterDetailSkeleton";
+
 export default function HousingDetailPage() {
   const params = useParams();
   const developerId = params.developer_id as string;
@@ -23,10 +24,12 @@ export default function HousingDetailPage() {
     isLoading: clusterLoading,
     error: clusterError,
   } = useClusterById(clusterId, true);
+
   const { data: clusterTypesData, isLoading: typesLoading } = useClusterTypes(
     clusterId,
     !!cluster
   );
+
   const { data: developer, isLoading: developerLoading } = useDetailDeveloper(
     Number(developerId)
   );
@@ -59,8 +62,8 @@ export default function HousingDetailPage() {
     "https://via.placeholder.com/250x125.png?text=Logo";
 
   return (
-    <div className="min-h-screen bg-light-tosca">
-      <main className="custom-container">
+    <div className="min-h-screen">
+      <main className="px-4 py-6 md:!px-0 custom-container">
         <ClusterHero
           clusterDetail={clusterDetail}
           propertyTypesCount={propertyTypes.length}

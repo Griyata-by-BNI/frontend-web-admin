@@ -144,8 +144,6 @@ export const KPRSimulator = ({
               paymentSchedule={paymentSchedule}
               onShowDetailedSchedule={handleShowDetailedSchedule}
               additionalButton={additionalButton}
-              tenor={tenor} // ← penting untuk hitung total angsuran, dsb.
-              // size={size} // ← aktifkan jika ingin KPRResults ikut mengecil
             />
           </Col>
         </Row>

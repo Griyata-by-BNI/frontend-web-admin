@@ -13,7 +13,6 @@ interface KPRResultsProps {
   paymentSchedule: any[];
   onShowDetailedSchedule: () => void;
   additionalButton?: React.ReactNode;
-  tenor: number; // ✅ baru
 }
 
 const columns = [
@@ -23,7 +22,8 @@ const columns = [
     title: "Angsuran/Bulan",
     dataIndex: "monthlyPayment",
     key: "monthlyPayment",
-    render: (value: number) => `Rp ${value.toLocaleString("id-ID")}`,
+    render: (value: number) =>
+      `Rp ${Math.round(value).toLocaleString("id-ID")}`,
   },
 ];
 
@@ -35,37 +35,16 @@ export const KPRResults = ({
   paymentSchedule,
   onShowDetailedSchedule,
   additionalButton,
-  tenor, // ✅ baru
 }: KPRResultsProps) => {
   const { token } = useToken();
   if (!selectedRate) return null;
 
-  // ======== Perhitungan aman (tidak “tabrakan” nilai) ========
   const loanAmount = useMemo(
     () => Math.max(0, Math.round(propertyPrice - downPayment)),
     [propertyPrice, downPayment]
   );
 
-  const totalInstallment = useMemo(() => {
-    if (selectedRate.type === "single-fixed") {
-      const months = Math.max(0, Math.floor(tenor * 12));
-      return months > 0 ? Math.round(monthlyPayment * months) : null;
-    }
-
-    // tiered-fixed: coba hitung dari schedule jika ada 'months' / 'duration'
-    if (Array.isArray(paymentSchedule) && paymentSchedule.length > 0) {
-      const sum = paymentSchedule.reduce((acc: number, row: any) => {
-        const m = Number(row?.months ?? row?.duration ?? 0);
-        const mp = Number(row?.monthlyPayment ?? 0);
-        return acc + (m > 0 ? m * mp : 0);
-      }, 0);
-      return sum > 0 ? Math.round(sum) : null;
-    }
-
-    return null;
-  }, [selectedRate.type, tenor, monthlyPayment, paymentSchedule]);
-
-  const fmt = (n: number) => `Rp ${n.toLocaleString("id-ID")}`;
+  const fmt = (n: number) => `Rp ${Math.round(n).toLocaleString("id-ID")}`;
 
   return (
     <div className="p-4 md:p-6 rounded-lg bg-light-tosca h-max w-full">
@@ -77,7 +56,7 @@ export const KPRResults = ({
             {monthlyPayment > 0 ? (
               <Row gutter={[4, 4]}>
                 {/* Jumlah Pinjaman */}
-                <Col xs={24} sm={12} md={12} className="min-w-0">
+                <Col xs={24} sm={13} md={13} className="min-w-0">
                   <p className="text-sm text-gray-600">Jumlah Pinjaman</p>
                   <p
                     className="text-primary-tosca text-xl font-bold break-words md:truncate"
@@ -88,7 +67,7 @@ export const KPRResults = ({
                 </Col>
 
                 {/* Angsuran per Bulan (ditaruh penuh 1 baris supaya tidak desak-desakan) */}
-                <Col xs={24} sm={12} md={12} className="min-w-0">
+                <Col xs={24} sm={11} md={11} className="min-w-0">
                   <p className="text-sm text-gray-600">Angsuran per Bulan</p>
                   <p
                     className="text-xl font-bold text-primary-tosca break-words md:truncate"

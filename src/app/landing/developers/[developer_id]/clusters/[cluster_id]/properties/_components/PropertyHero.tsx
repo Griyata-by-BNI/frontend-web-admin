@@ -1,11 +1,14 @@
 "use client";
 
 import { CustomBreadcrumb } from "@/components/CustomBreadcrumb";
+import { Cluster, DetailCluster } from "@/types/cluster";
+import { Developer } from "@/types/developer";
+import { Property, PropertyDetail } from "@/types/property";
 
 interface PropertyHeroProps {
-  property: any;
-  developer: any;
-  cluster: any;
+  property: PropertyDetail;
+  developer: Developer | undefined;
+  cluster: DetailCluster | undefined;
   developerId: number;
   clusterId: string;
 }
@@ -35,14 +38,14 @@ export default function PropertyHero({
             label: cluster?.name || "Cluster",
             href: `/landing/developers/${developerId}/clusters/${clusterId}`,
           },
-          { label: property.name },
+          { label: property.clusterTypeName + " - " + property.name },
         ]}
       />
 
       <div className="flex flex-col lg:flex-row gap-8 items-start">
         <div className="flex-1">
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900">
-            {property.name}
+            {property.clusterTypeName + " - " + property.name}
           </h1>
           <p className="mt-2 text-gray-600">
             {property.location || "Lokasi tidak tersedia"}
@@ -52,8 +55,7 @@ export default function PropertyHero({
 
           <div className="mt-4 flex flex-wrap gap-2">
             <span className="inline-flex items-center gap-2 rounded-full bg-primary-tosca/20 px-3 py-1 text-sm font-semibold text-dark-tosca border border-primary-tosca">
-              Rp{" "}
-              {new Intl.NumberFormat("id-ID").format(Number(property.price))}
+              Rp {new Intl.NumberFormat("id-ID").format(Number(property.price))}
             </span>
             {property.stock && (
               <span className="inline-flex items-center gap-2 rounded-full bg-primary-tosca/20 px-3 py-1 text-sm font-semibold text-dark-tosca border border-primary-tosca">

@@ -49,8 +49,6 @@ export default function DetailPropertyPage() {
     return data?.data;
   }, [data]);
 
-
-
   useEffect(() => {
     if (user && propertyId) {
       axiosInstance
@@ -87,8 +85,8 @@ export default function DetailPropertyPage() {
     "https://via.placeholder.com/250x125.png?text=Logo";
 
   return (
-    <div className="min-h-screen bg-light-tosca">
-      <main className="custom-container">
+    <div className="min-h-screen">
+      <main className="px-4 py-6 md:!px-0 custom-container">
         <PropertyHero
           property={property}
           developer={developer}
