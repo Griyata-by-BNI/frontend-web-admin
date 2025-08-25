@@ -3,12 +3,10 @@
 
 import ImageSlider from "@/app/(debtor)/developers/components/ImageSlider";
 import { MapWithNearbyPlaces } from "@/app/(debtor)/developers/components/Map";
-import PropertyCard from "@/app/(debtor)/developers/components/PropertyCard";
 import { useClusterById } from "@/services/clusterServices";
 import { useClusterTypes } from "@/services/clusterTypeServices";
 import { useDetailDeveloper } from "@/services/developerServices";
 import { usePropertiesByClusterType } from "@/services/propertyServices";
-import calculateInstallment from "@/utils/calculateInstallment";
 import formatPrice from "@/utils/formatPrice";
 import {
   faBuilding,
@@ -33,10 +31,13 @@ import {
   faUtensils,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Building } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
 import StickyCard from "../_components/StickyCard";
+import PropertyCard from "@/app/landing/search/_components/PropertyCard";
+import LatestClusterCardSkeleton from "@/app/landing/_components/latestCluster/LatestClusterCardSkeleton";
 
 export interface Facility {
   name: "KT" | "KM" | "LB" | "LT";
@@ -54,8 +55,8 @@ interface PropertyCardShape {
   installment?: number;
   facilities: Facility[];
   updatedAt: string;
-  photoUrl: string | null;
-  clusterTypeName?: string;
+  photoUrl: string;
+  clusterTypeName: string;
 }
 
 // ==============================
@@ -71,15 +72,28 @@ const PropertyTypesList = ({
   if (!propertyTypes?.length) return null;
 
   return (
-    <div className="space-y-8">
-      {propertyTypes.map((type) => (
-        <PropertyTypeItem
-          key={type.id}
-          type={type}
-          clusterDetail={clusterDetail}
-        />
-      ))}
-    </div>
+    <section
+      id="tipe"
+      className="mb-8 bg-white p-6 rounded-2xl shadow-lg shadow-gray-500/10 border border-gray-200"
+    >
+      <div className="flex items-center gap-2 mb-4">
+        {/* <Building className="w-6 h-6 text-primary-tosca" /> */}
+
+        <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+          Tipe Properti
+        </h2>
+      </div>
+
+      <div className="space-y-6">
+        {propertyTypes.map((type) => (
+          <PropertyTypeItem
+            key={type.id}
+            type={type}
+            clusterDetail={clusterDetail}
+          />
+        ))}
+      </div>
+    </section>
   );
 };
 
@@ -91,19 +105,17 @@ const PropertyTypeItem = ({
   clusterDetail: any;
 }) => {
   const { data, isLoading } = usePropertiesByClusterType(type.id);
-
   const properties = useMemo(() => data?.data || [], [data]);
 
   if (isLoading) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-4 md:p-5">
         <div className="h-6 w-48 bg-gray-200 rounded mb-4 animate-pulse" />
-        <div className="flex gap-4 overflow-hidden">
+        <div className="flex gap-4 overflow-x-auto overflow-y-visible pb-4 -mb-4">
           {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="w-80 h-96 bg-gray-200 rounded-xl animate-pulse"
-            />
+            <div key={i} className="w-1/2">
+              <LatestClusterCardSkeleton />
+            </div>
           ))}
         </div>
       </div>
@@ -113,11 +125,10 @@ const PropertyTypeItem = ({
   if (!properties?.length) return null;
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-4 md:p-5">
-      <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-3">
-        {type.name}
-      </h3>
-      <div className="flex gap-4 max-w-full overflow-x-auto pb-2">
+    <div className="p-6 rounded-xl border border-gray-200 bg-white relative">
+      <h3 className="text-lg font-bold text-dark-tosca mb-3">{type.name}</h3>
+
+      <div className="flex gap-4 max-w-full overflow-x-auto overflow-y-visible pb-4 -mb-2 relative z-10 no-scrollbar">
         {properties.map((prop: any) => {
           const rawFacilities: Facility[] = [
             { name: "KT", value: prop.jumlahKamarTidur || 0 },
@@ -141,10 +152,13 @@ const PropertyTypeItem = ({
           };
 
           return (
-            <PropertyCard
+            <div
               key={`${type.id}-${prop.propertyId}`}
-              property={propertyForCard}
-            />
+              className="w-1/2 relative z-10"
+            >
+              {/* pastikan komponen kartu mengisi lebar wrapper */}
+              <PropertyCard property={propertyForCard} />
+            </div>
           );
         })}
       </div>
@@ -245,7 +259,7 @@ export default function HousingDetailPage() {
     "https://via.placeholder.com/250x125.png?text=Logo";
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen bg-light-tosca">
       <main className="custom-container">
         {/* ===== Hero ===== */}
         <div
@@ -289,7 +303,7 @@ export default function HousingDetailPage() {
               {/* Badges ringkas */}
               <div className="mt-4 flex flex-wrap gap-2">
                 <span
-                  className="inline-flex items-center gap-2 rounded-full bg-primary-tosca/30
+                  className="inline-flex items-center gap-2 rounded-full bg-primary-tosca/20
                  px-3 py-1 text-sm font-semibold text-dark-tosca border border-primary-tosca"
                 >
                   Harga {formatPrice(clusterDetail.minPrice)} –{" "}
@@ -297,7 +311,7 @@ export default function HousingDetailPage() {
                 </span>
 
                 <span
-                  className="inline-flex items-center gap-2 rounded-full bg-primary-tosca/30
+                  className="inline-flex items-center gap-2 rounded-full bg-primary-tosca/20
                  px-3 py-1 text-sm font-semibold text-dark-tosca border border-primary-tosca"
                 >
                   {propertyTypes.length} tipe tersedia
@@ -331,7 +345,7 @@ export default function HousingDetailPage() {
           {/* Kiri */}
           <div className="lg:col-span-2">
             {/* Slider Foto */}
-            <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden mb-6">
+            <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden mb-8">
               <div className="relative w-full h-80 md:h-[420px]">
                 <ImageSlider
                   urls={clusterDetail.cluster_photo_urls}
@@ -341,7 +355,7 @@ export default function HousingDetailPage() {
             </div>
 
             {/* Deskripsi */}
-            <div className="rounded-2xl border border-gray-200 bg-white p-5 md:p-6 mb-6">
+            <div className="rounded-2xl border border-gray-200 shadow-lg shadow-gray-500/10 bg-white p-5 md:p-6 mb-8">
               <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
                 Deskripsi
               </h2>
@@ -352,9 +366,6 @@ export default function HousingDetailPage() {
 
             {/* Tipe Properti */}
             <div className="mb-6">
-              <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">
-                Tipe Properti
-              </h2>
               <PropertyTypesList
                 propertyTypes={propertyTypes}
                 clusterDetail={clusterDetail}
@@ -362,7 +373,7 @@ export default function HousingDetailPage() {
             </div>
 
             {/* Fasilitas */}
-            <div className="rounded-2xl border border-gray-200 bg-white p-5 md:p-6 mb-6">
+            <div className="rounded-2xl border border-gray-200 bg-white p-5 md:p-6 mb-6 shadow-lg shadow-gray-500/10">
               <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">
                 Fasilitas Umum
               </h2>
@@ -387,7 +398,7 @@ export default function HousingDetailPage() {
             </div>
 
             {/* Peta */}
-            <div className="rounded-2xl border border-gray-200 bg-white p-4 md:p-5">
+            <div className="rounded-2xl border border-gray-200 bg-white p-4 md:p-5 shadow-lg shadow-gray-500/10">
               <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">
                 Lokasi & Tempat Terdekat
               </h2>
@@ -419,9 +430,7 @@ export default function HousingDetailPage() {
               price={`${formatPrice(clusterDetail.minPrice)} - ${formatPrice(
                 clusterDetail.maxPrice
               )}`}
-              installmentText={`Angsuran mulai dari ${calculateInstallment(
-                clusterDetail.minPrice
-              )}/bulan`}
+              minPrice={clusterDetail.minPrice}
               developerName={clusterDetail.developerName}
               location={clusterDetail.address || "Alamat tidak tersedia"}
               developerPhotoUrl={developerLogo}
