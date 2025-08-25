@@ -16,7 +16,7 @@ const ClustersMap = dynamic(
 
 export default function LandingPage() {
   return (
-    <main className="space-y-6 md:space-y-10 custom-container">
+    <main className="space-y-6 md:space-y-10 custom-container px-4 md:px-0 py-6">
       <FilterProvider>
         <HeroSection />
       </FilterProvider>
