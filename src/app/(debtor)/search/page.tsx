@@ -13,7 +13,7 @@ export default function SearchPage() {
 
         <ExploreResults />
 
-        <KprToolsSection />
+        <KprToolsSection className="bg-primary-tosca/20" />
       </main>
     </FilterProvider>
   );

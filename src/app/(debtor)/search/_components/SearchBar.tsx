@@ -11,7 +11,7 @@ export default function SearchBar() {
 
   return (
     <Form form={form} onFinish={handleSearch} initialValues={initialValues}>
-      <div className="bg-light-tosca p-4 sm:p-5 md:p-6 rounded-2xl border border-white/20">
+      <div className="bg-primary-tosca/20 p-4 sm:p-5 md:p-6 rounded-2xl border border-white/20">
         <div className="flex flex-row items-stretch gap-2 sm:gap-3 md:gap-4">
           <label className="sr-only" htmlFor="search">
             Cari properti
