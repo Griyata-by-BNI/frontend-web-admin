@@ -12,6 +12,13 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Form, Radio, Row, Col, App, Grid } from "antd";
 import { formatRupiah } from "../utils/filterUtils";
+
+const formatNumber = (amount: number): string => {
+  return new Intl.NumberFormat("id-ID", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
 import { CounterItem } from "./CounterItem";
 import { FilterSection } from "./FilterSection";
 import { RangeSlider } from "./RangeSlider";
@@ -151,10 +158,11 @@ export function FilterForm() {
         <RangeSlider
           name="price"
           min={0}
-          max={1_000_000_000_000}
-          step={Math.max(1_000_000, Math.floor(1_000_000_000_000 / 100000))}
-          formatter={formatRupiah}
+          max={50_000_000_000}
+          step={100_000}
+          formatter={formatNumber}
           form={form}
+          prefix="Rp"
         />
       </FilterSection>
 

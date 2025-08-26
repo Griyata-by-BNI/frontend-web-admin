@@ -268,8 +268,9 @@ export default function CreateClusterModal() {
             rules={[{ required: true, message: "Mohon pilih fasilitas!" }]}
           >
             <Select
-              mode="multiple"
-              placeholder="Pilih fasilitas"
+              mode="tags"
+              placeholder="Pilih atau ketik fasilitas baru"
+              tokenSeparators={[',']}
               options={FacitiliesData.map((facility) => ({
                 label: facility,
                 value: facility,

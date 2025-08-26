@@ -8,6 +8,7 @@ interface RangeSliderProps {
   step: number;
   formatter: (value: number) => string;
   form: any;
+  prefix?: string;
 }
 
 export function RangeSlider({
@@ -17,10 +18,11 @@ export function RangeSlider({
   step,
   formatter,
   form,
+  prefix,
 }: RangeSliderProps) {
   return (
     <>
-      <Form.Item name={name} className="!mb-0">
+      <Form.Item name={name} className="!mb-0" initialValue={[min, max]}>
         <Slider
           range
           min={min}
@@ -52,13 +54,17 @@ export function RangeSlider({
               <InputNumber
                 min={min}
                 max={maxVal}
+                prefix={prefix}
                 value={minVal}
                 onChange={(val) => {
                   const current = form.getFieldValue(name) ?? [min, max];
                   form.setFieldsValue({ [name]: [val ?? min, current[1]] });
                 }}
                 formatter={(val) => formatter(val as number)}
-                parser={(val) => val?.replace(/[^\d]/g, "") as any}
+                parser={(val) => {
+                  const cleaned = val?.replace(/[^\d]/g, "");
+                  return cleaned ? parseInt(cleaned, 10) : undefined;
+                }}
                 controls={false}
                 size="small"
                 className="text-sm"
@@ -71,13 +77,17 @@ export function RangeSlider({
               <InputNumber
                 min={minVal}
                 max={max}
+                prefix={prefix}
                 value={maxVal}
                 onChange={(val) => {
                   const current = form.getFieldValue(name) ?? [min, max];
-                  form.setFieldsValue({ [name]: [current[0], val ?? max] });
+                  form.setFieldsValue({ [name]: [current[0], val ?? min] });
                 }}
                 formatter={(val) => formatter(val as number)}
-                parser={(val) => val?.replace(/[^\d]/g, "") as any}
+                parser={(val) => {
+                  const cleaned = val?.replace(/[^\d]/g, "");
+                  return cleaned ? parseInt(cleaned, 10) : undefined;
+                }}
                 controls={false}
                 size="small"
                 className="text-sm"
