@@ -10,10 +10,6 @@ export function FilterModal() {
   const { form, router, pathname, buildSearchParams } = useFilterContext();
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleReset = () => {
-    form.resetFields();
-  };
-
   const onClose = () => {
     setIsOpen(false);
   };
@@ -36,6 +32,21 @@ export function FilterModal() {
     } catch (error) {
       console.error("Form validation failed:", error);
     }
+  };
+
+  const handleReset = () => {
+    form.resetFields();
+
+    const baseUrl = getBaseUrl();
+    const basePath = pathname.endsWith("/search")
+      ? pathname
+      : `${pathname.replace(/\/$/, "")}/search`;
+
+    const url = new URL(basePath, baseUrl);
+    url.search = "";
+
+    router.push(url.toString());
+    setIsOpen(false);
   };
 
   return (
