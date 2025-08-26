@@ -15,41 +15,93 @@ import { formatRupiah } from "../utils/filterUtils";
 import { CounterItem } from "./CounterItem";
 import { FilterSection } from "./FilterSection";
 import { RangeSlider } from "./RangeSlider";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
 export function FilterForm() {
   const { message } = App.useApp();
   const form = Form.useFormInstance();
+
   const sortBy = Form.useWatch("sortBy", form);
+  const lat = Form.useWatch("lat", form);
+  const lng = Form.useWatch("lng", form);
+
+  const GEO_MSG_KEY = "geo-denied";
+
+  const showGeoDenied = useCallback(() => {
+    message.open({
+      key: GEO_MSG_KEY,
+      type: "error",
+      content:
+        "Mohon izinkan akses lokasi untuk memilih filter jarak terdekat!",
+      duration: 3,
+    });
+  }, [message]);
+
+  const fallbackToLatest = useCallback(() => {
+    form.setFieldsValue({
+      sortBy: "latestUpdated",
+      lat: undefined,
+      lng: undefined,
+    });
+
+    showGeoDenied();
+  }, [form, message]);
+
+  const requestLocation = useCallback(async (): Promise<boolean> => {
+    if (typeof window === "undefined" || !("geolocation" in navigator)) {
+      return false;
+    }
+
+    try {
+      if ("permissions" in navigator && (navigator as any).permissions?.query) {
+        const status = await (navigator as any).permissions.query({
+          name: "geolocation" as PermissionName,
+        });
+        if (status.state === "denied") return false;
+      }
+    } catch {}
+
+    try {
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        });
+      });
+
+      const { latitude, longitude } = pos.coords;
+      form.setFieldsValue({ lat: latitude, lng: longitude });
+      return true;
+    } catch {
+      return false;
+    }
+  }, [form]);
 
   useEffect(() => {
-    if (sortBy !== "closestDistance") {
-      return;
-    }
+    if (sortBy !== "closestDistance") return;
+    if (lat != null && lng != null) return;
 
-    if (typeof window === "undefined" || !("geolocation" in navigator)) {
-      return;
-    }
+    (async () => {
+      const ok = await requestLocation();
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        form.setFieldsValue({ lat: latitude, lng: longitude });
-      },
-      () => {
-        form.setFieldsValue({
-          lat: undefined,
-          lng: undefined,
-          sortBy: "latestUpdated",
-        });
+      if (!ok) fallbackToLatest();
+    })();
+  }, [sortBy, lat, lng, requestLocation, fallbackToLatest]);
 
-        message.error(
-          "Mohon izinkan akses lokasi untuk memilih filter jarak terdekat!"
-        );
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
-  }, [sortBy, form, message]);
+  const handleSortChange = useCallback(
+    async (e: any) => {
+      const value = e.target?.value;
+      if (value !== "closestDistance") return;
+
+      const ok = await requestLocation();
+
+      if (!ok) {
+        fallbackToLatest();
+      }
+    },
+    [requestLocation, fallbackToLatest]
+  );
 
   return (
     <div className="flex flex-col gap-2">
@@ -71,7 +123,11 @@ export function FilterForm() {
         title="Urutkan"
       >
         <Form.Item name="sortBy" initialValue="latestUpdated" className="!mb-0">
-          <Radio.Group optionType="button" buttonStyle="solid">
+          <Radio.Group
+            optionType="button"
+            buttonStyle="solid"
+            onChange={handleSortChange}
+          >
             <Radio.Button value="latestUpdated">Terbaru</Radio.Button>
             <Radio.Button value="lowestPrice">Harga Terendah</Radio.Button>
             <Radio.Button value="highestPrice">Harga Tertinggi</Radio.Button>

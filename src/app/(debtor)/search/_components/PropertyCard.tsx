@@ -20,7 +20,7 @@ const PropertyCard: React.FC<{ property: ExploreProperty }> = ({
   return (
     <Link
       href={`/developers/${property.developerId}/clusters/${property.clusterId}/properties/${property.id}`}
-      className="w-full bg-white rounded-2xl shadow-lg shadow-gray-500/10 overflow-hidden border border-gray-200
+      className="w-full !bg-white rounded-2xl shadow-lg shadow-gray-500/10 overflow-hidden border border-gray-200
       hover:shadow-gray-500/20 hover:border-primary-tosca flex flex-col h-full"
     >
       <div className="relative w-full h-40 bg-gray-100">
@@ -73,14 +73,14 @@ const PropertyCard: React.FC<{ property: ExploreProperty }> = ({
         <p className="text-sm text-gray-500">{property.developerName}</p>
 
         <Row align="middle" gutter={[16, 0]} className="my-4 py-3">
-          <Col span={8}>
+          <Col span={10}>
             <p className="text-xs text-gray-500">Harga</p>
             <p className="text-xl font-extrabold text-primary-tosca">
               <span>Rp</span> {formatPrice(String(property.price ?? 0))}
             </p>
           </Col>
 
-          <Col span={16} className="md:border-l md:pl-4 border-gray-200">
+          <Col span={14} className="md:border-l md:pl-4 border-gray-200">
             <p className="text-xs text-gray-500">Angsuran mulai dari</p>
             <p className="text-xl font-extrabold text-primary-tosca">
               {installment}

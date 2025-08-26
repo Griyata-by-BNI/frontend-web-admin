@@ -23,9 +23,7 @@ type FilterContextValue = {
   pathname: string;
   searchParams: ReturnType<typeof useSearchParams>;
 
-  handleSearch: (values: FilterFormData) => Promise<void>;
   buildSearchParams: (values: FilterFormData) => URLSearchParams;
-  handleReset: () => void;
   initialValues: FilterFormData;
 };
 
@@ -36,6 +34,16 @@ const isSort = (v: string | null): v is SortBy =>
   ["latestUpdated", "lowestPrice", "closestDistance", "highestPrice"].includes(
     v
   );
+
+const normalizeSort = (
+  sortBy: SortBy | undefined,
+  lat?: number,
+  lng?: number
+): SortBy => {
+  const hasCoords = Number.isFinite(lat) && Number.isFinite(lng);
+  if (sortBy === "closestDistance" && !hasCoords) return "latestUpdated";
+  return sortBy ?? "latestUpdated";
+};
 
 export const FilterProvider: React.FC<React.PropsWithChildren> = ({
   children,
@@ -99,59 +107,40 @@ export const FilterProvider: React.FC<React.PropsWithChildren> = ({
       const curr = searchParams;
       const next = new URLSearchParams(curr.toString());
 
-      // simple fields
+      const normalizedSort = normalizeSort(
+        values.sortBy,
+        values.lat,
+        values.lng
+      );
+
       setIf(next, "location", values.location);
       setIf(next, "propertyType", values.propertyType);
       setIf(next, "bedrooms", values.bedrooms);
       setIf(next, "bathrooms", values.bathrooms);
       setIf(next, "floors", values.floors);
-      setIf(next, "sortBy", values.sortBy);
+      setIf(next, "sortBy", normalizedSort);
       setIf(next, "search", values.search);
       setIf(next, "lat", values.lat);
       setIf(next, "lng", values.lng);
 
-      // ranges
       setRange(next, "price", values.price);
       setRange(next, "landArea", values.landArea);
       setRange(next, "buildingArea", values.buildingArea);
 
-      // 🔑 reset pageNumber ke 1 HANYA jika ada perubahan filter non-page
       const shouldResetPage = FILTER_KEYS_TO_CHECK.some((k) => {
         const beforeVal = curr.get(k) ?? "";
         const afterVal = next.get(k) ?? "";
         return beforeVal !== afterVal;
       });
+
       if (shouldResetPage) {
         next.set("pageNumber", "1");
-      } else {
-        // biarkan pageNumber sekarang (jangan disentuh)
-        // (next sudah clone dari curr, jadi value-nya tetap)
       }
 
       return next;
     },
     [searchParams, setIf, setRange]
   );
-
-  const handleSearch = useCallback(
-    async (values: FilterFormData) => {
-      setIsLoading(true);
-      try {
-        const next = buildSearchParams(values);
-        const url = `${
-          !pathname.includes("search") ? pathname + "/search" : pathname
-        }?${next.toString()}`;
-        router.push(url, { disableSameURL: false });
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [pathname, router, buildSearchParams]
-  );
-
-  const handleReset = useCallback(() => {
-    form.resetFields();
-  }, [form]);
 
   const getNum = useCallback(
     (k: string) => {
@@ -212,9 +201,7 @@ export const FilterProvider: React.FC<React.PropsWithChildren> = ({
     router,
     pathname,
     searchParams,
-    handleSearch,
     buildSearchParams,
-    handleReset,
     initialValues,
   };
 

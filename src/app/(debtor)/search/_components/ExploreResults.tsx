@@ -104,6 +104,7 @@ export default function ExploreResults() {
         <Alert
           type="warning"
           showIcon
+          className="!mb-4"
           message="Aktifkan akses lokasi untuk mengurutkan berdasarkan jarak terdekat."
         />
       )}
@@ -112,6 +113,7 @@ export default function ExploreResults() {
         <Alert
           type="error"
           showIcon
+          className="!mb-4"
           message={(error as Error).message || "Terjadi kesalahan"}
         />
       )}
