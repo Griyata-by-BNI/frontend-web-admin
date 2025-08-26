@@ -1,5 +1,5 @@
 import React from "react";
-import { Form, Slider } from "antd";
+import { Form, Slider, InputNumber } from "antd";
 
 interface RangeSliderProps {
   name: string;
@@ -33,14 +33,56 @@ export function RangeSlider({
       <Form.Item noStyle shouldUpdate>
         {() => {
           const [minVal, maxVal] = form.getFieldValue(name) ?? [min, max];
+
+          // Hitung lebar berbasis karakter terpanjang dari kandidat nilai
+          const calcWidth = (...nums: Array<number | undefined>) => {
+            const lengths = nums
+              .filter(
+                (n): n is number => typeof n === "number" && !Number.isNaN(n)
+              )
+              .map((n) => String(formatter(n)).length);
+
+            const ch = Math.max(6, ...lengths); // minimal 6ch biar nggak terlalu kecil
+            return `calc(${ch}ch + 1.75rem)`; // buffer padding + border
+          };
+
           return (
-            <div className="flex justify-between items-center text-gray-700">
-              <span className="text-sm font-medium bg-gray-200 px-3 py-1.5 rounded-md">
-                {formatter(minVal)}
-              </span>
-              <span className="text-sm font-medium bg-gray-200 px-3 py-1.5 rounded-md">
-                {formatter(maxVal)}
-              </span>
+            <div className="flex justify-between items-center gap-2 text-gray-700">
+              {/* MIN input → lebar mengikuti kandidat terpanjang antara min & maxVal */}
+              <InputNumber
+                min={min}
+                max={maxVal}
+                value={minVal}
+                onChange={(val) => {
+                  const current = form.getFieldValue(name) ?? [min, max];
+                  form.setFieldsValue({ [name]: [val ?? min, current[1]] });
+                }}
+                formatter={(val) => formatter(val as number)}
+                parser={(val) => val?.replace(/[^\d]/g, "") as any}
+                controls={false}
+                size="small"
+                className="text-sm"
+                style={{ width: calcWidth(min, maxVal, minVal) }}
+              />
+
+              <span className="text-xs text-gray-500">-</span>
+
+              {/* MAX input → lebar mengikuti kandidat terpanjang antara max & minVal */}
+              <InputNumber
+                min={minVal}
+                max={max}
+                value={maxVal}
+                onChange={(val) => {
+                  const current = form.getFieldValue(name) ?? [min, max];
+                  form.setFieldsValue({ [name]: [current[0], val ?? max] });
+                }}
+                formatter={(val) => formatter(val as number)}
+                parser={(val) => val?.replace(/[^\d]/g, "") as any}
+                controls={false}
+                size="small"
+                className="text-sm"
+                style={{ width: calcWidth(max, minVal, maxVal) }}
+              />
             </div>
           );
         }}
