@@ -1,6 +1,6 @@
 import { useFilterContext } from "@/contexts/filterContext";
 import "@ant-design/v5-patch-for-react-19";
-import { Button, Form, Modal } from "antd";
+import { Button, Form, Modal, App } from "antd";
 import { SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 import { FilterForm } from "./components/FilterForm";
@@ -8,6 +8,7 @@ import { getBaseUrl } from "@/utils/getBaseUrl";
 
 export function FilterModal() {
   const { form, router, pathname, buildSearchParams } = useFilterContext();
+  const { message } = App.useApp();
   const [isOpen, setIsOpen] = useState(false);
 
   const onClose = () => {
@@ -18,7 +19,18 @@ export function FilterModal() {
     try {
       const values = await form.validateFields();
       const formValues = await form.getFieldsValue();
-      console.log(formValues);
+
+      if (
+        formValues.sortBy === "closestDistance" &&
+        (!formValues.lat || !formValues.lng)
+      ) {
+        message.error(
+          "Mohon izinkan akses lokasi untuk memilih filter jarak terdekat!"
+        );
+        form.setFieldsValue({ sortBy: "latestUpdated" });
+        return;
+      }
+
       const searchParams = buildSearchParams(values);
 
       const baseUrl = getBaseUrl();
