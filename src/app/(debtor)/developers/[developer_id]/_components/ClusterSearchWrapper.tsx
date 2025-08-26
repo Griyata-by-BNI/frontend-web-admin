@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useClustersByDeveloper } from "@/services/clusterServices";
-import { useDebounce } from "@/utils/useDebounce";
 import ClusterCard from "../../_components/ClusterCard";
 import { Building2 } from "lucide-react";
 
@@ -33,14 +32,22 @@ export default function ClusterSearchWrapper({
   developerId,
 }: ClusterSearchWrapperProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const debouncedSearch = useDebounce(searchTerm, 500);
 
   const { data: clustersData, isLoading } = useClustersByDeveloper(
-    developerId.toString(),
-    debouncedSearch || undefined
+    developerId.toString()
   );
 
-  const clusters = clustersData?.data?.clusters || [];
+  const allClusters = clustersData?.data?.clusters || [];
+
+  const clusters = useMemo(() => {
+    if (!searchTerm.trim()) return allClusters;
+
+    return allClusters.filter(
+      (cluster) =>
+        cluster.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        cluster.address?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [allClusters, searchTerm]);
 
   return (
     <>
@@ -49,7 +56,7 @@ export default function ClusterSearchWrapper({
           <Building2 className="w-8 h-8 text-teal-600" />
 
           <h2 className="text-2xl font-bold text-gray-800">
-            Jelajahi Properti dari {developerName}
+            Jelajahi Cluster Perumahan dari {developerName}
           </h2>
         </div>
 
@@ -69,7 +76,7 @@ export default function ClusterSearchWrapper({
       {isLoading ? (
         <div className="text-center py-10">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500 mx-auto mb-2"></div>
-          <p className="text-gray-500">Mencari...</p>
+          <p className="text-gray-500">Memuat...</p>
         </div>
       ) : clusters.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -84,7 +91,7 @@ export default function ClusterSearchWrapper({
       ) : (
         <div className="text-center py-10 bg-white rounded-lg shadow-sm">
           <p className="text-gray-500">
-            {searchTerm
+            {searchTerm.trim()
               ? "Tidak ada properti yang ditemukan."
               : "Tidak ada properti yang ditemukan untuk developer ini."}
           </p>

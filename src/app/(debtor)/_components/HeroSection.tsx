@@ -41,7 +41,7 @@ export default function HeroSection() {
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
-        className="relative h-[48vh] sm:h-[52vh] md:h-[58vh] flex items-center justify-center overflow-hidden rounded-3xl"
+        className="relative h-max py-5 md:py-0 sm:h-[52vh] md:h-[58vh] flex items-center justify-center overflow-hidden rounded-3xl"
       >
         <div className="absolute inset-0 bg-gradient-to-r from-teal-900/80 via-teal-800/70 to-cyan-900/80 rounded-3xl" />
 

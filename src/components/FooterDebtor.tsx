@@ -25,7 +25,7 @@ export default function FooterDebtor() {
 
       {/* CTA Card (dark) */}
       <div className="custom-container px-6 md:px-0">
-        <div className="relative -mt-10 rounded-2xl bg-slate-800/80 backdrop-blur ring-1 ring-white/10 shadow-xl shadow-black/30 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="relative -mt-10 md:-mt-20 rounded-2xl bg-slate-800/80 backdrop-blur ring-1 ring-white/10 shadow-xl shadow-black/30 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
             <h3 className="text-xl md:text-2xl font-semibold text-white">
               Siap temukan rumah impian?
@@ -37,7 +37,7 @@ export default function FooterDebtor() {
           <div className="flex gap-3">
             <Link
               href="/developers"
-              className="rounded-full !bg-primary-tosca !text-slate-900 px-5 py-2.5 font-semibold hover:!brightness-95 transition"
+              className="rounded-full !bg-primary-tosca px-5 py-2.5 font-semibold hover:!brightness-95 transition !text-white"
             >
               Jelajahi Developer
             </Link>

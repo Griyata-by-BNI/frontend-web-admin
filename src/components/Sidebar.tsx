@@ -7,13 +7,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const menuItems = [
-  { label: "Sales Dashboard", href: "/admin/sales-report", icon: BarChart3 },
   { label: "Sales Management", href: "/admin/sales-management", icon: Users },
-  {
-    label: "Developer Dashboard",
-    href: "/admin/developer-report",
-    icon: PieChart,
-  },
+
   {
     label: "Developer Management",
     href: "/admin/developer-management",

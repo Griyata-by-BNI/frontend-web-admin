@@ -81,7 +81,7 @@ export default function ClustersMap() {
 
   useEffect(() => {
     if (map && userPos) {
-      map.setView(userPos, 14);
+      map.setView(userPos, 11);
     }
   }, [map, userPos]);
 
@@ -110,7 +110,7 @@ export default function ClustersMap() {
       <div className="relative">
         <MapContainer
           center={defaultCenter}
-          zoom={12}
+          zoom={11}
           scrollWheelZoom
           className="h-[70vh] [&_.leaflet-pane]:!z-48 w-full rounded-lg [&_.leaflet-top]:!z-[49] [&_.leaflet-bottom]:!z-[49]"
           ref={setMap}
