@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { message } from "antd";
 import axios from "axios";
 import { useAuth } from "@/contexts/authContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { axiosInstance } from "@/utils/axios";
+import { App } from "antd";
 
 const UploadIcon = () => (
   <svg
@@ -56,6 +56,7 @@ const DEFAULT_PROFILE_PICTURE =
 
 const EditProfilePage: React.FC = () => {
   const { user, token } = useAuth();
+  const { message } = App.useApp();
 
   const [profile, setProfile] = useState<UserProfile>({
     fullName: "",

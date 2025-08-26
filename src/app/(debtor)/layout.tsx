@@ -1,5 +1,6 @@
 "use client";
 
+import FooterDebtor from "@/components/FooterDebtor";
 import Navbar from "@/components/navbar";
 import { useAuth } from "@/contexts/authContext";
 import { redirect } from "next/navigation";
@@ -25,9 +26,11 @@ export default function LandingLayout({
     <div className="flex flex-col min-h-screen relative">
       <Navbar />
 
-      <main className="flex-grow bg-white">
-        <div className="flex flex-col md:px-0">{children}</div>
+      <main className="flex-grow bg-light-tosca">
+        <div className="flex flex-col md:px-0 pb-20">{children}</div>
       </main>
+
+      <FooterDebtor />
     </div>
   );
 }

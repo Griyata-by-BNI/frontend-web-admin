@@ -86,7 +86,7 @@ export default function DetailPropertyPage() {
 
   return (
     <div className="min-h-screen">
-      <main className="px-4 py-6 md:!px-0 custom-container">
+      <main className="px-4 pt-6 pb-20 md:!px-0 custom-container">
         <PropertyHero
           property={property}
           developer={developer}

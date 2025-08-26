@@ -63,7 +63,7 @@ export default function HousingDetailPage() {
 
   return (
     <div className="min-h-screen">
-      <main className="px-4 py-6 md:!px-0 custom-container">
+      <main className="px-4 pt-6 pb-12 md:!px-0 custom-container">
         <ClusterHero
           clusterDetail={clusterDetail}
           propertyTypesCount={propertyTypes.length}
@@ -95,16 +95,18 @@ export default function HousingDetailPage() {
 
           {/* Kanan (Sticky) */}
           <div className="lg:col-span-1 mt-8 lg:mt-0">
-            <StickyCard
-              priceLabel="Harga mulai dari"
-              price={`${formatPrice(clusterDetail.minPrice)} - ${formatPrice(
-                clusterDetail.maxPrice
-              )}`}
-              minPrice={clusterDetail.minPrice}
-              developerName={clusterDetail.developerName}
-              location={clusterDetail.address || "Alamat tidak tersedia"}
-              developerPhotoUrl={developerLogo}
-            />
+            <div className="lg:sticky lg:top-20 lg:space-y-4">
+              <StickyCard
+                priceLabel="Harga mulai dari"
+                price={`${formatPrice(clusterDetail.minPrice)} - ${formatPrice(
+                  clusterDetail.maxPrice
+                )}`}
+                minPrice={clusterDetail.minPrice}
+                developerName={clusterDetail.developerName}
+                location={clusterDetail.address || "Alamat tidak tersedia"}
+                developerPhotoUrl={developerLogo}
+              />
+            </div>
           </div>
         </div>
       </main>

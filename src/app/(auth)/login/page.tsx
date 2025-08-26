@@ -56,16 +56,16 @@ const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <div className="flex-1 flex flex-col lg:flex-row">
-        <div className="hidden lg:block lg:w-1/2 relative p-8">
+        <div className="hidden lg:block lg:w-1/2 relative min-h-[600px]">
           <Image
             src="/aset_login.jpg"
             alt="Happy family"
             fill
-            className="object-cover"
+            className="object-cover object-top"
             priority
+            sizes="(min-width: 1024px) 50vw, 100vw"
           />
         </div>
-
         <div className="flex-1 lg:w-1/2 bg-gray-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
           <div className="w-full max-w-md mx-auto">
             <div className="mb-6">
