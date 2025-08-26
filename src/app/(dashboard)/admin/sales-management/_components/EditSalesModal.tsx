@@ -30,8 +30,6 @@ export default function EditSalesModal({ record }: EditSalesModalProps) {
   useEffect(() => {
     if (!open) return;
     form.setFieldsValue({
-      full_name: record.nama,
-      email: record.email,
       npp: record.npp,
       monthly_target: record.target_skor,
       region_id: record.region_id,
@@ -77,29 +75,6 @@ export default function EditSalesModal({ record }: EditSalesModalProps) {
         classNames={{ body: "!pt-2" }}
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
-          <Form.Item
-            name="full_name"
-            label="Nama Lengkap"
-            className="!mb-3"
-            rules={[
-              { required: true, message: "Mohon masukkan nama lengkap!" },
-            ]}
-          >
-            <Input placeholder="Masukkan nama lengkap" />
-          </Form.Item>
-
-          <Form.Item
-            name="email"
-            label="Email"
-            className="!mb-3"
-            rules={[
-              { required: true, message: "Mohon masukkan email!" },
-              { type: "email", message: "Format email tidak valid!" },
-            ]}
-          >
-            <Input placeholder="contoh@email.com" />
-          </Form.Item>
-
           <Form.Item
             name="npp"
             label="NPP"

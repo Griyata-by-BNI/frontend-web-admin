@@ -27,6 +27,7 @@ import {
 } from "antd";
 import { Edit, Plus, Trash } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useDebounce } from "@/utils/useDebounce";
 import { bniRegions } from "./constants";
 import CreateSalesModal from "./_components/CreateSalesModal";
 import EditSalesModal from "./_components/EditSalesModal";
@@ -35,6 +36,7 @@ export default function SalesManagementPage() {
   const { message } = App.useApp();
 
   const [searchText, setSearchText] = useState("");
+  const debouncedSearchText = useDebounce(searchText, 500);
   const [regionId, setRegionId] = useState<number | undefined>();
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -52,7 +54,7 @@ export default function SalesManagementPage() {
     pageSize,
     sort_by: sortBy,
     sort_order: sortOrder,
-    search: searchText || undefined,
+    search: debouncedSearchText || undefined,
     region_id: regionId,
   });
 
@@ -92,7 +94,7 @@ export default function SalesManagementPage() {
   };
 
   const columns = [
-    { title: "NPP", dataIndex: "npp", key: "npp", sorter: true },
+    { title: "NPP", dataIndex: "npp", key: "npp" },
     {
       title: "Nama Lengkap",
       dataIndex: "nama",
