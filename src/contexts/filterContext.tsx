@@ -23,7 +23,9 @@ type FilterContextValue = {
   pathname: string;
   searchParams: ReturnType<typeof useSearchParams>;
 
+  handleSearch: (values: FilterFormData) => Promise<void>;
   buildSearchParams: (values: FilterFormData) => URLSearchParams;
+  handleReset: () => void;
   initialValues: FilterFormData;
 };
 
@@ -142,6 +144,26 @@ export const FilterProvider: React.FC<React.PropsWithChildren> = ({
     [searchParams, setIf, setRange]
   );
 
+  const handleSearch = useCallback(
+    async (values: FilterFormData) => {
+      setIsLoading(true);
+      try {
+        const next = buildSearchParams(values);
+        const url = `${
+          !pathname.includes("search") ? pathname + "/search" : pathname
+        }?${next.toString()}`;
+        router.push(url, { disableSameURL: false });
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [pathname, router, buildSearchParams]
+  );
+
+  const handleReset = useCallback(() => {
+    form.resetFields();
+  }, [form]);
+
   const getNum = useCallback(
     (k: string) => {
       const v = searchParams.get(k);
@@ -201,7 +223,9 @@ export const FilterProvider: React.FC<React.PropsWithChildren> = ({
     router,
     pathname,
     searchParams,
+    handleSearch,
     buildSearchParams,
+    handleReset,
     initialValues,
   };
 
