@@ -1,12 +1,9 @@
 export const FacitiliesData = [
-  "Kolam Renang",
-  "Gym",
-  "Restoran",
+  "Security",
+  "Jogging Track",
+  "Outdoor Playground",
+  "Park",
   "Mall",
-  "Taman",
-  "Masjid",
-  "Gereja",
-  "Cafe",
-  "Ruang Komunitas",
-  "Minimarket",
+  "Club House",
+  "Swimming Pool",
 ];
