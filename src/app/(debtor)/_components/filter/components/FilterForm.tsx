@@ -10,7 +10,7 @@ import {
   faArrowDownWideShort,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Form, Radio, Row, Col, App } from "antd";
+import { Form, Radio, Row, Col, App, Grid } from "antd";
 import { formatRupiah } from "../utils/filterUtils";
 import { CounterItem } from "./CounterItem";
 import { FilterSection } from "./FilterSection";
@@ -103,6 +103,8 @@ export function FilterForm() {
     [requestLocation, fallbackToLatest]
   );
 
+  const screens = Grid.useBreakpoint();
+
   return (
     <div className="flex flex-col gap-2">
       <Form.Item name="lat" hidden initialValue={undefined}>
@@ -124,7 +126,7 @@ export function FilterForm() {
       >
         <Form.Item name="sortBy" initialValue="latestUpdated" className="!mb-0">
           <Radio.Group
-            optionType="button"
+            optionType={screens.md ? "button" : "default"}
             buttonStyle="solid"
             onChange={handleSortChange}
           >
