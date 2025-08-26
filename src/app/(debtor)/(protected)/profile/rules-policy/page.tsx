@@ -116,7 +116,7 @@ export default function RulesPolicyPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-t from-white to-light-tosca p-4">
+    <div className="min-h-screen bg-light-tosca p-4">
       {/* Header Card */}
       <div className="max-w-4xl mx-auto mb-8">
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
@@ -151,9 +151,11 @@ export default function RulesPolicyPage() {
               <span className="text-gray-800 font-semibold text-lg">
                 {section.id}. {section.title}
               </span>
-              <Plus className={`w-6 h-6 text-gray-500 transition-transform duration-500 ease-in-out ${
-                openSections[section.id] ? 'rotate-45' : 'rotate-0'
-              }`} />
+              <Plus
+                className={`w-6 h-6 text-gray-500 transition-transform duration-500 ease-in-out ${
+                  openSections[section.id] ? "rotate-45" : "rotate-0"
+                }`}
+              />
             </button>
 
             {openSections[section.id] && (

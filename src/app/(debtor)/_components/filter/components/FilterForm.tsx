@@ -105,10 +105,10 @@ export function FilterForm() {
 
   return (
     <div className="flex flex-col gap-2">
-      <Form.Item name="lat" hidden>
+      <Form.Item name="lat" hidden initialValue={undefined}>
         <input type="hidden" />
       </Form.Item>
-      <Form.Item name="lng" hidden>
+      <Form.Item name="lng" hidden initialValue={undefined}>
         <input type="hidden" />
       </Form.Item>
 
@@ -150,7 +150,7 @@ export function FilterForm() {
           name="price"
           min={0}
           max={1_000_000_000_000}
-          step={Math.max(1_000_000, Math.floor(1_000_000_000_000 / 1000))}
+          step={Math.max(1_000_000, Math.floor(1_000_000_000_000 / 100000))}
           formatter={formatRupiah}
           form={form}
         />

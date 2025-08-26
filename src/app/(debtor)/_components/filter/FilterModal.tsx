@@ -17,6 +17,8 @@ export function FilterModal() {
   const handleApplyFilter = async () => {
     try {
       const values = await form.validateFields();
+      const formValues = await form.getFieldsValue();
+      console.log(formValues);
       const searchParams = buildSearchParams(values);
 
       const baseUrl = getBaseUrl();
