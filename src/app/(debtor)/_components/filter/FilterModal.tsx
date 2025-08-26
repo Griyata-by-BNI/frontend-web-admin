@@ -4,6 +4,7 @@ import { Button, Form, Modal } from "antd";
 import { SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 import { FilterForm } from "./components/FilterForm";
+import { getBaseUrl } from "@/utils/getBaseUrl";
 
 export function FilterModal() {
   const { form, router, pathname, buildSearchParams } = useFilterContext();
@@ -21,10 +22,16 @@ export function FilterModal() {
     try {
       const values = await form.validateFields();
       const searchParams = buildSearchParams(values);
-      const url = `${
-        !pathname.includes("search") ? pathname + "/search" : pathname
-      }?${searchParams.toString()}`;
-      router.push(url, { disableSameURL: false });
+
+      const baseUrl = getBaseUrl();
+      const basePath = pathname.endsWith("/search")
+        ? pathname
+        : `${pathname.replace(/\/$/, "")}/search`;
+
+      const url = new URL(basePath, baseUrl);
+      url.search = searchParams.toString();
+
+      router.push(url.toString());
       setIsOpen(false);
     } catch (error) {
       console.error("Form validation failed:", error);
