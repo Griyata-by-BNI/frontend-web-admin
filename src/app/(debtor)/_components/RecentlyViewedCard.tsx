@@ -24,7 +24,7 @@ const RecentlyViewedCard: React.FC<{ property: RecentlyViewedProperty }> = ({
   return (
     <Link
       href={`/developers/${property.developerId}/clusters/${property.clusterId}/properties/${property.id}`}
-      className="w-full bg-white rounded-2xl shadow-lg shadow-gray-500/10 overflow-hidden border border-gray-200
+      className="w-full !bg-white rounded-2xl shadow-lg shadow-gray-500/10 overflow-hidden border border-gray-200
       hover:shadow-gray-500/20 hover:border-primary-tosca flex flex-col h-full"
     >
       {/* Image */}

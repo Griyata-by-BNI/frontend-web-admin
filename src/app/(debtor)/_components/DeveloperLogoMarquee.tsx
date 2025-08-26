@@ -179,7 +179,7 @@ function LogoImg({
       src={src}
       alt={alt}
       aria-hidden={ariaHidden}
-      className="h-20 md:h-40 w-auto object-contain select-none"
+      className="h-40 w-auto object-contain select-none"
       loading="lazy"
       draggable={false}
       onLoad={onLoad}

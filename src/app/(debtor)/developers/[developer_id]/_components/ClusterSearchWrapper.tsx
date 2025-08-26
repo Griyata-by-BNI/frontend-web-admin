@@ -38,13 +38,14 @@ export default function ClusterSearchWrapper({
   );
 
   const allClusters = clustersData?.data?.clusters || [];
-  
+
   const clusters = useMemo(() => {
     if (!searchTerm.trim()) return allClusters;
-    
-    return allClusters.filter(cluster => 
-      cluster.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cluster.address?.toLowerCase().includes(searchTerm.toLowerCase())
+
+    return allClusters.filter(
+      (cluster) =>
+        cluster.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        cluster.address?.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [allClusters, searchTerm]);
 
@@ -55,7 +56,7 @@ export default function ClusterSearchWrapper({
           <Building2 className="w-8 h-8 text-teal-600" />
 
           <h2 className="text-2xl font-bold text-gray-800">
-            Jelajahi Properti dari {developerName}
+            Jelajahi Cluster Perumahan dari {developerName}
           </h2>
         </div>
 

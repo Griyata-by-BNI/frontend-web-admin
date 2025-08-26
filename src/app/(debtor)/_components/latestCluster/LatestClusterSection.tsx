@@ -95,13 +95,13 @@ export default function LatestClusterSection() {
         <Row gutter={[24, 24]}>
           {isLoading ? (
             Array.from({ length: SKELETON_COUNT }).map((_, idx) => (
-              <Col key={`skeleton-${idx}`} xs={24} md={6}>
+              <Col key={`skeleton-${idx}`} xs={24} md={8} lg={6}>
                 <LatestClusterCardSkeleton />
               </Col>
             ))
           ) : latestClusterData.length > 0 ? (
             latestClusterData.map((cluster) => (
-              <Col key={cluster.id} xs={24} md={6}>
+              <Col key={cluster.id} xs={24} md={8} lg={6}>
                 <LatestClusterCard cluster={cluster} />
               </Col>
             ))

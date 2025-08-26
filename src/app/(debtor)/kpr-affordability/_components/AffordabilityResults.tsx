@@ -1,8 +1,9 @@
 import { Alert, Button, Col, Divider, Row, theme } from "antd";
 import interestRateData from "@/data/interest-rate.json";
 import { AffordabilityParams } from "../_types";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import TermsAndConditionsModal from "@/components/TermsAndConditionsModal";
+import { useState } from "react";
 
 const { useToken } = theme;
 
@@ -19,6 +20,7 @@ export const AffordabilityResults = ({
 }: AffordabilityResultsProps) => {
   const { token } = useToken();
   const router = useRouter();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const netIncome = params.monthlyIncome - params.monthlyExpenses;
 
@@ -88,11 +90,17 @@ export const AffordabilityResults = ({
                 Cari Properti
               </Button>
 
-              <Link href="/">
-                <p className="text-sm text-dark-tosca/75 underline text-center mt-4">
-                  Syarat & Ketentuan
-                </p>
-              </Link>
+              <p 
+                className="text-sm text-dark-tosca/75 underline text-center mt-4 cursor-pointer"
+                onClick={() => setIsModalOpen(true)}
+              >
+                Syarat & Ketentuan
+              </p>
+
+              <TermsAndConditionsModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+              />
             </Col>
           </Row>
         ) : (

@@ -120,13 +120,13 @@ export default function RecentlyViewedProperties() {
           <Row gutter={[24, 24]}>
             {isLoading ? (
               Array.from({ length: SKELETON_COUNT }).map((_, idx) => (
-                <Col key={`skeleton-${idx}`} xs={24} md={6}>
+                <Col key={`skeleton-${idx}`} xs={24} md={8} lg={6}>
                   <LatestClusterCardSkeleton />
                 </Col>
               ))
             ) : properties.length > 0 ? (
               properties.map((property: RecentlyViewedProperty) => (
-                <Col key={property.id} xs={24} md={6}>
+                <Col key={property.id} xs={24} md={8} lg={6}>
                   <RecentlyViewedCard property={property} />
                 </Col>
               ))

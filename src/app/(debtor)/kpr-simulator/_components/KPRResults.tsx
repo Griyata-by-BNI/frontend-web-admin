@@ -1,7 +1,7 @@
 import { Alert, Button, Col, Row, Table, theme } from "antd";
 import { InterestRate } from "../_types";
-import React, { useMemo } from "react";
-import Link from "next/link";
+import React, { useMemo, useState } from "react";
+import TermsAndConditionsModal from "@/components/TermsAndConditionsModal";
 
 const { useToken } = theme;
 
@@ -37,6 +37,7 @@ export const KPRResults = ({
   additionalButton,
 }: KPRResultsProps) => {
   const { token } = useToken();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   if (!selectedRate) return null;
 
   const loanAmount = useMemo(
@@ -104,11 +105,12 @@ export const KPRResults = ({
                 )}
 
                 <Col span={24}>
-                  <Link href="/">
-                    <p className="text-sm text-dark-tosca/75 underline text-center">
-                      Syarat & Ketentuan
-                    </p>
-                  </Link>
+                  <p 
+                    className="text-sm text-dark-tosca/75 underline text-center cursor-pointer"
+                    onClick={() => setIsModalOpen(true)}
+                  >
+                    Syarat & Ketentuan
+                  </p>
                 </Col>
               </Row>
             ) : (
@@ -171,6 +173,11 @@ export const KPRResults = ({
           </div>
         )}
       </div>
+      
+      <TermsAndConditionsModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };
