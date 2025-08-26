@@ -2,12 +2,22 @@
 
 import "@ant-design/v5-patch-for-react-19";
 import { useSubmissionDetail } from "@/services/approvalListServices";
-import { Breadcrumb, Card, Col, Descriptions, Row, Skeleton, Tag } from "antd";
+import {
+  App,
+  Breadcrumb,
+  Card,
+  Col,
+  Descriptions,
+  Grid,
+  Row,
+  Skeleton,
+  Tag,
+  type DescriptionsProps,
+} from "antd";
 import { useParams, useRouter } from "next/navigation";
 import PropertyInformation from "./_components/PropertyInformation";
 import interestRateData from "@/data/interest-rate.json";
 import ApproveRejectButton from "./_components/ApproveRejectButton";
-import { useReducer } from "react";
 
 type InterestItem = { id: number; title: string };
 
@@ -15,6 +25,9 @@ export default function SubmissionDetailPage() {
   const params = useParams<{ submission_id: string }>();
   const submissionId = params?.submission_id ?? "";
   const { data, isLoading } = useSubmissionDetail(submissionId);
+  const router = useRouter();
+  const screens = Grid.useBreakpoint();
+  const { message } = App.useApp();
 
   const d = data?.data;
   const s = d?.submission;
@@ -50,8 +63,35 @@ export default function SubmissionDetailPage() {
         )?.title ?? "-"
       : "-";
 
-  const router = useRouter();
-  const descCols = { xs: 1, sm: 1, md: 1, lg: 2, xl: 2 };
+  // ====== Responsiveness helpers ======
+  const descColumn = screens.lg ? 2 : 1;
+  const descLayout: DescriptionsProps["layout"] = screens.md
+    ? "horizontal"
+    : "vertical";
+  const labelWidth = screens.md ? 220 : undefined;
+  const gutter: [number, number] = screens.md ? [24, 24] : [16, 16];
+
+  const statusColor: Record<
+    string,
+    "processing" | "warning" | "success" | "error"
+  > = {
+    submitted: "warning",
+    under_review: "processing",
+    verified: "success",
+    rejected: "error",
+  };
+
+  const commonDescProps: Partial<DescriptionsProps> = {
+    bordered: true,
+    size: "middle",
+    colon: false,
+    column: descColumn,
+    layout: descLayout,
+    styles: {
+      label: { width: labelWidth },
+      content: { wordBreak: "break-word", whiteSpace: "pre-wrap" },
+    },
+  };
 
   return (
     <div className="mt-4">
@@ -75,19 +115,16 @@ export default function SubmissionDetailPage() {
         {isLoading ? (
           <Skeleton active />
         ) : (
-          <Row gutter={[24, 24]}>
+          <Row gutter={gutter}>
+            {/* Status */}
             <Col span={24}>
-              <Descriptions
-                title="Status Submission"
-                bordered
-                size="middle"
-                colon={false}
-                column={descCols}
-                styles={{ label: { width: 220 } }}
-              >
+              <Descriptions title="Status Submission" {...commonDescProps}>
                 <Descriptions.Item label="Status">
                   {s?.status ? (
-                    <Tag color="processing" className="capitalize">
+                    <Tag
+                      color={statusColor[s.status] ?? "processing"}
+                      className="capitalize"
+                    >
                       {s.status.replace("_", " ")}
                     </Tag>
                   ) : (
@@ -95,26 +132,22 @@ export default function SubmissionDetailPage() {
                   )}
                 </Descriptions.Item>
                 <Descriptions.Item label="Diajukan Pada">
-                  {s?.created_at ? formatDate(s.created_at) : "-"}
+                  {formatDate(s?.created_at)}
                 </Descriptions.Item>
                 <Descriptions.Item label="Catatan Verifikasi">
-                  {s?.verification_notes || "-"}
+                  <span className="break-words">
+                    {s?.verification_notes || "-"}
+                  </span>
                 </Descriptions.Item>
                 <Descriptions.Item label="Diverifikasi Pada">
-                  {s?.verified_at ? formatDate(s.verified_at) : "-"}
+                  {formatDate(s?.verified_at)}
                 </Descriptions.Item>
               </Descriptions>
             </Col>
 
+            {/* Loan */}
             <Col span={24}>
-              <Descriptions
-                title="Informasi Pinjaman"
-                bordered
-                size="middle"
-                colon={false}
-                column={descCols}
-                styles={{ label: { width: 220 } }}
-              >
+              <Descriptions title="Informasi Pinjaman" {...commonDescProps}>
                 <Descriptions.Item label="Nilai Pinjaman">
                   {formatCurrency(loan?.loan_value)}
                 </Descriptions.Item>
@@ -127,15 +160,9 @@ export default function SubmissionDetailPage() {
               </Descriptions>
             </Col>
 
+            {/* Debtor */}
             <Col span={24}>
-              <Descriptions
-                title="Informasi Nasabah"
-                bordered
-                size="middle"
-                colon={false}
-                column={descCols}
-                styles={{ label: { width: 220 } }}
-              >
+              <Descriptions title="Informasi Nasabah" {...commonDescProps}>
                 <Descriptions.Item label="Nama Lengkap">
                   {debtor?.full_name || "-"}
                 </Descriptions.Item>
@@ -160,7 +187,7 @@ export default function SubmissionDetailPage() {
                   className="capitalize"
                 >
                   {debtor?.marital_status
-                    ? debtor?.marital_status?.replace("_", " ")
+                    ? debtor.marital_status.replace("_", " ")
                     : "-"}
                 </Descriptions.Item>
                 <Descriptions.Item
@@ -168,7 +195,7 @@ export default function SubmissionDetailPage() {
                   className="capitalize"
                 >
                   {debtor?.residence_status
-                    ? debtor?.residence_status?.replace("_", " ")
+                    ? debtor.residence_status.replace("_", " ")
                     : "-"}
                 </Descriptions.Item>
                 <Descriptions.Item label="NIK">
@@ -187,24 +214,22 @@ export default function SubmissionDetailPage() {
                   {debtor?.phone_number || "-"}
                 </Descriptions.Item>
                 <Descriptions.Item label="Alamat KTP">
-                  {debtor?.id_card_address || "-"}
+                  <span className="break-words">
+                    {debtor?.id_card_address || "-"}
+                  </span>
                 </Descriptions.Item>
                 <Descriptions.Item label="Alamat Domisili">
-                  {debtor?.domicile_address || "-"}
+                  <span className="break-words">
+                    {debtor?.domicile_address || "-"}
+                  </span>
                 </Descriptions.Item>
               </Descriptions>
             </Col>
 
+            {/* Spouse (optional) */}
             {spouse && (
               <Col span={24}>
-                <Descriptions
-                  title="Informasi Pasangan"
-                  bordered
-                  size="middle"
-                  colon={false}
-                  column={descCols}
-                  styles={{ label: { width: 220 } }}
-                >
+                <Descriptions title="Informasi Pasangan" {...commonDescProps}>
                   <Descriptions.Item label="Nama Lengkap">
                     {spouse.full_name || "-"}
                   </Descriptions.Item>
@@ -237,21 +262,17 @@ export default function SubmissionDetailPage() {
                     {spouse.email || "-"}
                   </Descriptions.Item>
                   <Descriptions.Item label="Alamat KTP">
-                    {spouse.id_card_address || "-"}
+                    <span className="break-words">
+                      {spouse.id_card_address || "-"}
+                    </span>
                   </Descriptions.Item>
                 </Descriptions>
               </Col>
             )}
 
+            {/* Emergency Contact */}
             <Col span={24}>
-              <Descriptions
-                title="Kontak Darurat"
-                bordered
-                size="middle"
-                colon={false}
-                column={descCols}
-                styles={{ label: { width: 220 } }}
-              >
+              <Descriptions title="Kontak Darurat" {...commonDescProps}>
                 <Descriptions.Item label="Nama">
                   {ec?.fullName || "-"}
                 </Descriptions.Item>
@@ -265,19 +286,16 @@ export default function SubmissionDetailPage() {
                   {ec?.mobilePhoneNumber ?? "-"}
                 </Descriptions.Item>
                 <Descriptions.Item label="Alamat">
-                  {ec?.address || "-"}
+                  <span className="break-words">{ec?.address || "-"}</span>
                 </Descriptions.Item>
               </Descriptions>
             </Col>
 
+            {/* Employment */}
             <Col span={24}>
               <Descriptions
                 title="Informasi Pekerjaan Saat Ini"
-                bordered
-                size="middle"
-                colon={false}
-                column={descCols}
-                styles={{ label: { width: 220 } }}
+                {...commonDescProps}
               >
                 <Descriptions.Item label="Jenis Pekerjaan">
                   {emp?.employment_type || "-"}
@@ -298,7 +316,7 @@ export default function SubmissionDetailPage() {
                   {emp?.industry_type || "-"}
                 </Descriptions.Item>
                 <Descriptions.Item label="Alamat Perusahaan">
-                  {emp?.address || "-"}
+                  <span className="break-words">{emp?.address || "-"}</span>
                 </Descriptions.Item>
                 <Descriptions.Item label="Lama Bekerja">
                   {typeof emp?.length_of_work_years === "number"
@@ -320,15 +338,12 @@ export default function SubmissionDetailPage() {
               </Descriptions>
             </Col>
 
+            {/* Employment History (optional) */}
             {emp?.employmentHistory && (
               <Col span={24}>
                 <Descriptions
                   title="Riwayat Pekerjaan Sebelumnya"
-                  bordered
-                  size="middle"
-                  colon={false}
-                  column={descCols}
-                  styles={{ label: { width: 220 } }}
+                  {...commonDescProps}
                 >
                   <Descriptions.Item label="Jenis Pekerjaan">
                     {emp.employmentHistory.employment_type || "-"}
@@ -349,7 +364,9 @@ export default function SubmissionDetailPage() {
                     {emp.employmentHistory.industry_type || "-"}
                   </Descriptions.Item>
                   <Descriptions.Item label="Alamat Perusahaan">
-                    {emp.employmentHistory.address || "-"}
+                    <span className="break-words">
+                      {emp.employmentHistory.address || "-"}
+                    </span>
                   </Descriptions.Item>
                   <Descriptions.Item label="Lama Bekerja">
                     {typeof emp.employmentHistory.length_of_work_years ===
@@ -361,13 +378,18 @@ export default function SubmissionDetailPage() {
               </Col>
             )}
 
+            {/* Property */}
             <Col span={24}>
               <PropertyInformation propertyId={propertyId} />
             </Col>
 
+            {/* Actions */}
             {s?.status === "under_review" && (
               <Col span={24}>
-                <ApproveRejectButton />
+                {/* biar enak di mobile, tombol lebar penuh */}
+                <div className="w-full md:w-auto">
+                  <ApproveRejectButton />
+                </div>
               </Col>
             )}
           </Row>

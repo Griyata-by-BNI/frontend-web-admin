@@ -1,17 +1,10 @@
 export interface Submission {
   id: number;
   customer_name: string;
-  phone_number: string;
   email: string;
-  nik: string;
-  property_name: string;
-  property_address: string;
-  loan_amount: string;
-  tenor: string;
-  interest_rate: string;
   status: string;
   created_at: string;
-  updated_at: string;
+  sales_id: number;
 }
 
 export interface Pagination {
@@ -35,8 +28,9 @@ export interface KprDashboardResponse {
   };
   data: {
     submissions: Submission[];
-    pagination: Pagination;
-    sorting: Sorting;
+    timing: string;
+    count: number;
+    filtered_by_sales: boolean;
   };
 }
 
