@@ -194,16 +194,22 @@ const PropertyCard: React.FC<{ property: Property }> = ({ property }) => {
           </div>
           <h3
             className="text-xl font-bold text-gray-900 truncate"
-            title={property.clusterTypeName ? `${property.clusterTypeName} - ${property.propertyName}` : property.propertyName}
+            title={
+              property.clusterTypeName
+                ? `${property.clusterTypeName} - ${property.propertyName}`
+                : property.propertyName
+            }
           >
-            {property.clusterTypeName ? `${property.clusterTypeName} - ${property.propertyName}` : property.propertyName}
+            {property.clusterTypeName
+              ? `${property.clusterTypeName} - ${property.propertyName}`
+              : property.propertyName}
           </h3>
           <p className="text-sm text-gray-500">{property.developerName}</p>
           <div className="my-4 flex items-center py-3">
             <div className="flex-1">
               <p className="text-xs text-gray-500">Harga</p>
               <p className="text-xl font-bold text-gray-800">
-                {formatCurrency(property.price ?? 0)}
+                <span>Rp</span> {formatCurrency(property.price ?? 0)}
               </p>
             </div>
             <div className="h-10 w-px bg-gray-200 mx-4"></div>

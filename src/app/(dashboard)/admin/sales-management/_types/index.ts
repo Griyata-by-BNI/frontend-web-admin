@@ -1,11 +1,15 @@
 export type Sales = {
   id: number;
-  name: string;
-  email: string;
-  phone_number: string;
-  gender: string;
-  address: string;
-  target_score: number;
-  created_at: string;
-  updated_at: string;
+  npp: string;
+  performance: number | null;
+  monthly_target: number;
+  region_id: number;
+  user_id: number;
+  user?: {
+    id: number;
+    full_name: string;
+    email: string;
+    role: string;
+    is_verified: boolean;
+  };
 };

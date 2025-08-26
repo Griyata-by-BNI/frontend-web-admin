@@ -40,7 +40,7 @@ const PropertyCard: React.FC<{ property: ExploreProperty }> = ({
         </span>
       </div>
 
-      <div className="p-5">
+      <div className="p-5 bg-white">
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center text-sm text-teal-700">
             <MapPin className="w-4 h-4" />
@@ -76,7 +76,7 @@ const PropertyCard: React.FC<{ property: ExploreProperty }> = ({
           <Col span={8}>
             <p className="text-xs text-gray-500">Harga</p>
             <p className="text-xl font-extrabold text-primary-tosca">
-              {formatPrice(String(property.price ?? 0))}
+              <span>Rp</span> {formatPrice(String(property.price ?? 0))}
             </p>
           </Col>
 

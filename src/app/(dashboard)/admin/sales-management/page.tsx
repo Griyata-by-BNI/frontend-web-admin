@@ -74,21 +74,6 @@ export default function SalesManagementPage() {
     setIsEditModalOpen(true);
   };
 
-  const handleEditSubmit = (values: UpdateSalesPayload) => {
-    if (!editingRecord) return;
-    updateMut.mutate(
-      { salesId: editingRecord.id, payload: values },
-      {
-        onSuccess: () => {
-          message.success("Sales berhasil diperbarui");
-          setIsEditModalOpen(false);
-          setEditingRecord(null);
-        },
-        onError: () => message.error("Gagal memperbarui sales"),
-      }
-    );
-  };
-
   const handleDelete = (record: Sales) => {
     setDeletingRecord(record);
     setIsDeleteModalOpen(true);
@@ -109,17 +94,23 @@ export default function SalesManagementPage() {
   const columns = [
     { title: "NPP", dataIndex: "npp", key: "npp", sorter: true },
     {
-      title: "Performance",
-      dataIndex: "performance",
-      key: "performance",
-      sorter: true,
-      render: (v: number) => `${v}%`,
+      title: "Nama Lengkap",
+      dataIndex: "nama",
     },
+    {
+      title: "Email",
+      dataIndex: "email",
+    },
+    // {
+    //   title: "Performance",
+    //   dataIndex: "performance",
+    //   key: "performance",
+    //   sorter: true,
+    //   render: (v: number | null) => (v ? `${v}%` : "-"),
+    // },
     {
       title: "Monthly Target",
       dataIndex: "target_skor",
-      key: "target_skor",
-      sorter: true,
     },
     {
       title: "Wilayah",

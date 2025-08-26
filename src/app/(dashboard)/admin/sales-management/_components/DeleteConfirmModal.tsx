@@ -35,7 +35,7 @@ export default function DeleteConfirmModal({
         Apakah Anda yakin ingin menghapus data{" "}
         {salesData && (
           <>
-            <strong>{salesData.name}</strong>
+            <strong>{salesData.user?.full_name || salesData.npp}</strong>
           </>
         )}
         ?

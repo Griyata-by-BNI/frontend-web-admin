@@ -1,7 +1,7 @@
 import { LatestCluster } from "@/types/cluster";
 import calculateInstallment from "@/utils/calculateInstallment";
 import formatPrice from "@/utils/formatPrice";
-import { Carousel } from "antd";
+import { Carousel, Col, Row } from "antd";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
@@ -89,36 +89,33 @@ const LatestClusterCard: React.FC<LatestClusterCardProps> = ({ cluster }) => {
 
         {/* CONTENT */}
         <div className="p-5 flex-grow flex flex-col">
-          <h3 className="text-lg font-bold text-teal-700 line-clamp-2">
+          <h3 className="text-lg font-bold text-primary-black line-clamp-2">
             {cluster.name}
           </h3>
 
-          <p className="text-base text-teal-600/90 mb-4 line-clamp-2">
+          <p className="text-base text-gray-500 mb-8 line-clamp-2">
             {cluster.address || "Lokasi tidak tersedia"}
           </p>
 
-          <div className="mt-auto flex items-center pt-4">
-            <div className="flex-1 min-w-0">
+          <Row align="middle" gutter={[16, 0]}>
+            <Col span={10}>
               <p className="text-xs text-gray-500">Harga mulai dari</p>
-              <p className="text-base font-bold text-gray-800 mt-1 truncate">
-                <span className="font-normal text-sm">Rp</span>{" "}
-                {formatPrice(cluster.minPrice)}
+              <p className="ext-base md:text-lg font-extrabold text-primary-tosca">
+                <span>Rp</span> {formatPrice(String(cluster.minPrice ?? 0))}
               </p>
-            </div>
+            </Col>
 
-            <div className="h-10 w-px bg-gray-200 mx-3" aria-hidden />
-
-            <div className="flex-1 min-w-0">
+            <Col span={14} className="md:border-l md:pl-4 border-gray-200">
               <p className="text-xs text-gray-500">Angsuran mulai dari</p>
-              <p className="text-base font-bold text-gray-800 mt-1 truncate">
+              <p className="text-base md:text-lg font-extrabold text-primary-tosca">
                 {installment}
-                <span className="text-sm text-gray-500 font-normal">
+                <span className="text-sm font-normal text-gray-900">
                   {" "}
                   /bulan
                 </span>
               </p>
-            </div>
-          </div>
+            </Col>
+          </Row>
         </div>
       </article>
     </Link>

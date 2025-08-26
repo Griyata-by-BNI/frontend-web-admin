@@ -30,11 +30,11 @@ export default function EditSalesModal({ record }: EditSalesModalProps) {
   useEffect(() => {
     if (!open) return;
     form.setFieldsValue({
+      full_name: record.nama,
+      email: record.email,
       npp: record.npp,
-      performance: record.performance,
-      target_skor: record.target_skor,
+      monthly_target: record.target_skor,
       region_id: record.region_id,
-      user_id: record.user_id,
     });
   }, [open, record, form]);
 
@@ -76,11 +76,30 @@ export default function EditSalesModal({ record }: EditSalesModalProps) {
         okButtonProps={{ loading: updateMut.isPending }}
         classNames={{ body: "!pt-2" }}
       >
-        <Form<UpdateSalesPayload>
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-        >
+        <Form form={form} layout="vertical" onFinish={handleSubmit}>
+          <Form.Item
+            name="full_name"
+            label="Nama Lengkap"
+            className="!mb-3"
+            rules={[
+              { required: true, message: "Mohon masukkan nama lengkap!" },
+            ]}
+          >
+            <Input placeholder="Masukkan nama lengkap" />
+          </Form.Item>
+
+          <Form.Item
+            name="email"
+            label="Email"
+            className="!mb-3"
+            rules={[
+              { required: true, message: "Mohon masukkan email!" },
+              { type: "email", message: "Format email tidak valid!" },
+            ]}
+          >
+            <Input placeholder="contoh@email.com" />
+          </Form.Item>
+
           <Form.Item
             name="npp"
             label="NPP"
@@ -91,32 +110,14 @@ export default function EditSalesModal({ record }: EditSalesModalProps) {
           </Form.Item>
 
           <Form.Item
-            name="performance"
-            label="Performance (%)"
-            className="!mb-3"
-            rules={[{ required: true, message: "Mohon masukkan performance!" }]}
-          >
-            <InputNumber
-              min={0}
-              max={100}
-              step={0.1}
-              placeholder="0 - 100"
-              style={{ width: "100%" }}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="target_skor"
+            name="monthly_target"
             label="Monthly Target"
             className="!mb-3"
-            rules={[
-              { required: true, message: "Mohon masukkan monthly target!" },
-            ]}
           >
             <InputNumber
               min={0}
               step={1}
-              placeholder="Masukkan target bulanan"
+              placeholder="Masukkan target bulanan (opsional)"
               style={{ width: "100%" }}
             />
           </Form.Item>
@@ -124,7 +125,7 @@ export default function EditSalesModal({ record }: EditSalesModalProps) {
           <Form.Item
             name="region_id"
             label="Wilayah"
-            className="!mb-3"
+            className="!mb-0"
             rules={[{ required: true, message: "Mohon pilih wilayah!" }]}
           >
             <Select
@@ -132,20 +133,6 @@ export default function EditSalesModal({ record }: EditSalesModalProps) {
               options={bniRegions}
               showSearch
               optionFilterProp="label"
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="user_id"
-            label="User ID"
-            className="!mb-0"
-            rules={[{ required: true, message: "Mohon masukkan User ID!" }]}
-          >
-            <InputNumber
-              min={1}
-              step={1}
-              placeholder="Masukkan User ID"
-              style={{ width: "100%" }}
             />
           </Form.Item>
         </Form>

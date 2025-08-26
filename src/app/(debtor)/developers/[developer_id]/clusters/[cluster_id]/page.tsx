@@ -98,9 +98,9 @@ export default function HousingDetailPage() {
             <div className="lg:sticky lg:top-20 lg:space-y-4">
               <StickyCard
                 priceLabel="Harga mulai dari"
-                price={`${formatPrice(clusterDetail.minPrice)} - ${formatPrice(
-                  clusterDetail.maxPrice
-                )}`}
+                price={`Rp ${formatPrice(
+                  clusterDetail.minPrice
+                )} - Rp ${formatPrice(clusterDetail.maxPrice)}`}
                 minPrice={clusterDetail.minPrice}
                 developerName={clusterDetail.developerName}
                 location={clusterDetail.address || "Alamat tidak tersedia"}

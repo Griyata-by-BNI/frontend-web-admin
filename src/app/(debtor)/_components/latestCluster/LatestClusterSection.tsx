@@ -1,18 +1,16 @@
 "use client";
 
 import { useLatestClusters } from "@/services";
-import { Col, Row, Empty, Grid, Carousel } from "antd";
+import { Carousel, Col, Empty, Grid, Row } from "antd";
 import type { CarouselRef } from "antd/es/carousel";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useRef } from "react";
 import LatestClusterCard from "./LatestClusterCard";
 import LatestClusterCardSkeleton from "./LatestClusterCardSkeleton";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
 
 const { useBreakpoint } = Grid;
 
 export default function LatestClusterSection() {
-  const queryClient = useQueryClient();
   const { data, isLoading } = useLatestClusters();
 
   const screens = useBreakpoint();

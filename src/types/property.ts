@@ -93,3 +93,38 @@ export interface PropertyDetailResponse {
   status: { code: number; message: string };
   data: PropertyDetail;
 }
+
+// Generic & status
+export interface ApiStatus {
+  code: number;
+  message: string;
+}
+
+export interface ApiResponse<T> {
+  status: ApiStatus;
+  data: T;
+}
+
+// Item
+export interface RecentlyViewedProperty {
+  id: number;
+  propertyName: string;
+  clusterTypeName: string;
+  developerName: string;
+  location: string;
+  clusterId: number;
+  clusterName: string;
+  developerId: number;
+  price: number;
+  /** ISO 8601 string, contoh: "2025-08-26T01:57:59.937Z" */
+  lastViewed: string;
+  photoUrl: string;
+}
+
+// Payload & response spesifik
+export interface RecentlyViewedPropertiesPayload {
+  recentlyViewedProperties: RecentlyViewedProperty[];
+}
+
+export type RecentlyViewedPropertiesResponse =
+  ApiResponse<RecentlyViewedPropertiesPayload>;

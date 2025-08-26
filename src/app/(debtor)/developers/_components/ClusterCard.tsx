@@ -103,8 +103,7 @@ const ClusterCard: React.FC<ClusterCardProps> = ({ cluster, developerId }) => {
               <p className="text-sm text-gray-500">Harga mulai dari</p>
               {/* Smaller price font size */}
               <p className="text-xl font-extrabold text-primary-tosca mt-1">
-                <span className="font-lg text-sm">Rp</span>{" "}
-                {formatPrice(cluster.minPrice)}
+                <span>Rp</span> {formatPrice(cluster.minPrice)}
               </p>
             </div>
 

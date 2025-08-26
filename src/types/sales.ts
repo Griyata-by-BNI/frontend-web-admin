@@ -14,6 +14,8 @@ export interface ApiResponse<T> {
 export interface Sales {
   id: number;
   npp: string;
+  nama: string;
+  email: string;
   performance: number; // contoh: 85.5  (dalam persen)
   target_skor: number; // contoh: 100
   region_id: number;
@@ -24,8 +26,10 @@ export interface Sales {
 
 export interface CreateSalesPayload {
   npp: string;
+  full_name: string;
+  email: string;
   performance: number;
-  target_skor: number;
+  monthly_target: number;
   region_id: number;
   user_id: number;
 }
