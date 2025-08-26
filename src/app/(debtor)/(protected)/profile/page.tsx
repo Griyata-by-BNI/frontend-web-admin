@@ -113,7 +113,7 @@ const MenuItem: React.FC<{
 }> = ({ icon, title, onClick }) => (
   <button
     onClick={onClick}
-    className="w-full flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-teal-200 hover:bg-teal-50/40 transition-colors group text-left"
+    className="cursor-pointer w-full flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-teal-200 hover:bg-teal-50/40 transition-colors group text-left"
   >
     <div className="size-12 rounded-full bg-teal-50 grid place-items-center group-hover:bg-teal-100 transition-colors">
       {icon}
@@ -201,7 +201,7 @@ const ProfilePage: React.FC = () => {
   }, [router]);
 
   const handlePolicyClick = useCallback(() => {
-    router.push("/profile/policy");
+    router.push("/profile/rules-policy");
   }, [router]);
 
   const handleFavoriteClick = useCallback(() => {

@@ -122,8 +122,14 @@ export const FilterProvider: React.FC<React.PropsWithChildren> = ({
       setIf(next, "floors", values.floors);
       setIf(next, "sortBy", normalizedSort);
       setIf(next, "search", values.search);
-      setIf(next, "lat", values.lat);
-      setIf(next, "lng", values.lng);
+      
+      if (normalizedSort === "closestDistance") {
+        setIf(next, "lat", values.lat);
+        setIf(next, "lng", values.lng);
+      } else {
+        next.delete("lat");
+        next.delete("lng");
+      }
 
       setRange(next, "price", values.price);
       setRange(next, "landArea", values.landArea);
