@@ -34,7 +34,8 @@ export function RangeSlider({
 
       <Form.Item noStyle shouldUpdate>
         {() => {
-          const [minVal, maxVal] = form.getFieldValue(name) ?? [min, max];
+          const fieldValue = form.getFieldValue(name);
+          const [minVal, maxVal] = fieldValue && Array.isArray(fieldValue) ? fieldValue : [min, max];
 
           // Hitung lebar berbasis karakter terpanjang dari kandidat nilai
           const calcWidth = (...nums: Array<number | undefined>) => {
@@ -57,8 +58,9 @@ export function RangeSlider({
                 prefix={prefix}
                 value={minVal}
                 onChange={(val) => {
-                  const current = form.getFieldValue(name) ?? [min, max];
-                  form.setFieldsValue({ [name]: [val ?? min, current[1]] });
+                  const current = form.getFieldValue(name);
+                  const currentValue = current && Array.isArray(current) ? current : [min, max];
+                  form.setFieldsValue({ [name]: [val ?? min, currentValue[1]] });
                 }}
                 formatter={(val) => formatter(val as number)}
                 parser={(val) => {
@@ -80,8 +82,9 @@ export function RangeSlider({
                 prefix={prefix}
                 value={maxVal}
                 onChange={(val) => {
-                  const current = form.getFieldValue(name) ?? [min, max];
-                  form.setFieldsValue({ [name]: [current[0], val ?? min] });
+                  const current = form.getFieldValue(name);
+                  const currentValue = current && Array.isArray(current) ? current : [min, max];
+                  form.setFieldsValue({ [name]: [currentValue[0], val ?? max] });
                 }}
                 formatter={(val) => formatter(val as number)}
                 parser={(val) => {

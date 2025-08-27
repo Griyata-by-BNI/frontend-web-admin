@@ -237,6 +237,7 @@ export const AffordabilityForm = ({
             value: rate.id,
             label: rate.title,
           }))}
+          popupMatchSelectWidth={false}
           status={!isValidTenor ? "error" : ""}
         />
 

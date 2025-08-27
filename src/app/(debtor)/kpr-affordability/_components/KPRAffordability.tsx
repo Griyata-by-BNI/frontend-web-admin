@@ -16,7 +16,7 @@ export const KPRAffordability = ({ className = "" }: KPRAffordabilityProps) => {
     tenor: 15,
     downPayment: 200000000,
     monthlyInstallment: 1500000,
-    selectedRateId: 7,
+    selectedRateId: 1,
   });
 
   const { affordablePrice, isAffordable } = useAffordabilityCalculation(params);

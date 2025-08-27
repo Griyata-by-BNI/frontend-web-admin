@@ -27,6 +27,7 @@ type FilterContextValue = {
   buildSearchParams: (values: FilterFormData) => URLSearchParams;
   handleReset: () => void;
   initialValues: FilterFormData;
+  currentValues: FilterFormData;
 };
 
 const FilterContext = createContext<FilterContextValue | undefined>(undefined);
@@ -201,26 +202,44 @@ export const FilterProvider: React.FC<React.PropsWithChildren> = ({
 
   const initialValues = useMemo<FilterFormData>(() => {
     return {
-      // string input native -> paksa "", lainnya undefined jika tak ada
+      search: "",
+      location: undefined,
+      propertyType: undefined,
+      sortBy: "latestUpdated",
+      bedrooms: undefined,
+      bathrooms: undefined,
+      floors: undefined,
+      price: [0, 50_000_000_000],
+      landArea: [0, 1000],
+      buildingArea: [0, 1000],
+      lat: undefined,
+      lng: undefined,
+    };
+  }, []);
+
+  const currentValues = useMemo<FilterFormData>(() => {
+    return {
       search: searchParams.get("search") ?? "",
       location: getStr("location"),
       propertyType: getStr("propertyType"),
       sortBy: isSort(searchParams.get("sortBy"))
         ? (searchParams.get("sortBy") as SortBy)
         : "latestUpdated",
-
       bedrooms: getNum("bedrooms"),
       bathrooms: getNum("bathrooms"),
       floors: getNum("floors"),
-
-      price: getRange("price"),
-      landArea: getRange("landArea"),
-      buildingArea: getRange("buildingArea"),
-
+      price: getRange("price") ?? [0, 50_000_000_000],
+      landArea: getRange("landArea") ?? [0, 1000],
+      buildingArea: getRange("buildingArea") ?? [0, 1000],
       lat: getNum("lat"),
       lng: getNum("lng"),
     };
   }, [searchParams, getStr, getNum, getRange]);
+
+  // Update form saat currentValues berubah
+  React.useEffect(() => {
+    form.setFieldsValue(currentValues);
+  }, [form, currentValues]);
 
   const value: FilterContextValue = {
     form,
@@ -233,6 +252,7 @@ export const FilterProvider: React.FC<React.PropsWithChildren> = ({
     buildSearchParams,
     handleReset,
     initialValues,
+    currentValues,
   };
 
   return (

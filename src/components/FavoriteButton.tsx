@@ -48,7 +48,6 @@ export default function FavoriteButton({
 
   const handleFavorite = async () => {
     if (!currentUserId) {
-      alert("Please login to manage favorites");
       return;
     }
 

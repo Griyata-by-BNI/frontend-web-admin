@@ -49,7 +49,7 @@ export default function HeroSection() {
           {/* Heading */}
           <div className="text-center mb-4 sm:mb-6 md:mb-8">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2 sm:mb-3 tracking-tight">
-              Jelajahi Properti dengan Griyata
+              Cara Baru untuk Pindah ke Rumah Baru
             </h1>
             <p className="text-sm sm:text-base md:text-lg lg:text-xl text-teal-100">
               Pilihan Properti Terbaik dengan Kemudahan KPR BNI
