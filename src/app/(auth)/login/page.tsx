@@ -12,41 +12,15 @@ const LoginPage: React.FC = () => {
   const { message: messageApi } = App.useApp();
   const { mutateAsync: loginApi, status } = useLogin();
 
-  const handleSubmit = async (values: {
-    email: string;
-    password: string;
-    rememberMe?: boolean;
-  }) => {
+  const handleSubmit = async (values: { email: string; password: string }) => {
     try {
-      const { email, password, rememberMe } = values;
+      const { email, password } = values;
       const response = await loginApi({ email, password });
       login(response.data.token);
-
-      if (rememberMe) {
-        localStorage.setItem("credential", JSON.stringify({ email, password }));
-      } else {
-        localStorage.removeItem("credential");
-      }
     } catch (err: any) {
       messageApi.error("Login gagal. Mohon periksa email dan password anda!");
     }
   };
-
-  useEffect(() => {
-    const savedCredential = localStorage.getItem("credential");
-    if (savedCredential) {
-      try {
-        const { email, password } = JSON.parse(savedCredential);
-        form.setFieldsValue({
-          email,
-          password,
-          rememberMe: true,
-        });
-      } catch {
-        localStorage.removeItem("credential");
-      }
-    }
-  }, [form]);
 
   const loading = status === "pending";
 
