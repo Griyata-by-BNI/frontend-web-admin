@@ -7,7 +7,7 @@ import { FilterForm } from "./components/FilterForm";
 import { getBaseUrl } from "@/utils/getBaseUrl";
 
 export function FilterModal() {
-  const { form, router, pathname, buildSearchParams } = useFilterContext();
+  const { form, router, pathname, buildSearchParams, initialValues } = useFilterContext();
   const { message } = App.useApp();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -50,6 +50,7 @@ export function FilterModal() {
 
   const handleReset = () => {
     form.resetFields();
+    form.setFieldsValue(initialValues);
 
     const baseUrl = getBaseUrl();
     const basePath = pathname.endsWith("/search")
