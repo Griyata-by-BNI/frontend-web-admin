@@ -12,10 +12,6 @@ export default function DashboardLayout({
   const { user } = useAuth();
 
   if (user && user.role !== "SALES") {
-    if (user.role === "DEBTOR") {
-      redirect("/");
-    }
-
     if (user.role === "ADMIN") {
       redirect("/admin/developer-management");
     }
