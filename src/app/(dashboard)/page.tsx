@@ -6,26 +6,25 @@ import { useRouter } from "next/navigation";
 
 export default function DefaultPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
+    if (loading) return;
+    
     if (!user) {
       router.replace("/login");
-      return;
-    }
-
-    if (user && user.role === "ADMIN") {
+    } else if (user.role === "ADMIN") {
       router.replace("/admin/developer-management");
-      return;
-    }
-
-    if (user && user.role === "SALES") {
+    } else if (user.role === "SALES") {
       router.replace("/sales/approval-list");
-      return;
+    } else {
+      router.replace("/login");
     }
+  }, [user, loading, router]);
 
-    router.replace("/login");
-  }, [user, router]);
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
 
   return null;
 }

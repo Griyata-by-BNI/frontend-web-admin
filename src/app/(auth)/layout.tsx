@@ -18,6 +18,10 @@ export default function AuthLayout({
     }
   }, [user, loading]);
 
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+
   return (
     <div className="flex flex-col min-h-screen relative">
       <div className="flex flex-col">{children}</div>
