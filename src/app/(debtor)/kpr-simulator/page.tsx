@@ -7,6 +7,7 @@ import {
   TrendingUp,
   Sparkles,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function KprSimulatorPage() {
@@ -16,9 +17,15 @@ export default function KprSimulatorPage() {
         {/* HERO */}
         <section className="relative overflow-hidden rounded-3xl border border-gray-200 bg-gradient-to-br from-teal-50 via-white to-indigo-50 p-6 md:p-10 shadow-lg shadow-gray-500/10 mb-8">
           <div className="pointer-events-none absolute -top-10 -right-10 h-48 w-48 rounded-full blur-3xl opacity-30 bg-gradient-to-br from-teal-300 to-indigo-300" />
-          <div className="flex items-start gap-4">
-            <div className="hidden md:flex h-12 w-12 items-center justify-center rounded-xl bg-teal-100 border border-teal-200">
-              <Calculator className="h-6 w-6 text-teal-700" aria-hidden />
+          <div className="flex items-start gap-8">
+            <div className="hidden md:flex h-30 aspect-square items-center justify-center rounded-xl">
+              <Image
+                width={100}
+                height={100}
+                alt="icon"
+                className="h-full w-full"
+                src="/images/angsuran.png"
+              />
             </div>
 
             <div className="flex-1 min-w-0">
@@ -84,12 +91,12 @@ export default function KprSimulatorPage() {
                 penawaran bank. Biaya lain seperti provisi, administrasi,
                 notaris, dan asuransi belum diperhitungkan.
               </p>
-              <Link
+              {/* <Link
                 href="/info/kpr"
                 className="mt-3 inline-flex text-sm font-medium text-teal-700 hover:text-teal-800 underline"
               >
                 Pelajari detail biaya KPR →
-              </Link>
+              </Link> */}
             </div>
           </aside>
         </section>

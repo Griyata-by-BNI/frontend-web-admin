@@ -67,7 +67,7 @@ export const KPRSimulator = ({
   const [downPayment, setDownPayment] = useState<number>(200_000_000);
   const [tenor, setTenor] = useState<number>(15);
   const [selectedInterestRate, setSelectedInterestRate] =
-    useState<InterestRate | null>(interestRateData[6] as InterestRate);
+    useState<InterestRate | null>(interestRateData[1] as InterestRate);
 
   // ----- kalkulasi
   const { monthlyPayment, paymentSchedule, isValidTenor } = useKPRCalculation({

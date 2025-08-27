@@ -1,14 +1,14 @@
-import { KPRAffordability } from "./_components/KPRAffordability";
 import {
-  Wallet2,
-  Target,
   BadgePercent,
-  ShieldCheck,
-  Info,
-  Sparkles,
   HelpCircle,
+  Info,
+  ShieldCheck,
+  Sparkles,
+  Target,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
+import { KPRAffordability } from "./_components/KPRAffordability";
 
 export default function KprAffordabilityPage() {
   return (
@@ -17,10 +17,18 @@ export default function KprAffordabilityPage() {
         {/* HERO */}
         <section className="relative overflow-hidden rounded-3xl border border-gray-200 bg-gradient-to-br from-teal-50 via-white to-indigo-50 p-6 md:p-10 shadow-lg shadow-gray-500/10 mb-8">
           <div className="pointer-events-none absolute -top-10 -right-10 h-48 w-48 rounded-full blur-3xl opacity-30 bg-gradient-to-br from-teal-300 to-indigo-300" />
-          <div className="flex items-start gap-4">
-            <div className="hidden md:flex h-12 w-12 items-center justify-center rounded-xl bg-teal-100 border border-teal-200">
-              <Wallet2 className="h-6 w-6 text-teal-700" aria-hidden />
+
+          <div className="flex items-start gap-8">
+            <div className="hidden md:flex h-30 aspect-square items-center justify-center rounded-xl">
+              <Image
+                width={100}
+                height={100}
+                alt="icon"
+                className="h-full w-full"
+                src="/images/loan-home.png"
+              />
             </div>
+
             <div className="flex-1 min-w-0">
               <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900">
                 Cek Kemampuan KPR
@@ -126,7 +134,7 @@ export default function KprAffordabilityPage() {
         </section>
 
         {/* CTA bawah (opsional) */}
-        <div className="mt-10 rounded-2xl border border-gray-200 bg-white p-5 md:p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center gap-3">
+        {/* <div className="mt-10 rounded-2xl border border-gray-200 bg-white p-5 md:p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center gap-3">
           <p className="text-sm text-gray-700">
             Butuh bantuan membaca hasil simulasi? Tim kami siap membantu.
           </p>
@@ -136,7 +144,7 @@ export default function KprAffordabilityPage() {
           >
             Konsultasi Gratis
           </Link>
-        </div>
+        </div> */}
       </main>
     </div>
   );

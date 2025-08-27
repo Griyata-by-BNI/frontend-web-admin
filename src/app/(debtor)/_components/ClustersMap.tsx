@@ -182,8 +182,8 @@ export default function ClustersMap() {
 
       {geoError && (
         <p className="text-xs text-red-600">
-          Lokasi pengguna: {geoError}. Peta & marker cluster tetap dapat
-          dilihat.
+          Lokasi pengguna tidak diizinkan. Mohon berikan akses lokasi di browser
+          Anda.
         </p>
       )}
     </div>

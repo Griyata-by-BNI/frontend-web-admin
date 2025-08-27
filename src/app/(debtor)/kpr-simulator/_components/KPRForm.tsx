@@ -88,6 +88,7 @@ export const KPRForm = ({
         <Select
           placeholder="Pilih suku bunga"
           className="w-full"
+          popupMatchSelectWidth={false}
           size="large"
           value={selectedRate?.id}
           onChange={(value) => {

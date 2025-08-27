@@ -38,37 +38,51 @@ export default function PropertySidebar({
         />
 
         {/* CTA di dalam sidebar hanya ditampilkan di desktop */}
-        {user && (
-          <div className="hidden lg:flex gap-3">
-            <Link href={applyHref} className="flex-1" aria-label="Ajukan KPR">
-              <button className="w-full py-3 px-6 bg-gradient-to-r from-teal-500 to-teal-600 text-white text-lg font-semibold rounded-full hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-lg">
-                Ajukan KPR
-              </button>
-            </Link>
 
-            {userId && (
+        <div className="hidden lg:flex gap-3">
+          <Link
+            href={user ? applyHref : "/redirect"}
+            className="flex-1 cursor-pointer"
+            aria-label="Ajukan KPR"
+          >
+            <button className="w-full py-3 px-6 bg-gradient-to-r from-teal-500 to-teal-600 text-white text-lg font-semibold rounded-full hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-lg">
+              Ajukan KPR
+            </button>
+          </Link>
+
+          {user ? (
+            <Link href="/redirect" className="cursor-pointer">
               <FavoriteButton propertyId={property.id} userId={userId} />
-            )}
-          </div>
-        )}
+            </Link>
+          ) : (
+            <FavoriteButton propertyId={property.id} userId={userId} />
+          )}
+        </div>
       </div>
 
       {/* Mobile: floating action bar di bawah */}
-      {user && (
-        <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-gray-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
-          <div className="custom-container px-6 py-3 flex items-center gap-3">
-            <Link href={applyHref} className="flex-1" aria-label="Ajukan KPR">
-              <button className="w-full py-3 px-6 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold rounded-full hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-lg">
-                Ajukan KPR
-              </button>
-            </Link>
 
-            {userId && (
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-gray-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
+        <div className="custom-container px-6 py-3 flex items-center gap-3">
+          <Link
+            href={user ? applyHref : "/redirect"}
+            className="flex-1"
+            aria-label="Ajukan KPR"
+          >
+            <button className="w-full py-3 px-6 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold rounded-full hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-lg">
+              Ajukan KPR
+            </button>
+          </Link>
+
+          {user ? (
+            <Link href="/redirect" className="cursor-pointer">
               <FavoriteButton propertyId={property.id} userId={userId} />
-            )}
-          </div>
+            </Link>
+          ) : (
+            <FavoriteButton propertyId={property.id} userId={userId} />
+          )}
         </div>
-      )}
+      </div>
 
       {/* Spacer agar konten tidak ketutup floating bar di mobile */}
       <div className="h-16 lg:hidden" />
