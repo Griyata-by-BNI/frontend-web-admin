@@ -1,11 +1,11 @@
 "use client";
 
-import Sidebar from "@/components/Sidebar";
 import { useAuth } from "@/contexts/authContext";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 
 export default function DefaultPage() {
-  const { user } = useAuth();
+  const router = useRouter();
+  const { user, logout } = useAuth();
 
   if (user) {
     if (user.role === "ADMIN") {
