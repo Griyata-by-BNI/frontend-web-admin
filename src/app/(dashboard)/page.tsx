@@ -1,23 +1,31 @@
 "use client";
 
 import { useAuth } from "@/contexts/authContext";
-import { redirect, useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function DefaultPage() {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
-  if (user) {
-    if (user.role === "ADMIN") {
-      redirect("/admin/developer-management");
+  useEffect(() => {
+    if (!user) {
+      router.replace("/login");
+      return;
     }
 
-    if (user.role === "SALES") {
-      redirect("/sales/approval-list");
+    if (user && user.role === "ADMIN") {
+      router.replace("/admin/developer-management");
+      return;
     }
-  } else {
-    redirect("/login");
-  }
 
-  return <></>;
+    if (user && user.role === "SALES") {
+      router.replace("/sales/approval-list");
+      return;
+    }
+
+    router.replace("/login");
+  }, [user, router]);
+
+  return null;
 }

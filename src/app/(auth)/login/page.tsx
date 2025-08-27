@@ -196,20 +196,6 @@ const LoginPage: React.FC = () => {
             />
           </Form.Item>
 
-          <div className="flex items-center justify-between -mt-2 mb-2">
-            <Form.Item noStyle name="rememberMe" valuePropName="checked">
-              <Checkbox disabled={loading}>Ingat Saya</Checkbox>
-            </Form.Item>
-            <Link
-              href="/forgot-password"
-              className={`!text-teal-600 hover:!text-teal-700 font-medium ${
-                loading ? "pointer-events-none opacity-50" : ""
-              }`}
-            >
-              Lupa password?
-            </Link>
-          </div>
-
           <Form.Item>
             <Button
               type="primary"
