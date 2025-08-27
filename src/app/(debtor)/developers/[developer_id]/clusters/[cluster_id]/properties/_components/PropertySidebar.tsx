@@ -63,7 +63,7 @@ export default function PropertySidebar({
       {/* Mobile: floating action bar di bawah */}
 
       <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-gray-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
-        <div className="custom-container px-6 py-3 flex items-center gap-3">
+        <div className="px-6 py-3 flex items-center gap-3">
           <Link
             href={user ? applyHref : "/redirect"}
             className="flex-1"

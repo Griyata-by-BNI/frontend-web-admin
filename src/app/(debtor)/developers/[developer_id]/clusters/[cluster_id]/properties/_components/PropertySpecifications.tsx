@@ -10,6 +10,9 @@ import {
   faSwimmingPool,
   faWarehouse,
   faDumbbell,
+  faSeedling,
+  faParking,
+  faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -74,11 +77,13 @@ const parseSpecifications = (property: any): Specification[] => {
     extraSpecs.forEach((spec: string) => {
       const lower = spec.toLowerCase();
 
-      let icon: IconDefinition = faHouse; // default
+      let icon: IconDefinition = faCheck; // default
       if (lower.includes("gym")) icon = faDumbbell;
       else if (lower.includes("garasi") || lower.includes("carport"))
         icon = faWarehouse;
       else if (lower.includes("kolam")) icon = faSwimmingPool;
+      else if (lower.includes("taman")) icon = faSeedling;
+      else if (lower.includes("park")) icon = faParking;
 
       pushUnique(map, spec, icon);
     });
