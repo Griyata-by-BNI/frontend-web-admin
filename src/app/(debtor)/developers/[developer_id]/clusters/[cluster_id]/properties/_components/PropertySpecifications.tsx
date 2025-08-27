@@ -9,6 +9,7 @@ import {
   faStairs,
   faSwimmingPool,
   faWarehouse,
+  faDumbbell,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -21,36 +22,69 @@ interface PropertySpecificationsProps {
   property: any;
 }
 
+const normalizeKey = (text: string) =>
+  text.normalize("NFKC").trim().toLowerCase().replace(/\s+/g, " ");
+
+const pushUnique = (
+  map: Map<string, Specification>,
+  text: string,
+  icon: IconDefinition
+) => {
+  const key = normalizeKey(text);
+  if (!map.has(key)) {
+    map.set(key, { text, icon });
+  }
+};
+
 const parseSpecifications = (property: any): Specification[] => {
-  const specs: Specification[] = [];
+  const map = new Map<string, Specification>();
 
-  if (property.jumlahKamarTidur)
-    specs.push({
-      text: `${property.jumlahKamarTidur} Kamar Tidur`,
-      icon: faBed,
-    });
-  if (property.jumlahKamarMandi)
-    specs.push({
-      text: `${property.jumlahKamarMandi} Kamar Mandi`,
-      icon: faShower,
-    });
-  if (property.luasTanah)
-    specs.push({
-      text: `Luas Tanah ${property.luasTanah} m²`,
-      icon: faChartArea,
-    });
-  if (property.luasBangunan)
-    specs.push({
-      text: `Luas Bangunan ${property.luasBangunan} m²`,
-      icon: faHouse,
-    });
-  if (property.jumlahLantai)
-    specs.push({ text: `${property.jumlahLantai} Lantai`, icon: faStairs });
-  if (property.garasi) specs.push({ text: "Garasi", icon: faWarehouse });
-  if (property.kolamRenang)
-    specs.push({ text: "Kolam Renang", icon: faSwimmingPool });
+  // --- dari properti numeric/boolean ---
+  if (property.jumlahKamarTidur) {
+    pushUnique(map, `${property.jumlahKamarTidur} Kamar Tidur`, faBed);
+  }
+  if (property.jumlahKamarMandi) {
+    pushUnique(map, `${property.jumlahKamarMandi} Kamar Mandi`, faShower);
+  }
+  const luasTanah = property.luasTanah ?? property.landArea;
+  if (luasTanah) {
+    pushUnique(map, `Luas Tanah ${luasTanah} m²`, faChartArea);
+  }
+  const luasBangunan = property.luasBangunan ?? property.buildingArea;
+  if (luasBangunan) {
+    pushUnique(map, `Luas Bangunan ${luasBangunan} m²`, faHouse);
+  }
+  if (property.jumlahLantai) {
+    pushUnique(map, `${property.jumlahLantai} Lantai`, faStairs);
+  }
+  if (property.garasi) {
+    pushUnique(map, "Garasi", faWarehouse);
+  }
+  if (property.kolamRenang) {
+    pushUnique(map, "Kolam Renang", faSwimmingPool);
+  }
 
-  return specs;
+  // --- dari string `spesifications` (contoh: "Gym, Garasi") ---
+  if (property.spesifications) {
+    const extraSpecs = String(property.spesifications)
+      .split(",")
+      .map((s: string) => s.trim())
+      .filter(Boolean);
+
+    extraSpecs.forEach((spec: string) => {
+      const lower = spec.toLowerCase();
+
+      let icon: IconDefinition = faHouse; // default
+      if (lower.includes("gym")) icon = faDumbbell;
+      else if (lower.includes("garasi") || lower.includes("carport"))
+        icon = faWarehouse;
+      else if (lower.includes("kolam")) icon = faSwimmingPool;
+
+      pushUnique(map, spec, icon);
+    });
+  }
+
+  return Array.from(map.values());
 };
 
 export default function PropertySpecifications({
@@ -64,7 +98,7 @@ export default function PropertySpecifications({
         Spesifikasi
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {specifications.map((spec: Specification, index: number) => (
+        {specifications.map((spec, index) => (
           <div
             key={index}
             className="flex items-center p-3 rounded-xl bg-teal-50 border border-teal-100"

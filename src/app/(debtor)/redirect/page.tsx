@@ -36,7 +36,7 @@ export default function NeedLoginPage() {
   const goNow = () => router.push("/login");
 
   return (
-    <div className="relative min-h-dvh overflow-hidden">
+    <div className="relative min-h-dvh overflow-hidden bg-light-tosca">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-sky-50 via-white to-emerald-50" />
       <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-emerald-200/40 blur-3xl" />
