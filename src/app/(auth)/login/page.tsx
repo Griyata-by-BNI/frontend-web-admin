@@ -78,7 +78,6 @@ const LoginPage: React.FC = () => {
   }, [reasonParam]);
 
   const [showReason, setShowReason] = useState(Boolean(reasonAlert));
-
   const loading = status === "pending";
 
   const handleSubmit = async (values: { email: string; password: string }) => {
@@ -91,7 +90,6 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  // Styling map untuk dekorasi
   const alertDecorMap: Record<
     NonNullable<AlertProps["type"]>,
     { ring: string; grad: string; bg: string }
@@ -121,15 +119,24 @@ const LoginPage: React.FC = () => {
   const deco = alertDecorMap[reasonAlert?.type || "info"] ?? alertDecorMap.info;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center !bg-light-tosca">
-      <div className="w-full max-w-lg mx-auto bg-white p-8 rounded-2xl shadow-lg shadow-gray-500/20 border border-gray-200 relative overflow-hidden">
-        {/* Reason alert (manual close, tidak auto-dismiss) */}
-        {reasonAlert && showReason && (
+    <div className="min-h-screen relative flex flex-col items-center justify-center !bg-light-tosca">
+      {/* Alert overlay: atas-tengah */}
+      {reasonAlert && showReason && (
+        <div
+          className="
+            fixed left-1/2 -translate-x-1/2
+            z-50
+            px-4
+            w-full max-w-xl
+            [top:calc(env(safe-area-inset-top,0px)+32px)]
+            pointer-events-none
+          "
+          // ganti 'fixed' -> 'absolute' jika ingin relatif ke parent .relative di atas
+        >
           <div
-            className={`
-              relative mb-6 rounded-xl ${deco.bg}
-              ring-1 ${deco.ring} shadow-sm transition-all duration-300
-            `}
+            className={`relative rounded-xl ${deco.bg} ring-1 ${deco.ring} shadow-lg pointer-events-auto`}
+            role="status"
+            aria-live="polite"
           >
             <div
               className={`absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b ${deco.grad}`}
@@ -148,8 +155,10 @@ const LoginPage: React.FC = () => {
               className="!bg-transparent !border-0 !px-4 !py-3 pl-6"
             />
           </div>
-        )}
+        </div>
+      )}
 
+      <div className="w-full max-w-lg mx-auto bg-white p-8 rounded-2xl shadow-lg shadow-gray-500/20 border border-gray-200 relative overflow-hidden">
         <div className="mb-6">
           <h2 className="text-2xl sm:text-3xl font-bold text-teal-600 mb-1 text-center">
             Griyata Dashboard

@@ -9,6 +9,7 @@ import {
   Users,
   Menu as MenuIcon,
   X,
+  ClipboardCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -21,16 +22,25 @@ type MenuItem = {
 };
 
 const adminMenuItems: MenuItem[] = [
-  { label: "Sales Management", href: "/admin/sales-management", icon: Users },
   {
     label: "Developer Management",
     href: "/admin/developer-management",
     icon: HousePlus,
   },
+  { label: "Sales Management", href: "/admin/sales-management", icon: Users },
+  {
+    label: "Submission List",
+    href: "/admin/submission-list",
+    icon: ClipboardCheck,
+  },
 ];
 
 const salesMenuItems: MenuItem[] = [
-  { label: "Approval List", href: "/sales/approval-list", icon: BarChart3 },
+  {
+    label: "Approval List",
+    href: "/sales/approval-list",
+    icon: ClipboardCheck,
+  },
 ];
 
 const getInitials = (name?: string) =>

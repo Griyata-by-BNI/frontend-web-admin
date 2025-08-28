@@ -1,9 +1,9 @@
 "use client";
 
-import interestRateData from "@/data/interest-rate.json";
-import { useSubmissionDetail } from "@/services/approvalListServices";
 import "@ant-design/v5-patch-for-react-19";
+import { useSubmissionDetail } from "@/services/approvalListServices";
 import {
+  App,
   Breadcrumb,
   Card,
   Col,
@@ -15,9 +15,9 @@ import {
   type DescriptionsProps,
 } from "antd";
 import { useParams, useRouter } from "next/navigation";
-import ApproveRejectButton from "./_components/ApproveRejectButton";
-import DocumentPreview from "./_components/DocumentPreview";
 import PropertyInformation from "./_components/PropertyInformation";
+import DocumentPreview from "./_components/DocumentPreview";
+import interestRateData from "@/data/interest-rate.json";
 
 type InterestItem = { id: number; title: string };
 
@@ -27,6 +27,7 @@ export default function SubmissionDetailPage() {
   const { data, isLoading } = useSubmissionDetail(submissionId);
   const router = useRouter();
   const screens = Grid.useBreakpoint();
+  const { message } = App.useApp();
 
   const d = data?.data;
   const s = d?.submission;
@@ -104,7 +105,7 @@ export default function SubmissionDetailPage() {
             { title: "Dashboard" },
             {
               title: "Submissions",
-              onClick: () => router.push(`/sales/approval-list`),
+              onClick: () => router.push(`/admin/submission-list`),
             },
             { title: `ID ${submissionId}` },
           ]}
@@ -392,16 +393,6 @@ export default function SubmissionDetailPage() {
                 >
                   <DocumentPreview documents={documents} />
                 </Card>
-              </Col>
-            )}
-
-            {/* Actions */}
-            {s?.status === "under_review" && (
-              <Col span={24}>
-                {/* biar enak di mobile, tombol lebar penuh */}
-                <div className="w-full md:w-auto">
-                  <ApproveRejectButton />
-                </div>
               </Col>
             )}
           </Row>

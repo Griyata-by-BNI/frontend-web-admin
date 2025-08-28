@@ -42,6 +42,15 @@ export default function SalesManagementPage() {
   }, [data, list]);
 
   const columns = [
+    {
+      title: "No",
+      dataIndex: "__index",
+      key: "__index",
+      width: 70,
+      align: "center",
+      render: (_: unknown, __: any, idx: number) =>
+        (pageNumber - 1) * pageSize + idx + 1,
+    },
     { title: "NPP", dataIndex: "npp", key: "npp" },
     {
       title: "Nama Lengkap",

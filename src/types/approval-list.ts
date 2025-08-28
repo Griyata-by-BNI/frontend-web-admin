@@ -118,6 +118,7 @@ export interface SubmissionDetail {
     loan_value: string;
     monthly_period: number;
   };
+  documents: { type: string; url: string }[];
 }
 
 export interface SubmissionDetailResponse {

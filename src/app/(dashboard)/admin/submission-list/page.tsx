@@ -1,8 +1,10 @@
 "use client";
 
+import { useApprovalList } from "@/services/approvalListServices";
+import { Submission } from "@/types/approval-list";
+import { useDebounce } from "@/utils/useDebounce";
 import "@ant-design/v5-patch-for-react-19";
 import {
-  App,
   Breadcrumb,
   Button,
   Col,
@@ -15,14 +17,8 @@ import {
   type TableProps,
 } from "antd";
 import { Eye } from "lucide-react";
-import { useMemo, useState } from "react";
-import { Submission } from "@/types/approval-list";
-import {
-  useApprovalList,
-  useUpdateSubmissionStatus,
-} from "@/services/approvalListServices";
 import { useRouter } from "next/navigation";
-import { useDebounce } from "@/utils/useDebounce";
+import { useMemo, useState } from "react";
 
 const tabItems = [
   { key: "submitted", label: "Need Approval" },
@@ -32,15 +28,12 @@ const tabItems = [
 ];
 
 export default function ApprovalListPage() {
-  const { message } = App.useApp();
   const screens = Grid.useBreakpoint();
   const [searchText, setSearchText] = useState("");
+  const debouncedSearchText = useDebounce(searchText, 500);
   const [activeTab, setActiveTab] = useState<string>("submitted");
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [updatingId, setUpdatingId] = useState<number | null>(null);
-
-  const debouncedSearchText = useDebounce(searchText, 500);
 
   const { data, isLoading } = useApprovalList({
     status: activeTab,
@@ -49,7 +42,6 @@ export default function ApprovalListPage() {
     search: debouncedSearchText || undefined,
   });
 
-  const { mutate, isPending } = useUpdateSubmissionStatus();
   const router = useRouter();
 
   const submissions = useMemo<Submission[]>(
@@ -58,25 +50,8 @@ export default function ApprovalListPage() {
   );
   const totalItems = data?.data?.count ?? 0;
 
-  const goToDetail = (id: number) => router.push(`/sales/approval-list/${id}`);
-
-  const handleOpenDetail = (record: Submission) => {
-    if (record.status === "submitted") {
-      setUpdatingId(record.id);
-      mutate(
-        { id: record.id, payload: { status: "under_review" } },
-        {
-          onSuccess: () => {
-            goToDetail(record.id);
-          },
-          onError: () => message.error("Gagal memperbarui status"),
-          onSettled: () => setUpdatingId(null),
-        }
-      );
-    } else {
-      goToDetail(record.id);
-    }
-  };
+  const goToDetail = (id: number) =>
+    router.push(`/admin/submission-list/${id}`);
 
   // Kolom: sembunyikan sebagian di layar kecil; pindahkan detail ke expanded row.
   const columns: TableProps<Submission>["columns"] = useMemo(
@@ -130,14 +105,13 @@ export default function ApprovalListPage() {
             <Button
               size="small"
               icon={<Eye className="w-4 h-4" />}
-              onClick={() => handleOpenDetail(record)}
-              loading={isPending && updatingId === record.id}
+              onClick={() => goToDetail(record.id)}
             />
           </Tooltip>
         ),
       },
     ],
-    [screens.lg, isPending, updatingId]
+    [screens.lg]
   );
 
   const useExpandedRow = !screens.md; // di mobile tampilkan detail di expanded row
