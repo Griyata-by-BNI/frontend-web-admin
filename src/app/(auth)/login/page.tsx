@@ -2,11 +2,10 @@
 import { useAuth } from "@/contexts/authContext";
 import { useLogin } from "@/services/authServices";
 import "@ant-design/v5-patch-for-react-19";
-import { App, Button, Checkbox, Form, Input, Alert } from "antd";
 import type { AlertProps } from "antd";
-import Link from "next/link";
-import React, { useMemo, useState } from "react";
+import { Alert, App, Button, Form, Input } from "antd";
 import { useSearchParams } from "next/navigation";
+import React, { useMemo, useState } from "react";
 
 type ReasonKey =
   | "manual"
@@ -184,10 +183,7 @@ const LoginPage: React.FC = () => {
           <Form.Item
             name="password"
             label="Password"
-            rules={[
-              { required: true, message: "Password wajib diisi" },
-              { min: 8, message: "Password harus minimal 8 karakter" },
-            ]}
+            rules={[{ required: true, message: "Password wajib diisi" }]}
           >
             <Input.Password
               placeholder="Kata sandi"

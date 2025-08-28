@@ -1,49 +1,72 @@
 "use client";
 
-import { Modal, Typography } from "antd";
-import type { Sales } from "../_types";
+import { App, Button, Modal, Tooltip, Typography } from "antd";
+import { useDeleteSales } from "@/services/salesServices";
+import { useState } from "react";
+import { Trash } from "lucide-react";
+import { Sales } from "@/types/sales";
 
 interface DeleteConfirmModalProps {
-  open: boolean;
-  onCancel: () => void;
-  onConfirm: () => void;
   salesData: Sales | null;
 }
 
 export default function DeleteConfirmModal({
-  open,
-  onCancel,
-  onConfirm,
   salesData,
 }: DeleteConfirmModalProps) {
-  return (
-    <Modal
-      title={
-        <Typography.Title level={5} className="!text-red-500">
-          Hapus Data Sales
-        </Typography.Title>
-      }
-      open={open}
-      onOk={onConfirm}
-      onCancel={onCancel}
-      okText="Hapus"
-      okType="danger"
-      cancelText="Batal"
-      classNames={{ footer: "!mt-6" }}
-    >
-      <p>
-        Apakah Anda yakin ingin menghapus data{" "}
-        {salesData && (
-          <>
-            <strong>{salesData.user?.full_name || salesData.npp}</strong>
-          </>
-        )}
-        ?
-      </p>
+  const { message } = App.useApp();
+  const [modalOpen, setModalOpen] = useState(false);
+  const deleteMut = useDeleteSales();
 
-      <p className="text-gray-500 text-sm mt-2">
-        Tindakan ini tidak dapat dibatalkan.
-      </p>
-    </Modal>
+  const handleDeleteConfirm = () => {
+    if (!salesData) return;
+    deleteMut.mutate(salesData.id, {
+      onSuccess: () => {
+        message.success("Sales berhasil dihapus");
+        setModalOpen(false);
+      },
+      onError: () => message.error("Gagal menghapus sales"),
+    });
+  };
+
+  return (
+    <>
+      <Tooltip title="Hapus Data">
+        <Button
+          danger
+          icon={<Trash className="w-4 h-4" />}
+          onClick={() => setModalOpen(true)}
+          loading={deleteMut.isPending}
+        />
+      </Tooltip>
+
+      <Modal
+        title={
+          <Typography.Title level={5} className="!text-red-500">
+            Hapus Data Sales
+          </Typography.Title>
+        }
+        open={modalOpen}
+        onOk={handleDeleteConfirm}
+        onCancel={() => setModalOpen(false)}
+        okText="Hapus"
+        okType="danger"
+        cancelText="Batal"
+        classNames={{ footer: "!mt-6" }}
+      >
+        <p>
+          Apakah Anda yakin ingin menghapus data{" "}
+          {salesData && (
+            <>
+              <strong>{salesData.nama || salesData.npp}</strong>
+            </>
+          )}
+          ?
+        </p>
+
+        <p className="text-gray-500 text-sm mt-2">
+          Tindakan ini tidak dapat dibatalkan.
+        </p>
+      </Modal>
+    </>
   );
 }

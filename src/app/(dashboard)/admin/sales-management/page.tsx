@@ -1,36 +1,15 @@
 "use client";
 
-import {
-  useCreateSales,
-  useDeleteSales,
-  useSales,
-  useUpdateSales,
-} from "@/services/salesServices";
-import type {
-  CreateSalesPayload,
-  Sales,
-  SortBy,
-  SortOrder,
-  UpdateSalesPayload,
-} from "@/types/sales";
-import "@ant-design/v5-patch-for-react-19";
-import {
-  App,
-  Breadcrumb,
-  Button,
-  Col,
-  Input,
-  Row,
-  Select,
-  Table,
-  Tooltip,
-} from "antd";
-import { Edit, Plus, Trash } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useSales } from "@/services/salesServices";
+import type { Sales, SortBy, SortOrder } from "@/types/sales";
 import { useDebounce } from "@/utils/useDebounce";
-import { bniRegions } from "./constants";
+import "@ant-design/v5-patch-for-react-19";
+import { App, Breadcrumb, Col, Input, Row, Select, Table } from "antd";
+import { useMemo, useState } from "react";
 import CreateSalesModal from "./_components/CreateSalesModal";
+import DeleteConfirmModal from "./_components/DeleteConfirmModal";
 import EditSalesModal from "./_components/EditSalesModal";
+import { bniRegions } from "./constants";
 
 export default function SalesManagementPage() {
   const { message } = App.useApp();
@@ -42,12 +21,6 @@ export default function SalesManagementPage() {
   const [pageSize, setPageSize] = useState(10);
   const [sortBy, setSortBy] = useState<SortBy>("npp");
   const [sortOrder, setSortOrder] = useState<SortOrder>("ASC");
-
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingRecord, setEditingRecord] = useState<Sales | null>(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deletingRecord, setDeletingRecord] = useState<Sales | null>(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const { data, isLoading } = useSales({
     pageNumber,
@@ -67,31 +40,6 @@ export default function SalesManagementPage() {
     const raw = (data?.data as any) ?? {};
     return raw?.pagination?.total ?? list.length;
   }, [data, list]);
-
-  const updateMut = useUpdateSales();
-  const deleteMut = useDeleteSales();
-
-  const handleEdit = (record: Sales) => {
-    setEditingRecord(record);
-    setIsEditModalOpen(true);
-  };
-
-  const handleDelete = (record: Sales) => {
-    setDeletingRecord(record);
-    setIsDeleteModalOpen(true);
-  };
-
-  const handleDeleteConfirm = () => {
-    if (!deletingRecord) return;
-    deleteMut.mutate(deletingRecord.id, {
-      onSuccess: () => {
-        message.success("Sales berhasil dihapus");
-        setIsDeleteModalOpen(false);
-        setDeletingRecord(null);
-      },
-      onError: () => message.error("Gagal menghapus sales"),
-    });
-  };
 
   const columns = [
     { title: "NPP", dataIndex: "npp", key: "npp" },
@@ -129,14 +77,7 @@ export default function SalesManagementPage() {
         <div className="flex items-center gap-2">
           <EditSalesModal record={record} />
 
-          <Tooltip title="Hapus Data">
-            <Button
-              danger
-              icon={<Trash className="w-4 h-4" />}
-              onClick={() => handleDelete(record)}
-              loading={deleteMut.isPending && deletingRecord?.id === record.id}
-            />
-          </Tooltip>
+          <DeleteConfirmModal salesData={record} />
         </div>
       ),
     },
