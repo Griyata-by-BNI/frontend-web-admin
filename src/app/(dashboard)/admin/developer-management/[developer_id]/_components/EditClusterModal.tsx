@@ -17,6 +17,7 @@ import { Edit, MapPin, Upload as UploadIcon, X } from "lucide-react";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+
 import { FacitiliesData } from "../../_constants";
 import { useNearbyPlaces } from "../_hooks/useNearbyPlaces";
 import { NearbyPlaceTypeLabel } from "../constants";
@@ -33,6 +34,7 @@ export default function EditClusterModal({ clusterId }: { clusterId: string }) {
     lat?: number;
     lng?: number;
   }>({});
+
 
   const { message } = App.useApp();
   const pathname = usePathname();
@@ -94,6 +96,8 @@ export default function EditClusterModal({ clusterId }: { clusterId: string }) {
     form.setFieldsValue({ latitude: lat, longitude: lng });
     fetchNearbyPlaces(lat, lng);
   };
+
+
 
   const handleSubmit = (values: any) => {
     try {
@@ -222,7 +226,19 @@ export default function EditClusterModal({ clusterId }: { clusterId: string }) {
               className="!mb-3"
               rules={[{ required: true, message: "Mohon masukkan latitude!" }]}
             >
-              <Input placeholder="Masukkan latitude" type="number" step="any" />
+              <Input
+                placeholder="Masukkan latitude"
+                type="number"
+                step="any"
+                onChange={(e) => {
+                  const lat = parseFloat(e.target.value);
+                  const lng = form.getFieldValue("longitude");
+                  if (!isNaN(lat) && !isNaN(lng)) {
+                    setCoordinates({ lat, lng });
+                    fetchNearbyPlaces(lat, lng);
+                  }
+                }}
+              />
             </Form.Item>
 
             <Form.Item
@@ -235,6 +251,14 @@ export default function EditClusterModal({ clusterId }: { clusterId: string }) {
                 placeholder="Masukkan longitude"
                 type="number"
                 step="any"
+                onChange={(e) => {
+                  const lng = parseFloat(e.target.value);
+                  const lat = form.getFieldValue("latitude");
+                  if (!isNaN(lat) && !isNaN(lng)) {
+                    setCoordinates({ lat, lng });
+                    fetchNearbyPlaces(lat, lng);
+                  }
+                }}
               />
             </Form.Item>
           </div>
@@ -304,7 +328,7 @@ export default function EditClusterModal({ clusterId }: { clusterId: string }) {
             <Select
               mode="tags"
               placeholder="Pilih atau ketik fasilitas baru"
-              tokenSeparators={[',']}
+              tokenSeparators={[","]}
               options={FacitiliesData.map((facility) => ({
                 label: facility,
                 value: facility,

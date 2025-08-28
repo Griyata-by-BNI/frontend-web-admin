@@ -12,7 +12,7 @@ import {
   Upload,
 } from "antd";
 import { Upload as UploadIcon, X, MapPin, Plus } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FacitiliesData } from "../../_constants";
 import dynamic from "next/dynamic";
 import { useNearbyPlaces } from "../_hooks/useNearbyPlaces";
@@ -64,6 +64,8 @@ export default function CreateClusterModal() {
     form.setFieldsValue({ latitude: lat, longitude: lng });
     fetchNearbyPlaces(lat, lng);
   };
+
+
 
   const queryClient = useQueryClient();
   const { mutate, status } = useCreateCluster();
@@ -188,7 +190,19 @@ export default function CreateClusterModal() {
               className="!mb-3"
               rules={[{ required: true, message: "Mohon masukkan latitude!" }]}
             >
-              <Input placeholder="Masukkan latitude" type="number" step="any" />
+              <Input
+                placeholder="Masukkan latitude"
+                type="number"
+                step="any"
+                onChange={(e) => {
+                  const lat = parseFloat(e.target.value);
+                  const lng = form.getFieldValue("longitude");
+                  if (!isNaN(lat) && !isNaN(lng)) {
+                    setCoordinates({ lat, lng });
+                    fetchNearbyPlaces(lat, lng);
+                  }
+                }}
+              />
             </Form.Item>
 
             <Form.Item
@@ -201,6 +215,14 @@ export default function CreateClusterModal() {
                 placeholder="Masukkan longitude"
                 type="number"
                 step="any"
+                onChange={(e) => {
+                  const lng = parseFloat(e.target.value);
+                  const lat = form.getFieldValue("latitude");
+                  if (!isNaN(lat) && !isNaN(lng)) {
+                    setCoordinates({ lat, lng });
+                    fetchNearbyPlaces(lat, lng);
+                  }
+                }}
               />
             </Form.Item>
           </div>
@@ -270,7 +292,7 @@ export default function CreateClusterModal() {
             <Select
               mode="tags"
               placeholder="Pilih atau ketik fasilitas baru"
-              tokenSeparators={[',']}
+              tokenSeparators={[","]}
               options={FacitiliesData.map((facility) => ({
                 label: facility,
                 value: facility,

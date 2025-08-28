@@ -38,7 +38,7 @@ export default function SalesManagementPage() {
 
   const total: number = useMemo(() => {
     const raw = (data?.data as any) ?? {};
-    return raw?.pagination?.total ?? list.length;
+    return raw?.pagination?.totalItems ?? list.length;
   }, [data, list]);
 
   const columns = [

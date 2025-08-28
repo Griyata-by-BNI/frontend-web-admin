@@ -13,6 +13,13 @@ import ImageGallery from "./_components/ImageGallery";
 import TableClusterType from "./_components/TableClusterType";
 import CreateClusterTypeModal from "./_components/CreateClusterTypeModal";
 
+const formatIDR = (n?: string | number) => {
+  const num =
+    typeof n === "string" ? Number(n.replace(/[^\d.-]/g, "")) : Number(n ?? 0);
+  if (Number.isNaN(num) || num === 0) return "-";
+  return new Intl.NumberFormat("id-ID").format(num);
+};
+
 export default function ClusterDetailPage() {
   const params = useParams();
   const developerId = params.developer_id as string;
@@ -27,18 +34,26 @@ export default function ClusterDetailPage() {
   }
 
   if (!cluster) {
-    return <div>Cluster tidak ditemukan</div>;
+    return <div className="p-4">Cluster tidak ditemukan</div>;
   }
 
-  return (
-    <>
-      <div className="mb-4 flex flex-col gap-1">
-        <div className="flex w-full justify-between items-end">
-          <div className="flex flex-col gap-1">
-            <p className="text-2xl text-primary-black font-bold">
-              {cluster.name}
-            </p>
+  // Normalisasi fasilitas agar aman saat null/empty
+  const facilities = String(cluster.facilities || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
 
+  return (
+    <div className="mb-4 flex flex-col gap-3 px-3 sm:px-0">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xl sm:text-2xl text-primary-black font-bold truncate">
+            {cluster.name}
+          </p>
+
+          {/* Breadcrumb bisa geser di layar sempit */}
+          <div className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <Breadcrumb
               items={[
                 { title: "Dashboard" },
@@ -53,171 +68,174 @@ export default function ClusterDetailPage() {
                 },
                 {
                   title: (
-                    <p className="text-dark-tosca font-semibold">
+                    <span className="text-dark-tosca font-semibold">
                       {cluster.name}
-                    </p>
+                    </span>
                   ),
                 },
               ]}
             />
           </div>
-
-          <div className="flex gap-2 pb-2">
-            <EditClusterModal clusterId={String(cluster.id)} />
-
-            <DeleteClusterModal dataCluster={cluster} />
-          </div>
         </div>
 
-        <div className="mt-4 overflow-hidden">
-          <Row gutter={[24, 24]}>
-            <Col xs={24} md={8}>
-              <ImageGallery
-                images={cluster.cluster_photo_urls}
-                name={cluster.name}
-              />
-            </Col>
-
-            <Col xs={24} md={16}>
-              <div className="flex justify-between items-end">
-                <p className="text-lg font-bold text-primary-black">
-                  Deskripsi
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <div>
-                  <p className="text-primary-black">{cluster.description}</p>
-                </div>
-
-                <Row gutter={16}>
-                  {cluster.minPrice && cluster.maxPrice && (
-                    <Col span={12}>
-                      <div>
-                        <p className="text-lg font-bold text-primary-black">
-                          Range Harga
-                        </p>
-
-                        <p className="text-primary-black">
-                          Rp{" "}
-                          {parseInt(cluster.minPrice).toLocaleString("id-ID")} -
-                          Rp{" "}
-                          {parseInt(cluster.maxPrice).toLocaleString("id-ID")}
-                        </p>
-                      </div>
-                    </Col>
-                  )}
-
-                  <Col span={12}>
-                    <div>
-                      <p className="text-lg font-bold text-primary-black">
-                        Informasi Kontak
-                      </p>
-
-                      <p className="text-primary-black">
-                        {cluster.phoneNumber || "-"}
-                      </p>
-                    </div>
-                  </Col>
-                </Row>
-
-                <div>
-                  <p className="text-lg font-bold text-primary-black mb-2">
-                    Fasilitas
-                  </p>
-
-                  {cluster.facilities.split(", ") ? (
-                    <Row>
-                      {cluster.facilities.split(", ").map((facility, index) => (
-                        <Col key={index}>
-                          <Tag>{facility}</Tag>
-                        </Col>
-                      ))}
-                    </Row>
-                  ) : (
-                    "-"
-                  )}
-                </div>
-              </div>
-            </Col>
-
-            <Col span={24}>
-              <div className="mb-4">
-                <p className="text-lg font-bold text-primary-black mb-2">
-                  Lokasi
-                </p>
-
-                <ClusterMap
-                  latitude={parseFloat(cluster.latitude)}
-                  longitude={parseFloat(cluster.longitude)}
-                  name={cluster.name}
-                />
-
-                <div className="mt-2 text-sm text-gray-600">
-                  <p>Alamat: {cluster.address}</p>
-                </div>
-              </div>
-
-              <Collapse
-                expandIconPosition="end"
-                items={[
-                  {
-                    key: "1",
-                    label: "Tempat Terdekat",
-                    children: (
-                      <Row gutter={[12, 12]}>
-                        {Array.isArray(cluster.nearbyPlaces) &&
-                          cluster.nearbyPlaces.map((category, idx) => {
-                            if (category.places.length === 0) return null;
-
-                            return (
-                              <Col sm={24} md={12} lg={8} key={idx}>
-                                <p className="text-xs font-medium text-gray-700 mb-1">
-                                  {NearbyPlaceTypeLabel[category.type] ??
-                                    category.type}
-                                  :
-                                </p>
-
-                                {category.places.map((place, idx2) => (
-                                  <p
-                                    key={idx2}
-                                    className="text-xs text-gray-600"
-                                  >
-                                    • {place.name} ({place.distance}m)
-                                  </p>
-                                ))}
-                              </Col>
-                            );
-                          })}
-                      </Row>
-                    ),
-                  },
-                ]}
-              />
-            </Col>
-
-            <Col span={24}>
-              <div className="flex flex-col gap-2">
-                <Row>
-                  <Col>
-                    <p className="text-lg font-bold text-primary-black mb-2">
-                      Cluster Type
-                    </p>
-                  </Col>
-
-                  <Col flex="auto">
-                    <div className="flex justify-end">
-                      <CreateClusterTypeModal />
-                    </div>
-                  </Col>
-                </Row>
-
-                <TableClusterType clusterId={cluster.id} />
-              </div>
-            </Col>
-          </Row>
+        {/* Actions: wrap di mobile */}
+        <div className="flex flex-wrap gap-2 justify-start md:justify-end pb-0 md:pb-2">
+          <EditClusterModal clusterId={String(cluster.id)} />
+          <DeleteClusterModal dataCluster={cluster} />
         </div>
       </div>
-    </>
+
+      {/* Konten */}
+      <div className="mt-2 overflow-hidden">
+        <Row
+          gutter={[
+            { xs: 12, sm: 16, md: 24 },
+            { xs: 12, sm: 16, md: 24 },
+          ]}
+        >
+          {/* Galeri gambar */}
+          <Col xs={24} md={8}>
+            <ImageGallery
+              images={cluster.cluster_photo_urls}
+              name={cluster.name}
+            />
+          </Col>
+
+          {/* Deskripsi + info ringkas */}
+          <Col xs={24} md={16}>
+            <div className="flex items-center justify-between">
+              <p className="text-base sm:text-lg font-bold text-primary-black">
+                Deskripsi
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <p className="text-primary-black text-justify text-sm sm:text-base leading-relaxed break-words">
+                {cluster.description || "-"}
+              </p>
+
+              <Row gutter={[12, 12]}>
+                {(cluster.minPrice || cluster.maxPrice) && (
+                  <Col xs={24} sm={12}>
+                    <div>
+                      <p className="text-base font-bold text-primary-black">
+                        Range Harga
+                      </p>
+                      <p className="text-primary-black text-sm sm:text-base">
+                        {formatIDR(cluster.minPrice) !== "-" &&
+                        formatIDR(cluster.maxPrice) !== "-"
+                          ? `Rp ${formatIDR(cluster.minPrice)} - Rp ${formatIDR(
+                              cluster.maxPrice
+                            )}`
+                          : "-"}
+                      </p>
+                    </div>
+                  </Col>
+                )}
+
+                <Col xs={24} sm={12}>
+                  <div>
+                    <p className="text-base font-bold text-primary-black">
+                      Informasi Kontak
+                    </p>
+                    <p className="text-primary-black text-sm sm:text-base break-words">
+                      {cluster.phoneNumber || "-"}
+                    </p>
+                  </div>
+                </Col>
+              </Row>
+
+              <div>
+                <p className="text-base font-bold text-primary-black mb-2">
+                  Fasilitas
+                </p>
+
+                {facilities.length > 0 ? (
+                  <Row gutter={[8, 8]}>
+                    {facilities.map((facility, i) => (
+                      <Col key={`${facility}-${i}`}>
+                        <Tag>{facility}</Tag>
+                      </Col>
+                    ))}
+                  </Row>
+                ) : (
+                  <span className="text-sm text-gray-600">-</span>
+                )}
+              </div>
+            </div>
+          </Col>
+
+          {/* Lokasi + peta */}
+          <Col span={24}>
+            <div className="mb-4">
+              <p className="text-base sm:text-lg font-bold text-primary-black mb-2">
+                Lokasi
+              </p>
+
+              <ClusterMap
+                latitude={parseFloat(cluster.latitude)}
+                longitude={parseFloat(cluster.longitude)}
+                name={cluster.name}
+              />
+
+              <div className="mt-2 text-xs sm:text-sm text-gray-600 break-words">
+                <p>Alamat: {cluster.address || "-"}</p>
+              </div>
+            </div>
+
+            <Collapse
+              expandIconPosition="end"
+              items={[
+                {
+                  key: "1",
+                  label: "Tempat Terdekat",
+                  children: (
+                    <Row gutter={[12, 12]}>
+                      {Array.isArray(cluster.nearbyPlaces) &&
+                        cluster.nearbyPlaces.map((category, idx) => {
+                          if (!category?.places?.length) return null;
+
+                          return (
+                            <Col xs={24} md={12} lg={8} key={idx}>
+                              <p className="text-xs font-medium text-gray-700 mb-1">
+                                {NearbyPlaceTypeLabel[category.type] ??
+                                  category.type}
+                                :
+                              </p>
+
+                              {category.places.map((place, idx2) => (
+                                <p key={idx2} className="text-xs text-gray-600">
+                                  • {place.name} ({place.distance}m)
+                                </p>
+                              ))}
+                            </Col>
+                          );
+                        })}
+                    </Row>
+                  ),
+                },
+              ]}
+            />
+          </Col>
+
+          {/* Cluster Type + Tombol Create */}
+          <Col span={24}>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+              <p className="text-base sm:text-lg font-bold text-primary-black">
+                Cluster Type
+              </p>
+              <div className="flex justify-start sm:justify-end">
+                <CreateClusterTypeModal />
+              </div>
+            </div>
+
+            {/* Tabel bisa di-scroll di mobile */}
+            <div className="w-full overflow-x-auto">
+              <TableClusterType clusterId={cluster.id} />
+            </div>
+          </Col>
+        </Row>
+      </div>
+    </div>
   );
 }

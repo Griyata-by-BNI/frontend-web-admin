@@ -1,12 +1,15 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { message } from "antd";
 import { NearbyPlace, Place } from "@/types/cluster";
+import { useDebounce } from "@/utils/useDebounce";
 
 export const useNearbyPlaces = () => {
   const [nearbyPlaces, setNearbyPlaces] = useState<NearbyPlace[]>([]);
   const [loading, setLoading] = useState(false);
+  const [coordinates, setCoordinates] = useState<{lat?: number, lng?: number}>({});
+  const debouncedCoordinates = useDebounce(coordinates, 500);
 
-  const fetchNearbyPlaces = async (lat: number, lng: number) => {
+  const fetchNearbyPlacesInternal = async (lat: number, lng: number) => {
     setLoading(true);
     try {
       const radius = 2000;
@@ -171,9 +174,21 @@ export const useNearbyPlaces = () => {
     }
   };
 
+  const fetchNearbyPlaces = useCallback((lat: number, lng: number) => {
+    setCoordinates({ lat, lng });
+  }, []);
+
   const resetPlaces = () => {
     setNearbyPlaces([]);
+    setCoordinates({});
   };
+
+  // Effect untuk fetch ketika coordinates berubah setelah debounce
+  useEffect(() => {
+    if (debouncedCoordinates.lat && debouncedCoordinates.lng) {
+      fetchNearbyPlacesInternal(debouncedCoordinates.lat, debouncedCoordinates.lng);
+    }
+  }, [debouncedCoordinates]);
 
   return {
     nearbyPlaces,
