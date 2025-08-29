@@ -65,8 +65,6 @@ export default function CreateClusterModal() {
     fetchNearbyPlaces(lat, lng);
   };
 
-
-
   const queryClient = useQueryClient();
   const { mutate, status } = useCreateCluster();
 
@@ -171,12 +169,14 @@ export default function CreateClusterModal() {
 
           <Form.Item
             name="address"
-            label="Alamat"
+            label="Lokasi Cluster"
             className="!mb-3"
-            rules={[{ required: true, message: "Mohon masukkan alamat!" }]}
+            rules={[
+              { required: true, message: "Mohon masukkan lokasi cluster!" },
+            ]}
           >
             <Input.TextArea
-              placeholder="Masukkan alamat lengkap"
+              placeholder="Masukkan lokasi cluster"
               rows={2}
               maxLength={1000}
               showCount

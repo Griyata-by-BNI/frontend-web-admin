@@ -12,6 +12,7 @@ import ClusterMap from "./_components/ClusterMap";
 import ImageGallery from "./_components/ImageGallery";
 import TableClusterType from "./_components/TableClusterType";
 import CreateClusterTypeModal from "./_components/CreateClusterTypeModal";
+import { NearbyPlacesCollapse } from "./_components/NearbyPlacesCollapse";
 
 const formatIDR = (n?: string | number) => {
   const num =
@@ -183,39 +184,7 @@ export default function ClusterDetailPage() {
               </div>
             </div>
 
-            <Collapse
-              expandIconPosition="end"
-              items={[
-                {
-                  key: "1",
-                  label: "Tempat Terdekat",
-                  children: (
-                    <Row gutter={[12, 12]}>
-                      {Array.isArray(cluster.nearbyPlaces) &&
-                        cluster.nearbyPlaces.map((category, idx) => {
-                          if (!category?.places?.length) return null;
-
-                          return (
-                            <Col xs={24} md={12} lg={8} key={idx}>
-                              <p className="text-xs font-medium text-gray-700 mb-1">
-                                {NearbyPlaceTypeLabel[category.type] ??
-                                  category.type}
-                                :
-                              </p>
-
-                              {category.places.map((place, idx2) => (
-                                <p key={idx2} className="text-xs text-gray-600">
-                                  • {place.name} ({place.distance}m)
-                                </p>
-                              ))}
-                            </Col>
-                          );
-                        })}
-                    </Row>
-                  ),
-                },
-              ]}
-            />
+            <NearbyPlacesCollapse cluster={cluster} />
           </Col>
 
           {/* Cluster Type + Tombol Create */}
