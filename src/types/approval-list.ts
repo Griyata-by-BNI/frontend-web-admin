@@ -31,6 +31,14 @@ export interface KprDashboardResponse {
     timing: string;
     count: number;
     filtered_by_sales: boolean;
+    pagination: {
+      currentPage: number;
+      pageSize: number;
+      total_items: number;
+      totalPages: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
   };
 }
 

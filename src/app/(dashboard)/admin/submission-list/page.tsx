@@ -48,7 +48,7 @@ export default function ApprovalListPage() {
     () => data?.data?.submissions ?? [],
     [data]
   );
-  const totalItems = data?.data?.count ?? 0;
+  const totalItems = data?.data?.pagination?.total_items ?? 0;
 
   const goToDetail = (id: number) =>
     router.push(`/admin/submission-list/${id}`);

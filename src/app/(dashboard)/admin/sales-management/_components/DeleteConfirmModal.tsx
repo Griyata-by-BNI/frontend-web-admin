@@ -24,7 +24,8 @@ export default function DeleteConfirmModal({
         message.success("Sales berhasil dihapus");
         setModalOpen(false);
       },
-      onError: () => message.error("Gagal menghapus sales"),
+      onError: (err: any) =>
+        message.error(err?.status?.message || "Gagal menghapus sales"),
     });
   };
 
