@@ -1,9 +1,13 @@
 "use client";
 
 import interestRateData from "@/data/interest-rate.json";
-import { useSubmissionDetail } from "@/services/approvalListServices";
+import {
+  useSubmissionDetail,
+  useUpdateSubmissionStatus,
+} from "@/services/approvalListServices";
 import "@ant-design/v5-patch-for-react-19";
 import {
+  App,
   Breadcrumb,
   Card,
   Col,
@@ -15,6 +19,7 @@ import {
   type DescriptionsProps,
 } from "antd";
 import { useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import ApproveRejectButton from "./_components/ApproveRejectButton";
 import DocumentPreview from "./_components/DocumentPreview";
 import PropertyInformation from "./_components/PropertyInformation";
@@ -22,11 +27,24 @@ import PropertyInformation from "./_components/PropertyInformation";
 type InterestItem = { id: number; title: string };
 
 export default function SubmissionDetailPage() {
+  const { message } = App.useApp();
   const params = useParams<{ submission_id: string }>();
   const submissionId = params?.submission_id ?? "";
   const { data, isLoading } = useSubmissionDetail(submissionId);
+  const { mutate: updateStatus } = useUpdateSubmissionStatus();
   const router = useRouter();
   const screens = Grid.useBreakpoint();
+
+  useEffect(() => {
+    if (data?.data?.submission?.status === "submitted") {
+      updateStatus(
+        { id: submissionId, payload: { status: "under_review" } },
+        {
+          onError: () => message.error("Gagal memperbarui status"),
+        }
+      );
+    }
+  }, [data?.data?.submission?.status, submissionId, updateStatus, message]);
 
   const d = data?.data;
   const s = d?.submission;

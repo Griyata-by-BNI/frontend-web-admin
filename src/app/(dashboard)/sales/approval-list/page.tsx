@@ -38,8 +38,6 @@ export default function ApprovalListPage() {
   const [activeTab, setActiveTab] = useState<string>("submitted");
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [updatingId, setUpdatingId] = useState<number | null>(null);
-
   const debouncedSearchText = useDebounce(searchText, 500);
 
   const { data, isLoading } = useApprovalList({
@@ -49,7 +47,6 @@ export default function ApprovalListPage() {
     search: debouncedSearchText || undefined,
   });
 
-  const { mutate, isPending } = useUpdateSubmissionStatus();
   const router = useRouter();
 
   const submissions = useMemo<Submission[]>(
@@ -58,24 +55,8 @@ export default function ApprovalListPage() {
   );
   const totalItems = data?.data?.count ?? 0;
 
-  const goToDetail = (id: number) => router.push(`/sales/approval-list/${id}`);
-
   const handleOpenDetail = (record: Submission) => {
-    if (record.status === "submitted") {
-      setUpdatingId(record.id);
-      mutate(
-        { id: record.id, payload: { status: "under_review" } },
-        {
-          onSuccess: () => {
-            goToDetail(record.id);
-          },
-          onError: () => message.error("Gagal memperbarui status"),
-          onSettled: () => setUpdatingId(null),
-        }
-      );
-    } else {
-      goToDetail(record.id);
-    }
+    router.push(`/sales/approval-list/${record.id}`);
   };
 
   // Kolom: sembunyikan sebagian di layar kecil; pindahkan detail ke expanded row.
@@ -131,13 +112,12 @@ export default function ApprovalListPage() {
               size="small"
               icon={<Eye className="w-4 h-4" />}
               onClick={() => handleOpenDetail(record)}
-              loading={isPending && updatingId === record.id}
             />
           </Tooltip>
         ),
       },
     ],
-    [screens.lg, isPending, updatingId]
+[screens.lg]
   );
 
   const useExpandedRow = !screens.md; // di mobile tampilkan detail di expanded row
