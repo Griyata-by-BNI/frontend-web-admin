@@ -44,8 +44,8 @@ export interface KprDashboardResponse {
 
 export interface KprDashboardParams {
   status?: string;
-  pageNumber: number;
-  pageSize: number;
+  page: number;
+  limit: number;
   search?: string;
 }
 

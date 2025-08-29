@@ -42,8 +42,8 @@ export default function ApprovalListPage() {
 
   const { data, isLoading } = useApprovalList({
     status: activeTab,
-    pageNumber,
-    pageSize,
+    page: pageNumber,
+    limit: pageSize,
     search: debouncedSearchText || undefined,
   });
 
@@ -117,7 +117,7 @@ export default function ApprovalListPage() {
         ),
       },
     ],
-[screens.lg]
+    [screens.lg]
   );
 
   const useExpandedRow = !screens.md; // di mobile tampilkan detail di expanded row

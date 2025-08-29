@@ -37,8 +37,8 @@ export default function ApprovalListPage() {
 
   const { data, isLoading } = useApprovalList({
     status: activeTab,
-    pageNumber,
-    pageSize,
+    page: pageNumber,
+    limit: pageSize,
     search: debouncedSearchText || undefined,
   });
 

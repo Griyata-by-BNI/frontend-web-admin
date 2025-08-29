@@ -11,14 +11,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 export const fetchApprovalList = async (
   params: KprDashboardParams
 ): Promise<KprDashboardResponse> => {
-  const { status, pageNumber, pageSize, search } = params;
+  const { status, page, limit, search } = params;
   const { data } = await axiosInstance.get<KprDashboardResponse>(
     "/kpr/submission",
     {
       params: {
         status,
-        pageNumber,
-        pageSize,
+        page,
+        limit,
         search,
       },
     }
