@@ -5,6 +5,14 @@ export interface Submission {
   status: string;
   created_at: string;
   sales_id: number;
+  sales: SalesSubmission;
+}
+
+export interface SalesSubmission {
+  id: number;
+  full_name: string;
+  email: string;
+  npp: string;
 }
 
 export interface Pagination {

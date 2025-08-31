@@ -95,6 +95,20 @@ export default function ApprovalListPage() {
         render: (date: string) => new Date(date).toLocaleDateString("id-ID"),
       },
       {
+        title: "NPP Sales",
+        dataIndex: "npp",
+        render: (_, record: Submission) => {
+          return record.sales.npp;
+        },
+      },
+      {
+        title: "Email Sales",
+        dataIndex: "npp",
+        render: (_, record: Submission) => {
+          return record.sales.email;
+        },
+      },
+      {
         title: "Aksi",
         key: "action",
         align: "center",
